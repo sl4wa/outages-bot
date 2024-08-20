@@ -12,9 +12,17 @@ load_dotenv()
 api_url = 'https://power-api.loe.lviv.ua/api/pw_accidents?pagination=false&otg.id=28&city.id=693'
 TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 
+# Mimic a browser request by setting headers
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
+    'Accept': 'application/json, text/plain, */*',
+    'Connection': 'keep-alive',
+    'Accept-Language': 'en-US,en;q=0.9',
+}
+
 def fetch_and_notify():
     logging.info("Attempting to fetch outage data from API...")
-    response = requests.get(api_url)
+    response = requests.get(api_url, headers=headers)
     
     if response.status_code == 200:
         try:
