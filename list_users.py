@@ -16,28 +16,30 @@ load_dotenv(dotenv_path)
 
 # Configuration
 TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
-chat_ids_file = 'chat_ids.json'
+subscriptions_file = 'subscriptions.json'
 
-def load_chat_ids():
+def load_chat_data():
     try:
-        with open(chat_ids_file, 'r') as file:
+        with open(subscriptions_file, 'r') as file:
             return json.load(file)
     except FileNotFoundError:
-        logging.info(f"{chat_ids_file} not found.")
-        return []
+        logging.info(f"{subscriptions_file} not found.")
+        return {}
 
 def list_users():
-    chat_ids = load_chat_ids()
-    if not chat_ids:
+    chat_data = load_chat_data()
+    if not chat_data:
         logging.info("No users are currently subscribed.")
         return
 
     bot = Bot(token=TOKEN)
     logging.info("Subscribed Users:")
-    for chat_id in chat_ids:
+    for chat_id, info in chat_data.items():
         try:
             chat_info = bot.get_chat(chat_id)
-            print(f"Chat ID: {chat_info.id}, Username: @{chat_info.username}, First Name: {chat_info.first_name}, Last Name: {chat_info.last_name}")
+            print(f"Chat ID: {chat_info.id}, Username: @{chat_info.username}, First Name: {chat_info.first_name}, "
+                  f"Last Name: {chat_info.last_name}, Street ID: {info['street_id']}, "
+                  f"Street Name: {info['street_name']}, Building: {info['building']}")
         except Exception as e:
             logging.error(f"Failed to get info for chat_id {chat_id}: {e}")
 
