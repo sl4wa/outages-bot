@@ -1,18 +1,28 @@
+import warnings
+
+# Suppress specific warning about urllib3 in python-telegram-bot
+warnings.filterwarnings("ignore", category=UserWarning, message="python-telegram-bot is using upstream urllib3. This is allowed but not supported by python-telegram-bot maintainers.")
+
 import requests
 import logging
 from telegram import Bot, ParseMode
-from utils.helpers import save_last_message, format_datetime, load_last_message
 import os
 import re
 from dotenv import load_dotenv
 import json
+from datetime import datetime
 
+# Load environment variables from .env file
 load_dotenv()
 
+# Set up logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# API URL and Telegram Bot token from environment variables
 api_url = 'https://power-api.loe.lviv.ua/api/pw_accidents?pagination=false&otg.id=28&city.id=693'
 TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 
-# Mimic a browser request by setting headers
+# Headers to mimic a browser request
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
     'Accept': 'application/json, text/plain, */*',
@@ -20,7 +30,7 @@ headers = {
     'Accept-Language': 'en-US,en;q=0.9',
 }
 
-def fetch_and_notify():
+def notify():
     logging.info("Attempting to fetch outage data from API...")
     response = requests.get(api_url, headers=headers)
     
@@ -64,8 +74,43 @@ def fetch_and_notify():
         logging.error(f"Failed to fetch data: HTTP {response.status_code}")
 
 def load_subscriptions():
+    """Loads the subscription data from a JSON file."""
     try:
         with open('subscriptions.json', 'r', encoding='utf-8') as file:
             return json.load(file)
     except FileNotFoundError:
+        logging.error("subscriptions.json file not found!")
         return {}
+
+def save_last_message(chat_id, message):
+    """Saves the last message sent to each chat_id."""
+    try:
+        with open('last_messages.json', 'r+', encoding='utf-8') as file:
+            last_messages = json.load(file)
+            last_messages[chat_id] = message
+            file.seek(0)
+            json.dump(last_messages, file, ensure_ascii=False, indent=4)
+            file.truncate()
+    except FileNotFoundError:
+        with open('last_messages.json', 'w', encoding='utf-8') as file:
+            json.dump({chat_id: message}, file, ensure_ascii=False, indent=4)
+
+def load_last_message(chat_id):
+    """Loads the last message sent to a chat_id."""
+    try:
+        with open('last_messages.json', 'r', encoding='utf-8') as file:
+            last_messages = json.load(file)
+            return last_messages.get(chat_id, "")
+    except FileNotFoundError:
+        return ""
+
+def format_datetime(iso_string):
+    """Formats the ISO 8601 date string into a readable format."""
+    try:
+        dt = datetime.fromisoformat(iso_string)
+        return dt.strftime('%Y-%m-%d %H:%M')
+    except ValueError:
+        return iso_string
+
+if __name__ == "__main__":
+    notify()

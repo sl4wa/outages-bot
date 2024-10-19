@@ -3,6 +3,7 @@ import os
 import signal
 import sys
 import warnings
+from logging.handlers import WatchedFileHandler
 
 # Suppress specific warning about urllib3
 warnings.filterwarnings("ignore", category=UserWarning, message="python-telegram-bot is using upstream urllib3. This is allowed but not supported by python-telegram-bot maintainers.")
@@ -11,12 +12,13 @@ from dotenv import load_dotenv
 from bot_setup import setup_bot, get_scheduler
 
 # Configure logging
+log_file = 'bot.log'
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S',
     handlers=[
-        logging.FileHandler('bot.log'),
+        WatchedFileHandler(log_file),
         logging.StreamHandler()
     ]
 )

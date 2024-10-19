@@ -7,7 +7,7 @@ SERVICE_FILE=$(SERVICE_NAME).service
 SYSTEMD_SERVICE_FILE=/etc/systemd/system/$(SERVICE_NAME).service
 USER=$(shell whoami)
 BOT_DIR=$(shell pwd)
-BOT_SCRIPT=main.py
+BOT_SCRIPT=bot.py
 GIT_REPO=https://github.com/sl4wa/poweron-bot.git
 BRANCH=main
 
@@ -50,7 +50,7 @@ install: $(SYSTEMD_SERVICE_FILE)
 $(SYSTEMD_SERVICE_FILE): $(SERVICE_FILE)
 	sudo mv $(SERVICE_FILE) $(SYSTEMD_SERVICE_FILE)
 
-$(SERVICE_FILE): $(VENV)/bin/python
+$(SERVICE_FILE): $(VENV)/bin/$(PYTHON)
 	@echo "Generating service file with virtual environment Python"
 	@echo "[Unit]" > $(SERVICE_FILE)
 	@echo "Description=Telegram Bot" >> $(SERVICE_FILE)
@@ -59,7 +59,7 @@ $(SERVICE_FILE): $(VENV)/bin/python
 	@echo "[Service]" >> $(SERVICE_FILE)
 	@echo "User=$(USER)" >> $(SERVICE_FILE)
 	@echo "WorkingDirectory=$(BOT_DIR)" >> $(SERVICE_FILE)
-	@echo "ExecStart=$(BOT_DIR)/$(VENV)/bin/python $(BOT_DIR)/$(BOT_SCRIPT)" >> $(SERVICE_FILE)
+	@echo "ExecStart=$(BOT_DIR)/$(VENV)/bin/$(PYTHON) $(BOT_DIR)/$(BOT_SCRIPT)" >> $(SERVICE_FILE)
 	@echo "Restart=always" >> $(SERVICE_FILE)
 	@echo "RestartSec=5" >> $(SERVICE_FILE)
 	@echo "StartLimitInterval=0" >> $(SERVICE_FILE)
