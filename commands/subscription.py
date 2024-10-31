@@ -1,8 +1,8 @@
 from telegram import Update
-from telegram.ext import CallbackContext
+from telegram.ext import ContextTypes
 import json
 
-def show_subscription(update: Update, context: CallbackContext):
+async def show_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
     subscriptions = load_subscriptions()
     last_message = load_last_message(chat_id)
@@ -16,12 +16,12 @@ def show_subscription(update: Update, context: CallbackContext):
         message = "Ви не маєте активної підписки."
 
     if update.message:
-        update.message.reply_text(message)
+        await update.message.reply_text(message)
     elif update.callback_query:
-        update.callback_query.answer()
-        update.callback_query.message.reply_text(message)
+        await update.callback_query.answer()
+        await update.callback_query.message.reply_text(message)
     else:
-        context.bot.send_message(chat_id=chat_id, text=message)
+        await context.bot.send_message(chat_id=chat_id, text=message)
 
 def load_subscriptions():
     try:

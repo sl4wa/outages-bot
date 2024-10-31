@@ -1,5 +1,5 @@
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
-from telegram.ext import CallbackContext, ConversationHandler
+from telegram.ext import ContextTypes, ConversationHandler
 import json
 import logging
 
@@ -14,34 +14,34 @@ STREET, BUILDING = range(2)
 def normalize(text):
     return text.strip().lower()
 
-def start(update: Update, context: CallbackContext) -> int:
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     chat_id = update.effective_chat.id
     subscriptions = load_subscriptions()
 
     if str(chat_id) in subscriptions:
         current_sub = subscriptions[str(chat_id)]
-        update.message.reply_text(
+        await update.message.reply_text(
             f"Ваша поточна підписка:\nВулиця: {current_sub['street_name']}\nБудинок: {current_sub['building']}\n\n"
             "Будь ласка, оберіть нову вулицю для оновлення підписки або введіть назву вулиці:"
         )
     else:
-        update.message.reply_text("Будь ласка, введіть назву вулиці:")
+        await update.message.reply_text("Будь ласка, введіть назву вулиці:")
 
     return STREET
 
-def street_selection(update: Update, context: CallbackContext) -> int:
+async def street_selection(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = normalize(update.message.text)
     filtered_streets = [street for street in streets if query in normalize(street['name'])]
 
     if not filtered_streets:
-        update.message.reply_text('Вулицю не знайдено. Спробуйте ще раз.')
+        await update.message.reply_text('Вулицю не знайдено. Спробуйте ще раз.')
         return STREET
 
     exact_match = next((street for street in filtered_streets if normalize(street['name']) == query), None)
     if exact_match:
         context.user_data['street_name'] = exact_match['name']
         context.user_data['street_id'] = exact_match['id']
-        update.message.reply_text(
+        await update.message.reply_text(
             text=f"Ви обрали вулицю: {exact_match['name']}\nБудь ласка, введіть номер будинку:",
             reply_markup=ReplyKeyboardRemove()
         )
@@ -49,16 +49,16 @@ def street_selection(update: Update, context: CallbackContext) -> int:
 
     keyboard = [[street['name']] for street in filtered_streets]
     reply_markup = ReplyKeyboardMarkup(keyboard, one_time_keyboard=True, resize_keyboard=True)
-    update.message.reply_text('Будь ласка, оберіть вулицю:', reply_markup=reply_markup)
+    await update.message.reply_text('Будь ласка, оберіть вулицю:', reply_markup=reply_markup)
     return STREET
 
-def building_selection(update: Update, context: CallbackContext) -> int:
+async def building_selection(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     building = update.message.text
 
     street_name = context.user_data.get('street_name')
     street_id = context.user_data.get('street_id')
     if not street_name or not street_id:
-        update.message.reply_text('Підписка не завершена. Будь ласка, почніть знову.')
+        await update.message.reply_text('Підписка не завершена. Будь ласка, почніть знову.')
         return ConversationHandler.END
 
     chat_id = str(update.effective_chat.id)
@@ -67,7 +67,7 @@ def building_selection(update: Update, context: CallbackContext) -> int:
     save_subscriptions(subscriptions)
     clear_last_message(chat_id)
 
-    update.message.reply_text(
+    await update.message.reply_text(
         f"Ви підписалися на сповіщення про відключення електроенергії для вулиці {street_name}, будинок {building}.",
         reply_markup=ReplyKeyboardRemove()
     )
