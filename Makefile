@@ -1,117 +1,71 @@
-# Variables
-PYTHON=python3
-PIP=pip3
-VENV=venv
-SERVICE_NAME=poweron
-SERVICE_FILE=$(SERVICE_NAME).service
-SYSTEMD_SERVICE_FILE=/etc/systemd/system/$(SERVICE_NAME).service
+PROJECT_DIR=$(shell pwd)
+SUPERVISOR_DIR=$(PROJECT_DIR)/supervisor
+SUPERVISOR_LINK_DIR=/etc/supervisor.d
+VENV_DIR=$(PROJECT_DIR)/venv
 USER=$(shell whoami)
-BOT_DIR=$(shell pwd)
-BOT_SCRIPT=bot.py
-GIT_REPO=https://github.com/sl4wa/poweron-bot.git
-BRANCH=main
 
-# Default target
-.PHONY: all
-all: help
+.PHONY: help deps install start stop restart status logs uninstall
 
-# Help target
-.PHONY: help
+# Display available targets
 help:
 	@echo "Available targets:"
-	@echo "  setup          - Set up the Python virtual environment and install dependencies"
-	@echo "  install        - Create the systemd service file and enable the service"
-	@echo "  start          - Start the Telegram bot service"
-	@echo "  stop           - Stop the Telegram bot service"
-	@echo "  restart        - Restart the Telegram bot service"
-	@echo "  status         - Show the status of the Telegram bot service"
-	@echo "  logs           - Show the logs of the Telegram bot service"
-	@echo "  uninstall      - Remove the systemd service file and disable the service"
-	@echo "  update         - Pull the latest code from GitHub and restart the service"
+	@echo "  deps           - Set up the Python virtual environment and install dependencies"
+	@echo "  install        - Set up Supervisor to run with project configuration"
+	@echo "  start          - Start Supervisor and services"
+	@echo "  stop           - Stop services and Supervisor"
+	@echo "  restart        - Restart services"
+	@echo "  status         - Show the status of services"
+	@echo "  logs           - Show the logs of services"
+	@echo "  uninstall      - Remove Supervisor config and stop services"
 
-# Clone the repository from GitHub
-.PHONY: clone
-clone:
-	@if [ ! -d "$(BOT_DIR)" ]; then git clone -b $(BRANCH) $(GIT_REPO) $(BOT_DIR); fi
+# Set up the virtual environment and install dependencies
+deps:
+	@echo "Creating virtual environment and installing dependencies..."
+	python3 -m venv $(VENV_DIR)
+	$(VENV_DIR)/bin/pip install -r requirements.txt
 
-# Set up the Python virtual environment and install dependencies
-.PHONY: setup
-setup: clone
-	cd $(BOT_DIR) && $(PYTHON) -m venv $(VENV)
-	cd $(BOT_DIR) && $(VENV)/bin/$(PIP) install -r requirements.txt
+# Install Supervisor configuration and generate .ini files with absolute paths
+install:
+	@echo "Generating Supervisor configuration files with absolute paths..."
+	sed 's|{{PROJECT_DIR}}|$(PROJECT_DIR)|g; s|{{USER}}|$(USER)|g' $(SUPERVISOR_DIR)/bot.template.ini > $(SUPERVISOR_DIR)/bot.ini
+	sed 's|{{PROJECT_DIR}}|$(PROJECT_DIR)|g; s|{{USER}}|$(USER)|g' $(SUPERVISOR_DIR)/notifier.template.ini > $(SUPERVISOR_DIR)/notifier.ini
+	touch bot.log notifier.log
+	@echo "Setting up Supervisor configuration links..."
+	sudo ln -sf $(SUPERVISOR_DIR)/bot.ini $(SUPERVISOR_LINK_DIR)/bot.ini
+	sudo ln -sf $(SUPERVISOR_DIR)/notifier.ini $(SUPERVISOR_LINK_DIR)/notifier.ini
+	sudo supervisorctl reread
+	sudo supervisorctl update
 
-# Create the systemd service file and enable the service
-.PHONY: install
-install: $(SYSTEMD_SERVICE_FILE)
-	sudo systemctl daemon-reload
-	sudo systemctl enable $(SERVICE_NAME)
-	@echo "Service installed and enabled."
-
-$(SYSTEMD_SERVICE_FILE): $(SERVICE_FILE)
-	sudo mv $(SERVICE_FILE) $(SYSTEMD_SERVICE_FILE)
-
-$(SERVICE_FILE): $(VENV)/bin/$(PYTHON)
-	@echo "Generating service file with virtual environment Python"
-	@echo "[Unit]" > $(SERVICE_FILE)
-	@echo "Description=Telegram Bot" >> $(SERVICE_FILE)
-	@echo "After=network.target" >> $(SERVICE_FILE)
-	@echo "" >> $(SERVICE_FILE)
-	@echo "[Service]" >> $(SERVICE_FILE)
-	@echo "User=$(USER)" >> $(SERVICE_FILE)
-	@echo "WorkingDirectory=$(BOT_DIR)" >> $(SERVICE_FILE)
-	@echo "ExecStart=$(BOT_DIR)/$(VENV)/bin/$(PYTHON) $(BOT_DIR)/$(BOT_SCRIPT)" >> $(SERVICE_FILE)
-	@echo "Restart=always" >> $(SERVICE_FILE)
-	@echo "RestartSec=5" >> $(SERVICE_FILE)
-	@echo "StartLimitInterval=0" >> $(SERVICE_FILE)
-	@echo "StartLimitBurst=0" >> $(SERVICE_FILE)
-	@echo "StandardOutput=journal" >> $(SERVICE_FILE)
-	@echo "StandardError=journal" >> $(SERVICE_FILE)
-	@echo "" >> $(SERVICE_FILE)
-	@echo "[Install]" >> $(SERVICE_FILE)
-	@echo "WantedBy=multi-user.target" >> $(SERVICE_FILE)
-
-# Start the Telegram bot service
-.PHONY: start
+# Start the Supervisor services
 start:
-	sudo systemctl start $(SERVICE_NAME)
-	@echo "Service started."
+	@echo "Starting Supervisor-managed services..."
+	sudo supervisorctl start bot notifier
 
-# Stop the Telegram bot service
-.PHONY: stop
+# Stop the Supervisor services
 stop:
-	sudo systemctl stop $(SERVICE_NAME)
-	@echo "Service stopped."
+	@echo "Stopping Supervisor-managed services..."
+	sudo supervisorctl stop bot notifier
 
-# Restart the Telegram bot service
-.PHONY: restart
+# Restart the Supervisor services
 restart:
-	sudo systemctl restart $(SERVICE_NAME)
-	@echo "Service restarted."
+	@echo "Restarting Supervisor-managed services..."
+	sudo supervisorctl restart bot notifier
 
-# Show the status of the Telegram bot service
-.PHONY: status
+# Display the status of Supervisor services
 status:
-	sudo systemctl status $(SERVICE_NAME)
+	@echo "Displaying status of Supervisor-managed services..."
+	sudo supervisorctl status
 
-# Show the logs of the Telegram bot service
-.PHONY: logs
+# Tail logs for both bot and notifier
 logs:
-	sudo journalctl -u $(SERVICE_NAME) -f
+	@echo "Tailing logs for bot and notifier services..."
+	tail -f bot.log notifier.log api_checker.log
 
-# Remove the systemd service file and disable the service
-.PHONY: uninstall
+# Uninstall Supervisor configurations and stop services
 uninstall:
-	sudo systemctl stop $(SERVICE_NAME)
-	sudo systemctl disable $(SERVICE_NAME)
-	sudo rm -f $(SYSTEMD_SERVICE_FILE)
-	sudo systemctl daemon-reload
-	@echo "Service uninstalled."
-
-# Pull the latest code from GitHub and restart the service
-.PHONY: update
-update:
-	cd $(BOT_DIR) && git fetch
-	cd $(BOT_DIR) && git checkout $(BRANCH)
-	cd $(BOT_DIR) && git reset --hard origin/$(BRANCH)
-	sudo systemctl restart $(SERVICE_NAME)
-	@echo "Service updated and restarted."
+	@echo "Removing Supervisor configuration and stopping services..."
+	sudo supervisorctl stop bot notifier
+	sudo rm -f $(SUPERVISOR_LINK_DIR)/bot.ini $(SUPERVISOR_LINK_DIR)/notifier.ini
+	sudo supervisorctl reread
+	sudo supervisorctl update
+	rm -f $(SUPERVISOR_DIR)/bot.ini $(SUPERVISOR_DIR)/notifier.ini

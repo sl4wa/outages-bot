@@ -3,6 +3,5 @@ venv/
 __pycache__/
 subscriptions.json
 last_messages.json
-bot.log
-notify.log
+*.log
 .env

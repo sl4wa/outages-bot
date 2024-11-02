@@ -2,20 +2,40 @@
 
 ## Setup
 
-### 1. Install dependencies
+### 1. Install Dependencies
 
-    make setup
+Create a virtual environment and install required Python packages:
 
-### 2. Run the bot
+    make deps
 
-    ./venv/bin/python3 bot.py
+### 2. Install and Enable Services
 
-### 3. Add `run_notify.sh` to cron
+Set up and enable the bot and notifier services using Supervisor:
 
-Make `run_notify.sh` executable:
+    make install
 
-    chmod +x run_notify.sh
+This command registers two Supervisor services:
+- `notifier`: Handles notifications.
+- `bot`: Manages bot interactions.
 
-Then add it to cron:
+### 3. Start the Bot Services
 
-    */5 7-23 * * * /path/to/run_notify.sh
+To start both services together, run:
+
+    make start
+
+### 4. Run `api_checker.sh` with Cron
+
+To check the API at regular intervals, add `api_checker.sh` to cron:
+
+1. Make the script executable:
+
+    ```bash
+    chmod +x /path/to/api_checker.sh
+    ```
+
+2. Add it to cron (for example run every 5 minutes between 7 AM and 11 PM):
+
+    ```bash
+    */5 7-23 * * * /path/to/api_checker.sh
+    ```
