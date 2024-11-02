@@ -1,7 +1,9 @@
 import os
 import json
 import logging
+import asyncio
 from telegram import Bot
+from telegram.error import TelegramError
 from dotenv import load_dotenv, find_dotenv
 
 # Setup logging
@@ -26,7 +28,7 @@ def load_chat_data():
         logging.info(f"{subscriptions_file} not found.")
         return {}
 
-def list_users():
+async def list_users():
     chat_data = load_chat_data()
     if not chat_data:
         logging.info("No users are currently subscribed.")
@@ -36,12 +38,12 @@ def list_users():
     logging.info("Subscribed Users:")
     for chat_id, info in chat_data.items():
         try:
-            chat_info = bot.get_chat(chat_id)
+            chat_info = await bot.get_chat(chat_id)
             print(f"Chat ID: {chat_info.id}, Username: @{chat_info.username}, First Name: {chat_info.first_name}, "
                   f"Last Name: {chat_info.last_name}, Street ID: {info['street_id']}, "
                   f"Street Name: {info['street_name']}, Building: {info['building']}")
-        except Exception as e:
+        except TelegramError as e:
             logging.error(f"Failed to get info for chat_id {chat_id}: {e}")
 
 if __name__ == '__main__':
-    list_users()
+    asyncio.run(list_users())
