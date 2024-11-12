@@ -59,7 +59,7 @@ status:
 # Tail logs for both bot and notifier
 logs:
 	@echo "Tailing logs for bot and notifier services..."
-	tail -f bot.log notifier.log api_checker.log
+	tail -f bot.log notifier.log loe_checker.log
 
 # Uninstall Supervisor configurations and stop services
 uninstall:
