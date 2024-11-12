@@ -24,18 +24,18 @@ To start both services together, run:
 
     make start
 
-### 4. Run `api_checker.sh` with Cron
+### 4. Run `loe_checker.sh` with Cron
 
-To check the API at regular intervals, add `api_checker.sh` to cron:
+To check the API at regular intervals, add `loe_checker.sh` to cron:
 
 1. Make the script executable:
 
     ```bash
-    chmod +x /path/to/api_checker.sh
+    chmod +x /path/to/loe_checker.sh
     ```
 
 2. Add it to cron (for example run every 5 minutes between 7 AM and 11 PM):
 
     ```bash
-    */5 7-23 * * * /path/to/api_checker.sh
+    */5 7-23 * * * /path/to/loe_checker.sh
     ```
