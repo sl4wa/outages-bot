@@ -6,9 +6,8 @@ from telegram.ext import ContextTypes, ConversationHandler
 
 
 def load_streets():
-    with open("streets.json", "r", encoding="utf-8") as file:
-        data = json.load(file)
-        return data["hydra:member"]
+    with open("data/streets.json", "r", encoding="utf-8") as file:
+        return json.load(file)
 
 
 streets = load_streets()

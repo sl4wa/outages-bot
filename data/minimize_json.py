@@ -10,7 +10,7 @@ def minimize_json(file_path):
             {"id": member["id"], "name": member["name"]}
             for member in data["hydra:member"]
         ]
-        minimized_data = {"hydra:member": minimized_members}
+        minimized_data = minimized_members
     else:
         minimized_data = {}
 
