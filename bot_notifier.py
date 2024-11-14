@@ -9,7 +9,7 @@ from telegram import Bot
 
 # Constants
 PIPE_NAME = "telegram.pipe"
-LOG_FILE = "notifier.log"
+LOG_FILE = "bot_notifier.log"
 TELEGRAM_TOKEN_ENV = "TELEGRAM_BOT_TOKEN"
 
 
