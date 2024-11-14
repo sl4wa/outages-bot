@@ -3,11 +3,13 @@ import json
 from telegram import Update
 from telegram.ext import ContextTypes
 
+from users import user_storage
+
 
 async def show_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = str(update.effective_chat.id)
-    subscriptions = load_subscriptions()
-    last_message = load_last_message(chat_id)
+    chat_id = update.effective_chat.id
+    subscriptions = user_storage.load_subscriptions()
+    last_message = user_storage.load_last_message(chat_id)
 
     if chat_id in subscriptions:
         current_sub = subscriptions[chat_id]
@@ -24,20 +26,3 @@ async def show_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.callback_query.message.reply_text(message)
     else:
         await context.bot.send_message(chat_id=chat_id, text=message)
-
-
-def load_subscriptions():
-    try:
-        with open("subscriptions.json", "r", encoding="utf-8") as file:
-            return json.load(file)
-    except FileNotFoundError:
-        return {}
-
-
-def load_last_message(chat_id):
-    try:
-        with open("last_messages.json", "r", encoding="utf-8") as file:
-            data = json.load(file)
-            return data.get(chat_id, "")
-    except FileNotFoundError:
-        return ""

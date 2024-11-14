@@ -4,6 +4,8 @@ import logging
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import ContextTypes, ConversationHandler
 
+from users import user_storage
+
 
 def load_streets():
     with open("data/streets.json", "r", encoding="utf-8") as file:
@@ -20,10 +22,10 @@ def normalize(text):
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     chat_id = update.effective_chat.id
-    subscriptions = load_subscriptions()
+    subscriptions = user_storage.load_subscriptions()
 
-    if str(chat_id) in subscriptions:
-        current_sub = subscriptions[str(chat_id)]
+    if chat_id in subscriptions:
+        current_sub = subscriptions[chat_id]
         await update.message.reply_text(
             f"Ваша поточна підписка:\nВулиця: {current_sub['street_name']}\nБудинок: {current_sub['building']}\n\n"
             "Будь ласка, оберіть нову вулицю для оновлення підписки або введіть назву вулиці:"
@@ -78,15 +80,15 @@ async def building_selection(update: Update, context: ContextTypes.DEFAULT_TYPE)
         )
         return ConversationHandler.END
 
-    chat_id = str(update.effective_chat.id)
-    subscriptions = load_subscriptions()
+    chat_id = update.effective_chat.id
+    subscriptions = user_storage.load_subscriptions()
     subscriptions[chat_id] = {
         "street_id": street_id,
         "street_name": street_name,
         "building": building,
     }
-    save_subscriptions(subscriptions)
-    clear_last_message(chat_id)
+    user_storage.save_subscriptions(subscriptions)
+    user_storage.clear_last_message(chat_id)
 
     await update.message.reply_text(
         f"Ви підписалися на сповіщення про відключення електроенергії для вулиці {street_name}, будинок {building}.",
@@ -97,32 +99,3 @@ async def building_selection(update: Update, context: ContextTypes.DEFAULT_TYPE)
         f"User {chat_id} subscribed to {street_name} street, building {building}."
     )
     return ConversationHandler.END
-
-
-def load_subscriptions():
-    try:
-        with open("subscriptions.json", "r", encoding="utf-8") as file:
-            return json.load(file)
-    except FileNotFoundError:
-        return {}
-
-
-def save_subscriptions(subscriptions):
-    with open("subscriptions.json", "w", encoding="utf-8") as file:
-        json.dump(
-            {str(k): v for k, v in subscriptions.items()},
-            file,
-            ensure_ascii=False,
-            indent=4,
-        )
-
-
-def clear_last_message(chat_id):
-    try:
-        with open("last_messages.json", "r", encoding="utf-8") as file:
-            data = json.load(file)
-    except FileNotFoundError:
-        data = {}
-    data.pop(str(chat_id), None)
-    with open("last_messages.json", "w", encoding="utf-8") as file:
-        json.dump(data, file, ensure_ascii=False, indent=4)

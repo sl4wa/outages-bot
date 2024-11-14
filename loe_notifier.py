@@ -4,6 +4,8 @@ import os
 import re
 from datetime import datetime
 
+from users import user_storage
+
 PIPE_NAME = "telegram.pipe"
 
 if __name__ == "__main__":
@@ -25,7 +27,7 @@ def loe_notifier():
     try:
         with open("loe_data.json", "r", encoding="utf-8") as f:
             outages = json.load(f)
-        subscriptions = load_subscriptions()
+        subscriptions = user_storage.load_subscriptions()
 
         ensure_pipe_exists(PIPE_NAME)
         with open(PIPE_NAME, "w") as pipe:
@@ -62,7 +64,7 @@ def loe_notifier():
                         # Write message to named pipe
                         pipe.write(f"{chat_id} {message}\n")
                         pipe.flush()  # Ensure the message is written immediately
-                        save_last_message(chat_id, message)
+                        user_storage.save_last_message(chat_id, message)
                         logging.info(
                             f"Notification sent to {chat_id} for subscription: {subscription}"
                         )
@@ -78,41 +80,6 @@ def loe_notifier():
         logging.error(f"Error processing outage data: {e}")
     except FileNotFoundError:
         logging.error("loe_data.json file not found!")
-
-
-def load_subscriptions():
-    """Loads the subscription data from a JSON file."""
-    try:
-        with open("subscriptions.json", "r", encoding="utf-8") as file:
-            return json.load(file)
-    except FileNotFoundError:
-        logging.error("subscriptions.json file not found!")
-        return {}
-
-
-def save_last_message(chat_id, message):
-    """Saves the last message sent to each chat_id."""
-    try:
-        with open("last_messages.json", "r+", encoding="utf-8") as file:
-            last_messages = json.load(file)
-            last_messages[chat_id] = message
-            file.seek(0)
-            json.dump(last_messages, file, ensure_ascii=False, indent=4)
-            file.truncate()
-    except FileNotFoundError:
-        with open("last_messages.json", "w", encoding="utf-8") as file:
-            json.dump({chat_id: message}, file, ensure_ascii=False, indent=4)
-
-
-def load_last_message(chat_id):
-    """Loads the last message sent to a chat_id."""
-    try:
-        with open("last_messages.json", "r", encoding="utf-8") as file:
-            last_messages = json.load(file)
-            return last_messages.get(chat_id, "")
-    except FileNotFoundError:
-        return ""
-
 
 def format_datetime(iso_string):
     """Formats the ISO 8601 date string into a readable format."""
