@@ -6,6 +6,9 @@ from logging.handlers import WatchedFileHandler
 
 from dotenv import load_dotenv
 from telegram import Bot
+from telegram.error import Forbidden
+
+from users import user_storage
 
 # Constants
 PIPE_NAME = "telegram.pipe"
@@ -43,11 +46,19 @@ def load_bot_token() -> str:
     return token
 
 
-async def send_message(bot, chat_id, text) -> None:
+async def send_message(bot, chat_id: int, text: str) -> None:
     """Send a message to the specified Telegram chat ID."""
     try:
         await bot.send_message(chat_id=chat_id, text=text, parse_mode="HTML")
         logging.info(f"Sent message to chat_id={chat_id}")
+    except Forbidden as e:
+        logging.warning(f"Bot was blocked by the user with chat_id={chat_id}")
+        subscriptions = user_storage.load_subscriptions()
+        if chat_id in subscriptions:
+            del subscriptions[chat_id]
+            user_storage.save_subscriptions(subscriptions)
+            user_storage.clear_last_message(chat_id)
+            logging.warning(f"User {chat_id} data was removed.")
     except Exception as e:
         logging.error(f"Failed to send message to chat_id={chat_id}: {e}")
 
@@ -70,7 +81,7 @@ async def listen_pipe(bot) -> None:
                 if line:
                     try:
                         first_space = line.find(" ")
-                        chat_id = line[:first_space]
+                        chat_id = int(line[:first_space])
                         message = line[first_space + 1 :].replace(
                             "\\n", "\n"
                         )  # Convert \\n to actual newlines
