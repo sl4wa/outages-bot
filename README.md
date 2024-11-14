@@ -15,7 +15,7 @@ Set up and enable the bot and notifier services using Supervisor:
     make install
 
 This command registers two Supervisor services:
-- `notifier`: Handles notifications.
+- `bot_notifier`: Handles notifications.
 - `bot`: Manages bot interactions.
 
 ### 3. Start the Bot Services
