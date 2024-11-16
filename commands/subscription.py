@@ -1,4 +1,5 @@
 import json
+import re
 
 from telegram import Update
 from telegram.ext import ContextTypes
@@ -9,7 +10,8 @@ from users import user_storage
 async def show_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     subscriptions = user_storage.load_subscriptions()
-    last_message = user_storage.load_last_message(chat_id)
+    last_message = user_storage.load_last_message(chat_id).replace("\\n", "\n")
+    last_message = re.sub(r'<.*?>', '', last_message)
 
     if chat_id in subscriptions:
         current_sub = subscriptions[chat_id]
