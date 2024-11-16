@@ -1,5 +1,6 @@
 import json
 import logging
+from logging.handlers import TimedRotatingFileHandler
 
 import requests
 
@@ -11,7 +12,12 @@ LOG_FILE = "loe_checker.log"
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[logging.FileHandler(LOG_FILE), logging.StreamHandler()],
+    handlers=[
+        TimedRotatingFileHandler(
+            LOG_FILE, when="midnight", interval=1, backupCount=5
+        ),
+        logging.StreamHandler()
+    ],
 )
 
 HEADERS = {
