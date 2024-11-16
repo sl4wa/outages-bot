@@ -59,7 +59,7 @@ def loe_notifier():
                         "\n", "\\n"
                     )  # Replace actual newlines with \n for transmission
 
-                    last_message = load_last_message(chat_id)
+                    last_message = user_storage.load_last_message(chat_id)
                     if message != last_message:
                         # Write message to named pipe
                         pipe.write(f"{chat_id} {message}\n")
