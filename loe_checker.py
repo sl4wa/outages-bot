@@ -2,7 +2,7 @@ import json
 import asyncio
 import logging
 import sys
-from logging.handlers import WatchedFileHandler
+from logging.handlers import TimedRotatingFileHandler
 
 import requests
 
@@ -19,11 +19,21 @@ HEADERS = {
 }
 
 def configure_logging() -> None:
+    file_handler = TimedRotatingFileHandler(
+        LOG_FILE,
+        when="midnight",
+        interval=1,
+        backupCount=5,
+        encoding="utf-8",
+        utc=True,
+    )
+    file_handler.suffix = "%Y-%m-%d.log"
+
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
-        handlers=[WatchedFileHandler(LOG_FILE), logging.StreamHandler(sys.stdout)],
+        handlers=[file_handler, logging.StreamHandler(sys.stdout)],
     )
 
     # Suppress excessive logging from HTTP requests library
