@@ -10,17 +10,16 @@ Create a virtual environment and install required Python packages:
 
 ### 2. Install and Enable Services
 
-Set up and enable the bot and notifier services using Supervisor:
+Set up and enable the bot service using Supervisor:
 
     make install
 
-This command registers two Supervisor services:
-- `bot_notifier`: Handles notifications.
+This command registers supervisor service:
 - `bot`: Manages bot interactions.
 
 ### 3. Start the Bot Services
 
-To start both services together, run:
+To start service run:
 
     make start
 

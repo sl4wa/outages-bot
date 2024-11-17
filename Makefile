@@ -20,52 +20,42 @@ help:
 
 # Set up the virtual environment and install dependencies
 deps:
-	@echo "Creating virtual environment and installing dependencies..."
 	python3 -m venv $(VENV_DIR)
 	$(VENV_DIR)/bin/pip install -r requirements.txt
 
 # Install Supervisor configuration and generate .ini files with absolute paths
 install:
-	@echo "Generating Supervisor configuration files with absolute paths..."
 	sed 's|{{PROJECT_DIR}}|$(PROJECT_DIR)|g; s|{{USER}}|$(USER)|g' $(SUPERVISOR_DIR)/bot.template.ini > $(SUPERVISOR_DIR)/bot.ini
-	sed 's|{{PROJECT_DIR}}|$(PROJECT_DIR)|g; s|{{USER}}|$(USER)|g' $(SUPERVISOR_DIR)/bot_notifier.template.ini > $(SUPERVISOR_DIR)/bot_notifier.ini
-	touch bot.log bot_notifier.log
+	touch bot.log 
 	@echo "Setting up Supervisor configuration links..."
 	sudo ln -sf $(SUPERVISOR_DIR)/bot.ini $(SUPERVISOR_LINK_DIR)/bot.ini
-	sudo ln -sf $(SUPERVISOR_DIR)/bot_notifier.ini $(SUPERVISOR_LINK_DIR)/bot_notifier.ini
 	sudo supervisorctl reread
 	sudo supervisorctl update
 
 # Start the Supervisor services
 start:
-	@echo "Starting Supervisor-managed services..."
-	sudo supervisorctl start bot bot_notifier
+	sudo supervisorctl start bot
 
 # Stop the Supervisor services
 stop:
-	@echo "Stopping Supervisor-managed services..."
-	sudo supervisorctl stop bot bot_notifier
+	sudo supervisorctl stop bot
 
 # Restart the Supervisor services
 restart:
-	@echo "Restarting Supervisor-managed services..."
-	sudo supervisorctl restart bot bot_notifier
+	sudo supervisorctl restart bot
 
 # Display the status of Supervisor services
 status:
-	@echo "Displaying status of Supervisor-managed services..."
 	sudo supervisorctl status
 
-# Tail logs for both bot and notifier
+# Tail logs
 logs:
-	@echo "Tailing logs for bot and notifier services..."
-	tail -f bot.log bot_notifier.log loe_checker.log
+	tail -f bot.log loe_checker.log
 
 # Uninstall Supervisor configurations and stop services
 uninstall:
-	@echo "Removing Supervisor configuration and stopping services..."
-	sudo supervisorctl stop bot bot_notifier
-	sudo rm -f $(SUPERVISOR_LINK_DIR)/bot.ini $(SUPERVISOR_LINK_DIR)/bot_notifier.ini
+	sudo supervisorctl stop bot
+	sudo rm -f $(SUPERVISOR_LINK_DIR)/bot.ini
 	sudo supervisorctl reread
 	sudo supervisorctl update
-	rm -f $(SUPERVISOR_DIR)/bot.ini $(SUPERVISOR_DIR)/bot_notifier.ini
+	rm -f $(SUPERVISOR_DIR)/bot.ini

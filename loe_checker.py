@@ -1,6 +1,8 @@
 import json
+import asyncio
 import logging
-from logging.handlers import TimedRotatingFileHandler
+import sys
+from logging.handlers import WatchedFileHandler
 
 import requests
 
@@ -9,17 +11,6 @@ from loe_notifier import loe_notifier
 API_URL = "https://power-api.loe.lviv.ua/api/pw_accidents?pagination=false&otg.id=28&city.id=693"
 LOG_FILE = "loe_checker.log"
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[
-        TimedRotatingFileHandler(
-            LOG_FILE, when="midnight", interval=1, backupCount=5
-        ),
-        logging.StreamHandler()
-    ],
-)
-
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
     "Accept": "application/json, text/plain, */*",
@@ -27,8 +18,21 @@ HEADERS = {
     "Accept-Language": "en-US,en;q=0.9",
 }
 
+def configure_logging() -> None:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+        handlers=[WatchedFileHandler(LOG_FILE), logging.StreamHandler(sys.stdout)],
+    )
 
-def loe_checker():
+    # Suppress excessive logging from HTTP requests library
+    httpx_logger = logging.getLogger("httpx")
+    httpx_logger.setLevel(logging.WARNING)
+
+    logging.info("Logging is configured.")
+
+async def loe_checker():
     logging.info("Attempting to fetch outage data from API...")
     response = requests.get(API_URL, headers=HEADERS)
 
@@ -57,10 +61,11 @@ def loe_checker():
         except Exception as e:
             logging.error(f"Unexpected error: {e}")
 
-        loe_notifier()
+        await loe_notifier()
     else:
         logging.error(f"Failed to fetch data: HTTP {response.status_code}")
 
 
 if __name__ == "__main__":
-    loe_checker()
+    configure_logging()
+    asyncio.run(loe_checker())
