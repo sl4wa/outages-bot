@@ -1,4 +1,3 @@
-import json
 import logging
 
 from telegram import Update
@@ -9,11 +8,10 @@ from users import user_storage
 
 async def handle_stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
-    subscriptions = user_storage.load_subscriptions()
+    subscription = user_storage.load_subscription(chat_id)
 
-    if chat_id in subscriptions:
-        del subscriptions[chat_id]
-        user_storage.save_subscriptions(subscriptions)
+    if subscription:
+        user_storage.remove_subscription(chat_id)
         await update.message.reply_text(
             "Ви успішно відписалися від сповіщень про відключення електроенергії."
         )

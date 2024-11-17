@@ -1,60 +1,54 @@
-# users/file_storage.py
+import os
+from typing import Dict, Optional
 
-import json
-from typing import Dict, Any
-from .storage_interface import UserStorage
-
-class FileUserStorage(UserStorage):
-    """File-based implementation of the UserStorage interface."""
+class FileUserStorage:
+    """File-based implementation of the UserStorage interface using key-value storage."""
 
     def __init__(self):
-        self.subscriptions_file = "subscriptions.json"
-        self.last_messages_file = "last_messages.json"
+        self.data_directory = "users/data"
+        os.makedirs(self.data_directory, exist_ok=True)
 
-    def load_subscriptions(self) -> Dict[int, Any]:
-        """Load subscriptions from a JSON file."""
-        try:
-            with open(self.subscriptions_file, "r", encoding="utf-8") as file:
-                data = json.load(file)
-                # Automatically handle chat_id as integers internally
-                return {int(chat_id): info for chat_id, info in data.items()}
-        except FileNotFoundError:
-            return {}
+    def _get_file_path(self, chat_id: int) -> str:
+        """Get the file path for a specific chat ID."""
+        return os.path.join(self.data_directory, f"{chat_id}.txt")
 
-    def save_subscriptions(self, subscriptions: Dict[int, Any]) -> None:
-        """Save subscriptions to a JSON file."""
-        with open(self.subscriptions_file, "w", encoding="utf-8") as file:
-            json.dump(subscriptions, file, ensure_ascii=False, indent=4)
+    def load_subscription(self, chat_id: int) -> Optional[Dict[str, str]]:
+        """Load a subscription from a file."""
+        file_path = self._get_file_path(chat_id)
+        if not os.path.exists(file_path):
+            return None
 
-    def load_last_message(self, chat_id: int) -> str:
-        """Load the last message for a specific chat ID."""
-        try:
-            with open(self.last_messages_file, "r", encoding="utf-8") as file:
-                data = json.load(file)
-                return data.get(str(chat_id), "")
-        except FileNotFoundError:
-            return ""
+        subscription = {}
+        with open(file_path, "r", encoding="utf-8") as file:
+            for line in file:
+                if ": " in line:
+                    try:
+                        key, value = line.strip().split(": ", 1)
+                        subscription[key] = value
+                    except ValueError:
+                        continue  # Handle lines that do not match the expected format
+        return subscription
 
-    def save_last_message(self, chat_id: int, message: str) -> None:
-        """Save the last message for a specific chat ID."""
-        try:
-            with open(self.last_messages_file, "r+", encoding="utf-8") as file:
-                last_messages = json.load(file)
-                last_messages[chat_id] = message
-                file.seek(0)
-                json.dump(last_messages, file, ensure_ascii=False, indent=4)
-                file.truncate()
-        except FileNotFoundError:
-            with open(self.last_messages_file, "w", encoding="utf-8") as file:
-                json.dump({chat_id: message}, file, ensure_ascii=False, indent=4)
+    def save_subscription(self, chat_id: int, subscription: Dict[str, str]) -> None:
+        """Save or update a subscription."""
+        file_path = self._get_file_path(chat_id)
+        with open(file_path, "w", encoding="utf-8") as file:
+            for key, value in subscription.items():
+                file.write(f"{key}: {value}\n")
 
-    def clear_last_message(self, chat_id: int) -> None:
-        """Clear the last message for a specific chat ID."""
-        try:
-            with open(self.last_messages_file, "r", encoding="utf-8") as file:
-                data = json.load(file)
-        except FileNotFoundError:
-            data = {}
-        data.pop(chat_id, None)
-        with open(self.last_messages_file, "w", encoding="utf-8") as file:
-            json.dump(data, file, ensure_ascii=False, indent=4)
+    def remove_subscription(self, chat_id: int) -> None:
+        """Remove a subscription."""
+        file_path = self._get_file_path(chat_id)
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
+    def load_all_subscriptions(self) -> Dict[int, Dict[str, str]]:
+        """Load all subscriptions."""
+        subscriptions = {}
+        for filename in os.listdir(self.data_directory):
+            if filename.endswith(".txt"):
+                chat_id = int(filename.replace(".txt", ""))
+                subscription = self.load_subscription(chat_id)
+                if subscription:
+                    subscriptions[chat_id] = subscription
+        return subscriptions

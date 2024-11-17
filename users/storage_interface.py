@@ -1,27 +1,25 @@
-# users/storage_interface.py
-
 from abc import ABC, abstractmethod
-from typing import Dict, Any
+from typing import Dict, Optional
 
 class UserStorage(ABC):
     """Interface for user data storage."""
 
     @abstractmethod
-    def load_subscriptions(self) -> Dict[int, Any]:
+    def load_subscription(self, chat_id: int) -> Optional[Dict[str, str]]:
+        """Load a specific subscription."""
         pass
 
     @abstractmethod
-    def save_subscriptions(self, subscriptions: Dict[int, Any]) -> None:
+    def save_subscription(self, chat_id: int, subscription: Dict[str, str]) -> None:
+        """Save or update a subscription."""
         pass
 
     @abstractmethod
-    def load_last_message(self, chat_id: int) -> str:
+    def remove_subscription(self, chat_id: int) -> None:
+        """Remove a subscription."""
         pass
 
     @abstractmethod
-    def save_last_message(self, chat_id: int, message: str) -> None:
-        pass
-
-    @abstractmethod
-    def clear_last_message(self, chat_id: int) -> None:
+    def load_all_subscriptions(self) -> Dict[int, Dict[str, str]]:
+        """Load all subscriptions."""
         pass

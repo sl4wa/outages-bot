@@ -53,11 +53,9 @@ async def send_message(bot, chat_id: int, text: str) -> None:
         logging.info(f"Sent message to chat_id={chat_id}")
     except Forbidden as e:
         logging.warning(f"Bot was blocked by the user with chat_id={chat_id}")
-        subscriptions = user_storage.load_subscriptions()
-        if chat_id in subscriptions:
-            del subscriptions[chat_id]
-            user_storage.save_subscriptions(subscriptions)
-            user_storage.clear_last_message(chat_id)
+        subscription = user_storage.load_subscription(chat_id)
+        if subscription:
+            user_storage.remove_subscription(chat_id)
             logging.warning(f"User {chat_id} data was removed.")
     except Exception as e:
         logging.error(f"Failed to send message to chat_id={chat_id}: {e}")

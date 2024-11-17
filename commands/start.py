@@ -22,12 +22,11 @@ def normalize(text):
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     chat_id = update.effective_chat.id
-    subscriptions = user_storage.load_subscriptions()
+    subscription = user_storage.load_subscription(chat_id)
 
-    if chat_id in subscriptions:
-        current_sub = subscriptions[chat_id]
+    if subscription:
         await update.message.reply_text(
-            f"Ваша поточна підписка:\nВулиця: {current_sub['street_name']}\nБудинок: {current_sub['building']}\n\n"
+            f"Ваша поточна підписка:\nВулиця: {subscription['street_name']}\nБудинок: {subscription['building']}\n\n"
             "Будь ласка, оберіть нову вулицю для оновлення підписки або введіть назву вулиці:"
         )
     else:
@@ -81,14 +80,15 @@ async def building_selection(update: Update, context: ContextTypes.DEFAULT_TYPE)
         return ConversationHandler.END
 
     chat_id = update.effective_chat.id
-    subscriptions = user_storage.load_subscriptions()
-    subscriptions[chat_id] = {
+    subscription = {
         "street_id": street_id,
         "street_name": street_name,
         "building": building,
+        "start_date": "",
+        "end_date": "",
+        "comment": ""
     }
-    user_storage.save_subscriptions(subscriptions)
-    user_storage.clear_last_message(chat_id)
+    user_storage.save_subscription(chat_id, subscription)
 
     await update.message.reply_text(
         f"Ви підписалися на сповіщення про відключення електроенергії для вулиці {street_name}, будинок {building}.",

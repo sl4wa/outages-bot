@@ -1,6 +1,7 @@
 venv/
 *.pyc
 __pycache__/
+users/data/
 subscriptions.json
 last_messages.json
 loe_data.json
