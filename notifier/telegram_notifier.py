@@ -3,7 +3,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from telegram import Bot
 from telegram.error import Forbidden
-from users import user_storage
+from users import users
 from .notifier_interface import NotifierInterface
 
 load_dotenv()
@@ -51,7 +51,7 @@ class TelegramNotifier(NotifierInterface):
             await self.bot.send_message(chat_id=chat_id, text=message, parse_mode="HTML")
         except Forbidden:
             # Handle case when the bot is blocked by the user
-            subscription = user_storage.load_subscription(chat_id)
+            subscription = users.get(chat_id)
             if subscription:
                 user_storage.remove_subscription(chat_id)
                 logging.info(f"Subscription removed for blocked user {chat_id}.")

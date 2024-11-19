@@ -1,7 +1,5 @@
-# users/__init__.py
-
-from .file_storage import FileUserStorage
-from .storage_interface import UserStorage
+from .file_users import FileUsers
+from .users_interface import UsersInterface
 
 # Global instance of the storage implementation
-user_storage: UserStorage = FileUserStorage()
+users: UsersInterface = FileUsers()

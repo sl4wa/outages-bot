@@ -50,7 +50,7 @@ status:
 
 # Tail logs
 logs:
-	tail -f bot.log loe_checker.log
+	tail -f bot.log notifier.log
 
 # Uninstall Supervisor configurations and stop services
 uninstall:
