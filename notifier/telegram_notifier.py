@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from dotenv import load_dotenv
 from telegram import Bot
 from telegram.error import Forbidden
@@ -25,14 +26,32 @@ class TelegramNotifier(NotifierInterface):
             )
         return token
 
-    async def send_message(self, chat_id: int, message: str) -> None:
+    def _format_datetime(self, iso_string: str) -> str:
+        """Formats the ISO 8601 date string into a readable format."""
+        try:
+            dt = datetime.fromisoformat(iso_string)
+            return dt.strftime("%Y-%m-%d %H:%M")
+        except ValueError:
+            return iso_string
+
+    async def send_message(self, chat_id: int, relevant_outage) -> None:
         """Send a message to the specified Telegram chat ID."""
         try:
+            start_time = self._format_datetime(relevant_outage["dateEvent"])
+            end_time = self._format_datetime(relevant_outage["datePlanIn"])
+            message = (
+                f"Поточні відключення:\n"
+                f"Місто: {relevant_outage['city']['name']}\n"
+                f"Вулиця: {relevant_outage['street']['name']}\n"
+                f"<b>{start_time} - {end_time}</b>\n"
+                f"Коментар: {relevant_outage['koment']}\n"
+                f"Будинки: {relevant_outage['buildingNames']}"
+            )
+
             await self.bot.send_message(chat_id=chat_id, text=message, parse_mode="HTML")
         except Forbidden:
             # Handle case when the bot is blocked by the user
             subscription = user_storage.load_subscription(chat_id)
             if subscription:
                 user_storage.remove_subscription(chat_id)
-        except Exception as e:
-            print(f"Failed to send message to chat_id={chat_id}: {e}")
+                logging.info(f"Subscription removed for blocked user {chat_id}.")
