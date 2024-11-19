@@ -46,7 +46,8 @@ async def street_selection(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         return STREET
 
     exact_match = next(
-        (street for street in filtered_streets if normalize(street["name"]) == query),
+        (street for street in filtered_streets if normalize(
+            street["name"]) == query),
         None,
     )
     if exact_match:
@@ -86,7 +87,7 @@ async def building_selection(update: Update, context: ContextTypes.DEFAULT_TYPE)
         "building": building,
         "start_date": "",
         "end_date": "",
-        "comment": ""
+        "comment": "",
     }
     users.save(chat_id, subscription)
 

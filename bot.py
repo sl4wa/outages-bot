@@ -30,7 +30,8 @@ def configure_logging() -> None:
         level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
-        handlers=[WatchedFileHandler(LOG_FILE), logging.StreamHandler(sys.stdout)],
+        handlers=[WatchedFileHandler(
+            LOG_FILE), logging.StreamHandler(sys.stdout)],
     )
 
     httpx_logger = logging.getLogger("httpx")
@@ -63,7 +64,8 @@ def setup_bot(token: str):
         states={
             STREET: [MessageHandler(filters.TEXT & ~filters.COMMAND, street_selection)],
             BUILDING: [
-                MessageHandler(filters.TEXT & ~filters.COMMAND, building_selection)
+                MessageHandler(filters.TEXT & ~filters.COMMAND,
+                               building_selection)
             ],
         },
         fallbacks=[],

@@ -1,4 +1,5 @@
 import requests
+
 from .checker_interface import CheckerInterface
 
 API_URL = "https://power-api.loe.lviv.ua/api/pw_accidents?pagination=false&otg.id=28&city.id=693"
@@ -13,7 +14,7 @@ HEADERS = {
 
 class LOEChecker(CheckerInterface):
     """Concrete implementation of CheckerInterface for LOE outages."""
-    
+
     def get_outages(self):
         """
         Fetch outage data from the LOE API and return cleaned data.
@@ -37,4 +38,5 @@ class LOEChecker(CheckerInterface):
             ]
             return cleaned_outages
         else:
-            raise ValueError(f"Failed to fetch data: HTTP {response.status_code}")
+            raise ValueError(
+                f"Failed to fetch data: HTTP {response.status_code}")

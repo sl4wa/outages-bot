@@ -1,5 +1,4 @@
 import asyncio
-import json
 import logging
 import re
 import sys
@@ -10,6 +9,7 @@ from notifier import notifier
 from users import users
 
 LOG_FILE = "notifier.log"
+
 
 def configure_logging() -> None:
     file_handler = TimedRotatingFileHandler(
@@ -35,6 +35,7 @@ def configure_logging() -> None:
 
     logging.info("Logging is configured.")
 
+
 async def loe_notifier():
     outages = checker.get_outages()
 
@@ -53,7 +54,7 @@ async def loe_notifier():
                 o
                 for o in outages
                 if str(o["street"]["id"]) == street_id
-                and re.search(rf'\b{building}\b', o["buildingNames"])
+                and re.search(rf"\b{building}\b", o["buildingNames"])
                 and (
                     o["dateEvent"] != start_date
                     or o["datePlanIn"] != end_date
@@ -70,13 +71,17 @@ async def loe_notifier():
                 logging.error(f"Failed to send message to {chat_id}: {e}")
                 return
 
-            user['start_date'] = relevant_outage["dateEvent"]
-            user['end_date'] = relevant_outage["datePlanIn"]
-            user['comment'] = relevant_outage["koment"]
+            user["start_date"] = relevant_outage["dateEvent"]
+            user["end_date"] = relevant_outage["datePlanIn"]
+            user["comment"] = relevant_outage["koment"]
             users.save(chat_id, user)
-            logging.info(f"Notification sent to {chat_id} - {street_name}, {building}")
+            logging.info(
+                f"Notification sent to {chat_id} - {street_name}, {building}")
         else:
-            logging.info(f"No relevant outage found for user {chat_id} - {street_name}, {building}")
+            logging.info(
+                f"No relevant outage found for user {chat_id} - {street_name}, {building}"
+            )
+
 
 if __name__ == "__main__":
     configure_logging()

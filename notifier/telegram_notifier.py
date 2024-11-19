@@ -1,14 +1,18 @@
 import os
 from datetime import datetime
+
 from dotenv import load_dotenv
 from telegram import Bot
 from telegram.error import Forbidden
+
 from users import users
+
 from .notifier_interface import NotifierInterface
 
 load_dotenv()
 
 TELEGRAM_TOKEN_ENV = "TELEGRAM_BOT_TOKEN"
+
 
 class TelegramNotifier(NotifierInterface):
     """A notifier that sends messages via a Telegram bot."""
@@ -48,10 +52,13 @@ class TelegramNotifier(NotifierInterface):
                 f"Будинки: {relevant_outage['buildingNames']}"
             )
 
-            await self.bot.send_message(chat_id=chat_id, text=message, parse_mode="HTML")
+            await self.bot.send_message(
+                chat_id=chat_id, text=message, parse_mode="HTML"
+            )
         except Forbidden:
             # Handle case when the bot is blocked by the user
             subscription = users.get(chat_id)
             if subscription:
                 user_storage.remove_subscription(chat_id)
-                logging.info(f"Subscription removed for blocked user {chat_id}.")
+                logging.info(
+                    f"Subscription removed for blocked user {chat_id}.")

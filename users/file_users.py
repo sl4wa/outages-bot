@@ -1,6 +1,8 @@
 import os
 from typing import Dict, Optional
+
 from .users_interface import UsersInterface
+
 
 class FileUsers(UsersInterface):
     """File-based implementation of the UserInterface interface using key-value storage."""
