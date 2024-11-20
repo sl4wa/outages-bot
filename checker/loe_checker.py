@@ -29,9 +29,9 @@ class LOEChecker(CheckerInterface):
                 {
                     "dateEvent": outage.get("dateEvent"),
                     "datePlanIn": outage.get("datePlanIn"),
-                    "city": outage.get("city", {}).get("name", ""),
-                    "street": outage.get("street", {}).get("name", ""),
-                    "buildingNames": outage.get("buildingNames", []),
+                    "city": outage.get("city", {}),
+                    "street": outage.get("street", {}),
+                    "buildingNames": outage.get("buildingNames"),
                     "koment": outage.get("koment", ""),
                 }
                 for outage in outages
