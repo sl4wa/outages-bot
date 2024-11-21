@@ -40,25 +40,17 @@ class TelegramNotifier(NotifierInterface):
 
     async def send_message(self, chat_id: int, relevant_outage) -> None:
         """Send a message to the specified Telegram chat ID."""
-        try:
-            start_time = self._format_datetime(relevant_outage["dateEvent"])
-            end_time = self._format_datetime(relevant_outage["datePlanIn"])
-            message = (
-                f"Поточні відключення:\n"
-                f"Місто: {relevant_outage['city']['name']}\n"
-                f"Вулиця: {relevant_outage['street']['name']}\n"
-                f"<b>{start_time} - {end_time}</b>\n"
-                f"Коментар: {relevant_outage['koment']}\n"
-                f"Будинки: {relevant_outage['buildingNames']}"
-            )
+        start_time = self._format_datetime(relevant_outage["dateEvent"])
+        end_time = self._format_datetime(relevant_outage["datePlanIn"])
+        message = (
+            f"Поточні відключення:\n"
+            f"Місто: {relevant_outage['city']['name']}\n"
+            f"Вулиця: {relevant_outage['street']['name']}\n"
+            f"<b>{start_time} - {end_time}</b>\n"
+            f"Коментар: {relevant_outage['koment']}\n"
+            f"Будинки: {relevant_outage['buildingNames']}"
+        )
 
-            await self.bot.send_message(
-                chat_id=chat_id, text=message, parse_mode="HTML"
-            )
-        except Forbidden:
-            # Handle case when the bot is blocked by the user
-            subscription = users.get(chat_id)
-            if subscription:
-                users.remove(chat_id)
-                logging.info(
-                    f"Subscription removed for blocked user {chat_id}.")
+        await self.bot.send_message(
+            chat_id=chat_id, text=message, parse_mode="HTML"
+        )

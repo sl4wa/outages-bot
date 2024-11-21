@@ -67,6 +67,9 @@ async def loe_notifier():
         if relevant_outage:
             try:
                 await notifier.send_message(chat_id, relevant_outage)
+            except Forbidden:
+                users.remove(chat_id)
+                logging.info(f"Subscription removed for blocked user {chat_id}.")
             except Exception as e:
                 logging.error(f"Failed to send message to {chat_id}: {e}")
                 return
