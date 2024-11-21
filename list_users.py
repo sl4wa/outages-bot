@@ -9,15 +9,6 @@ from telegram.error import TelegramError
 
 from users import users
 
-# Setup logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-httpx_logger = logging.getLogger("httpx")
-httpx_logger.setLevel(logging.WARNING)
-
-logging.info("Logging is configured.")
-
 # Load environment variables from .env file
 dotenv_path = find_dotenv()
 if not dotenv_path:
@@ -32,8 +23,9 @@ TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
 async def list_users():
     bot = Bot(token=TOKEN)
-    logging.info("Subscribed Users:")
+    print("Subscribed Users:")
     subscribed_users = users.all()
+    user_count = 0
     for chat_id, user in subscribed_users:
         try:
             chat_info = await bot.get_chat(chat_id)
@@ -42,8 +34,11 @@ async def list_users():
                 f"Last Name: {chat_info.last_name}, "
                 f"Street Name: {user['street_name']}, Building: {user['building']}"
             )
+            user_count += 1
         except TelegramError as e:
             logging.error(f"Failed to get info for chat_id {chat_id}: {e}")
+
+    print(f"Total Users: {user_count}")
 
 
 if __name__ == "__main__":
