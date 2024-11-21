@@ -41,7 +41,7 @@ async def loe_notifier():
 
     subscribed_users = users.all()
 
-    for chat_id, user in subscribed_users.items():
+    for chat_id, user in subscribed_users:
         street_id = user.get("street_id")
         street_name = user.get("street_name")
         building = user.get("building")

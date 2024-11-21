@@ -1,5 +1,5 @@
 import os
-from typing import Dict, Optional
+from typing import Dict, Optional, Iterator, Tuple
 
 from .users_interface import UsersInterface
 
@@ -45,13 +45,11 @@ class FileUsers(UsersInterface):
         if os.path.exists(file_path):
             os.remove(file_path)
 
-    def all(self) -> Dict[int, Dict[str, str]]:
-        """Load all subscriptions."""
-        subscriptions = {}
+    def all(self) -> Iterator[Tuple[int, Dict[str, str]]]:
+        """Load all subscriptions as a generator."""
         for filename in os.listdir(self.data_directory):
             if filename.endswith(".txt"):
                 chat_id = int(filename.replace(".txt", ""))
                 subscription = self.get(chat_id)
                 if subscription:
-                    subscriptions[chat_id] = subscription
-        return subscriptions
+                    yield chat_id, subscription
