@@ -13,6 +13,10 @@ from users import users
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
+httpx_logger = logging.getLogger("httpx")
+httpx_logger.setLevel(logging.WARNING)
+
+logging.info("Logging is configured.")
 
 # Load environment variables from .env file
 dotenv_path = find_dotenv()
