@@ -1,8 +1,9 @@
 import os
 from datetime import datetime
+
 from dotenv import load_dotenv
 from telegram import Bot
-from telegram.error import Forbidden
+
 from .outage import Outage
 
 TELEGRAM_TOKEN_ENV = "TELEGRAM_BOT_TOKEN"

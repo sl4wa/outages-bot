@@ -1,5 +1,7 @@
 import os
-from typing import Optional, Iterator, Tuple
+from collections.abc import Iterator
+from typing import Optional
+
 from .user import User
 
 
@@ -21,7 +23,7 @@ class UsersStorage:
             return None
 
         data = {}
-        with open(file_path, "r", encoding="utf-8") as file:
+        with open(file_path, encoding="utf-8") as file:
             for line in file:
                 if ": " in line:
                     try:
@@ -45,7 +47,7 @@ class UsersStorage:
         if os.path.exists(file_path):
             os.remove(file_path)
 
-    def all(self) -> Iterator[Tuple[int, User]]:
+    def all(self) -> Iterator[tuple[int, User]]:
         """Load all users as a generator."""
         for filename in os.listdir(self.data_directory):
             if filename.endswith(".txt"):

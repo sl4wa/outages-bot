@@ -4,11 +4,11 @@ import logging
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import ContextTypes, ConversationHandler
 
-from users import users, User
+from users import User, users
 
 
 def load_streets():
-    with open("data/streets.json", "r", encoding="utf-8") as file:
+    with open("data/streets.json", encoding="utf-8") as file:
         return json.load(file)
 
 

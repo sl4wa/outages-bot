@@ -1,6 +1,5 @@
-from .outages_reader import OutagesReader
 from .outages_notifier import OutagesNotifier
-from .outage import Outage
+from .outages_reader import OutagesReader
 
 outages_reader = OutagesReader()
 outages_notifier = OutagesNotifier()

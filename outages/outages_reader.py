@@ -1,6 +1,6 @@
-from typing import List
-from .outage import Outage
 import requests
+
+from .outage import Outage
 
 API_URL = "https://power-api.loe.lviv.ua/api/pw_accidents?pagination=false&otg.id=28&city.id=693"
 
@@ -14,7 +14,7 @@ HEADERS = {
 
 class OutagesReader:
 
-    def get_outages(self) -> List[Outage]:
+    def get_outages(self) -> list[Outage]:
         """
         Fetch outage data from the LOE API and return cleaned data.
         """

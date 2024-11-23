@@ -3,11 +3,11 @@ import logging
 import re
 import sys
 from logging.handlers import TimedRotatingFileHandler
-from typing import List
 
-from users import users, User
-from outages import outages_reader, outages_notifier, Outage
 from telegram.error import Forbidden
+
+from outages import Outage, outages_notifier, outages_reader
+from users import User, users
 
 LOG_FILE = "notifier.log"
 
@@ -50,7 +50,7 @@ async def notify_user(chat_id: int, user: User, outage: Outage) -> None:
         logging.error(f"Failed to send message to {chat_id}: {e}")
 
 
-async def notifier(outages: List[Outage]) -> None:
+async def notifier(outages: list[Outage]) -> None:
     for chat_id, user in users.all():
         outage = next(
             (
