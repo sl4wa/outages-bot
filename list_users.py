@@ -32,7 +32,7 @@ async def list_users():
             print(
                 f"Chat ID: {chat_info.id}, Username: @{chat_info.username}, First Name: {chat_info.first_name}, "
                 f"Last Name: {chat_info.last_name}, "
-                f"Street Name: {user['street_name']}, Building: {user['building']}"
+                f"Street Name: {user.street_name}, Building: {user.building}"
             )
             user_count += 1
         except TelegramError as e:
