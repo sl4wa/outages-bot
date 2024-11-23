@@ -1,20 +1,14 @@
 import os
 from datetime import datetime
-
 from dotenv import load_dotenv
 from telegram import Bot
 from telegram.error import Forbidden
-
-from users import users
-
-from .notifier_interface import NotifierInterface
-
-load_dotenv()
+from .outage import Outage
 
 TELEGRAM_TOKEN_ENV = "TELEGRAM_BOT_TOKEN"
 
 
-class TelegramNotifier(NotifierInterface):
+class OutagesNotifier:
     """A notifier that sends messages via a Telegram bot."""
 
     def __init__(self):
@@ -23,6 +17,7 @@ class TelegramNotifier(NotifierInterface):
 
     def _load_bot_token(self) -> str:
         """Load the Telegram bot token from environment variables."""
+        load_dotenv()
         token = os.getenv(TELEGRAM_TOKEN_ENV)
         if not token:
             raise ValueError(
@@ -38,19 +33,17 @@ class TelegramNotifier(NotifierInterface):
         except ValueError:
             return iso_string
 
-    async def send_message(self, chat_id: int, relevant_outage) -> None:
+    async def send_message(self, chat_id: int, outage: Outage) -> None:
         """Send a message to the specified Telegram chat ID."""
-        start_time = self._format_datetime(relevant_outage["dateEvent"])
-        end_time = self._format_datetime(relevant_outage["datePlanIn"])
+        start = self._format_datetime(outage.start_date)
+        end = self._format_datetime(outage.end_date)
         message = (
             f"Поточні відключення:\n"
-            f"Місто: {relevant_outage['city']['name']}\n"
-            f"Вулиця: {relevant_outage['street']['name']}\n"
-            f"<b>{start_time} - {end_time}</b>\n"
-            f"Коментар: {relevant_outage['koment']}\n"
-            f"Будинки: {relevant_outage['buildingNames']}"
+            f"Місто: {outage.city}\n"
+            f"Вулиця: {outage.street}\n"
+            f"<b>{start} - {end}</b>\n"
+            f"Коментар: {outage.comment}\n"
+            f"Будинки: {outage.building}"
         )
 
-        await self.bot.send_message(
-            chat_id=chat_id, text=message, parse_mode="HTML"
-        )
+        await self.bot.send_message(chat_id=chat_id, text=message, parse_mode="HTML")

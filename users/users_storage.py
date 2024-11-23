@@ -1,11 +1,10 @@
 import os
-from typing import Dict, Optional, Iterator, Tuple
+from typing import Optional, Iterator, Tuple
+from .user import User
 
-from .users_interface import UsersInterface
 
-
-class FileUsers(UsersInterface):
-    """File-based implementation of the UserInterface interface using key-value storage."""
+class UsersStorage:
+    """File-based implementation for managing users."""
 
     def __init__(self):
         self.data_directory = "users/data"
@@ -15,41 +14,42 @@ class FileUsers(UsersInterface):
         """Get the file path for a specific chat ID."""
         return os.path.join(self.data_directory, f"{chat_id}.txt")
 
-    def get(self, chat_id: int) -> Optional[Dict[str, str]]:
-        """Load a subscription from a file."""
+    def get(self, chat_id: int) -> Optional[User]:
+        """Load a user from a file."""
         file_path = self._get_file_path(chat_id)
         if not os.path.exists(file_path):
             return None
 
-        subscription = {}
+        data = {}
         with open(file_path, "r", encoding="utf-8") as file:
             for line in file:
                 if ": " in line:
                     try:
                         key, value = line.strip().split(": ", 1)
-                        subscription[key] = value
+                        data[key] = value
                     except ValueError:
-                        continue  # Handle lines that do not match the expected format
-        return subscription
+                        continue  # Skip lines that do not match the expected format
 
-    def save(self, chat_id: int, subscription: Dict[str, str]) -> None:
-        """Save or update a subscription."""
+        return User.from_dict(data)
+
+    def save(self, chat_id: int, user: User) -> None:
+        """Save or update a user."""
         file_path = self._get_file_path(chat_id)
         with open(file_path, "w", encoding="utf-8") as file:
-            for key, value in subscription.items():
+            for key, value in user.to_dict().items():
                 file.write(f"{key}: {value}\n")
 
     def remove(self, chat_id: int) -> None:
-        """Remove a subscription."""
+        """Remove a user."""
         file_path = self._get_file_path(chat_id)
         if os.path.exists(file_path):
             os.remove(file_path)
 
-    def all(self) -> Iterator[Tuple[int, Dict[str, str]]]:
-        """Load all subscriptions as a generator."""
+    def all(self) -> Iterator[Tuple[int, User]]:
+        """Load all users as a generator."""
         for filename in os.listdir(self.data_directory):
             if filename.endswith(".txt"):
                 chat_id = int(filename.replace(".txt", ""))
-                subscription = self.get(chat_id)
-                if subscription:
-                    yield chat_id, subscription
+                user = self.get(chat_id)
+                if user:
+                    yield chat_id, user

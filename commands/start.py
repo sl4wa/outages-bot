@@ -4,7 +4,7 @@ import logging
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import ContextTypes, ConversationHandler
 
-from users import users
+from users import users, User
 
 
 def load_streets():
@@ -26,7 +26,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
     if subscription:
         await update.message.reply_text(
-            f"Ваша поточна підписка:\nВулиця: {subscription['street_name']}\nБудинок: {subscription['building']}\n\n"
+            f"Ваша поточна підписка:\nВулиця: {subscription.street_name}\nБудинок: {subscription.building}\n\n"
             "Будь ласка, оберіть нову вулицю для оновлення підписки або введіть назву вулиці:"
         )
     else:
@@ -81,14 +81,14 @@ async def building_selection(update: Update, context: ContextTypes.DEFAULT_TYPE)
         return ConversationHandler.END
 
     chat_id = update.effective_chat.id
-    subscription = {
-        "street_id": street_id,
-        "street_name": street_name,
-        "building": building,
-        "start_date": "",
-        "end_date": "",
-        "comment": "",
-    }
+    subscription = User(
+        street_id=street_id,
+        street_name=street_name,
+        building=building,
+        start_date="",
+        end_date="",
+        comment="",
+    )
     users.save(chat_id, subscription)
 
     await update.message.reply_text(

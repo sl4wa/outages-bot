@@ -1,5 +1,4 @@
-from .file_users import FileUsers
-from .users_interface import UsersInterface
+from .users_storage import UsersStorage
+from .user import User
 
-# Global instance of the storage implementation
-users: UsersInterface = FileUsers()
+users = UsersStorage()

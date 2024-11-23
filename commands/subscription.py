@@ -9,7 +9,7 @@ async def show_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE):
     subscription = users.get(chat_id)
 
     if subscription:
-        message = f"Ваша поточна підписка:\nВулиця: {subscription['street_name']}\nБудинок: {subscription['building']}"
+        message = f"Ваша поточна підписка:\nВулиця: {subscription.street_name}\nБудинок: {subscription.building}"
     else:
         message = "Ви не маєте активної підписки."
 

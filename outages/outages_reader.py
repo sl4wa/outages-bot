@@ -1,6 +1,6 @@
+from typing import List
+from .outage import Outage
 import requests
-
-from .checker_interface import CheckerInterface
 
 API_URL = "https://power-api.loe.lviv.ua/api/pw_accidents?pagination=false&otg.id=28&city.id=693"
 
@@ -12,10 +12,9 @@ HEADERS = {
 }
 
 
-class LOEChecker(CheckerInterface):
-    """Concrete implementation of CheckerInterface for LOE outages."""
+class OutagesReader:
 
-    def get_outages(self):
+    def get_outages(self) -> List[Outage]:
         """
         Fetch outage data from the LOE API and return cleaned data.
         """
@@ -26,14 +25,15 @@ class LOEChecker(CheckerInterface):
 
             # Clean and structure the outages
             cleaned_outages = [
-                {
-                    "dateEvent": outage.get("dateEvent"),
-                    "datePlanIn": outage.get("datePlanIn"),
-                    "city": outage.get("city", {}),
-                    "street": outage.get("street", {}),
-                    "buildingNames": outage.get("buildingNames"),
-                    "koment": outage.get("koment", ""),
-                }
+                Outage(
+                    start_date=outage["dateEvent"],
+                    end_date=outage["datePlanIn"],
+                    city=outage["city"]["name"],
+                    street_id=outage["street"]["id"],
+                    street=outage["street"]["name"],
+                    building=outage["buildingNames"],
+                    comment=outage["koment"],
+                )
                 for outage in outages
             ]
             return cleaned_outages
