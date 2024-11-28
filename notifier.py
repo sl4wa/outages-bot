@@ -4,10 +4,12 @@ import re
 import sys
 from logging.handlers import TimedRotatingFileHandler
 
+from telegram import Bot
 from telegram.error import Forbidden
 
-from outages import Outage, outages_notifier, outages_reader
-from users import User, users
+from bot import load_bot_token
+from outages import outages_formatter, outages_reader
+from users import users
 
 LOG_FILE = "notifier.log"
 
@@ -35,23 +37,15 @@ def configure_logging() -> None:
     logging.info("Starting notification script.")
 
 
-async def notify_user(chat_id: int, user: User, outage: Outage) -> None:
-    try:
-        await outages_notifier.send_message(chat_id, outage)
-        user.start_date = outage.start_date
-        user.end_date = outage.end_date
-        user.comment = outage.comment
-        users.save(chat_id, user)
-        logging.info(f"Notification sent to {chat_id} - {user.street_name}, {user.building}")
-    except Forbidden:
-        users.remove(chat_id)
-        logging.info(f"Subscription removed for blocked user {chat_id}.")
-    except Exception as e:
-        logging.error(f"Failed to send message to {chat_id}: {e}")
+async def main() -> None:
+    configure_logging()
 
+    bot = Bot(token=load_bot_token())
 
-async def notifier(outages: list[Outage]) -> None:
-    for chat_id, user in users.all():
+    outages = outages_reader.get_outages()
+    subscribed_users = users.all()
+
+    for chat_id, user in subscribed_users:
         # Find the first relevant outage
         outage = next(
             (
@@ -74,15 +68,23 @@ async def notifier(outages: list[Outage]) -> None:
                 continue
 
             # Otherwise, notify about the outage
-            await notify_user(chat_id, user, outage)
+            try:
+                message = outages_formatter.format_message(outage)
+                await bot.send_message(chat_id=chat_id, text=message, parse_mode="HTML")
+                # save user outage
+                user.start_date = outage.start_date
+                user.end_date = outage.end_date
+                user.comment = outage.comment
+                users.save(chat_id, user)
+                logging.info(f"Notification sent to {chat_id} - {user.street_name}, {user.building}")
+            except Forbidden:
+                users.remove(chat_id)
+                logging.info(f"Subscription removed for blocked user {chat_id}.")
+            except Exception as e:
+                logging.error(f"Failed to send message to {chat_id}: {e}")
         else:
             logging.info(f"No relevant outage found for user {chat_id} - {user.street_name}, {user.building}")
 
 
-def main() -> None:
-    configure_logging()
-    asyncio.run(notifier(outages_reader.get_outages()))
-
-
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

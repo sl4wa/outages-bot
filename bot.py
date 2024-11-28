@@ -42,6 +42,8 @@ def configure_logging() -> None:
 
 def load_bot_token() -> str:
     """Load the Telegram bot token from environment variables."""
+    load_dotenv()
+
     token = os.getenv(TELEGRAM_TOKEN_ENV)
     if not token:
         error_message = (
@@ -83,11 +85,8 @@ def setup_bot(token: str):
 
 def main() -> None:
     configure_logging()
-    load_dotenv()
 
-    token = load_bot_token()
-
-    application = setup_bot(token)
+    application = setup_bot(load_bot_token())
 
     logging.info("Bot setup completed. Starting polling...")
 
