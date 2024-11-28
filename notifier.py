@@ -52,22 +52,28 @@ async def notify_user(chat_id: int, user: User, outage: Outage) -> None:
 
 async def notifier(outages: list[Outage]) -> None:
     for chat_id, user in users.all():
+        # Find the first relevant outage
         outage = next(
             (
                 o
                 for o in outages
                 if o.street_id == user.street_id
                 and re.search(rf"\b{re.escape(user.building)}\b", o.building)
-                and (
-                    o.start_date != user.start_date
-                    or o.end_date != user.end_date
-                    or o.comment != user.comment
-                )
             ),
             None,
         )
 
         if outage:
+            # If stored outage matches the first relevant outage, do nothing
+            if (
+                outage.start_date == user.start_date
+                and outage.end_date == user.end_date
+                and outage.comment == user.comment
+            ):
+                logging.info(f"Outage already notified for user {chat_id} - {user.street_name}, {user.building}")
+                continue
+
+            # Otherwise, notify about the outage
             await notify_user(chat_id, user, outage)
         else:
             logging.info(f"No relevant outage found for user {chat_id} - {user.street_name}, {user.building}")
