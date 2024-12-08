@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import re
 import sys
 from logging.handlers import TimedRotatingFileHandler
 
@@ -8,7 +7,7 @@ from telegram import Bot
 from telegram.error import Forbidden
 
 from bot import load_bot_token
-from outages import outages_formatter, outages_reader
+from outages import outages_reader
 from users import users
 
 LOG_FILE = "notifier.log"
@@ -46,36 +45,16 @@ async def main() -> None:
     subscribed_users = users.all()
 
     for chat_id, user in subscribed_users:
-        # Find the first relevant outage
-        outage = next(
-            (
-                o
-                for o in outages
-                if o.street_id == user.street_id
-                and re.search(rf"\b{re.escape(user.building)}\b", o.building)
-            ),
-            None,
-        )
+        outage = user.get_first_outage(outages)
 
         if outage:
-            # If stored outage matches the first relevant outage, do nothing
-            if (
-                outage.start_date == user.start_date
-                and outage.end_date == user.end_date
-                and outage.comment == user.comment
-            ):
+            if (user.is_notified(outage)):
                 logging.info(f"Outage already notified for user {chat_id} - {user.street_name}, {user.building}")
                 continue
 
-            # Otherwise, notify about the outage
             try:
-                message = outages_formatter.format_message(outage)
-                await bot.send_message(chat_id=chat_id, text=message, parse_mode="HTML")
-                # save user outage
-                user.start_date = outage.start_date
-                user.end_date = outage.end_date
-                user.comment = outage.comment
-                users.save(chat_id, user)
+                await bot.send_message(chat_id=chat_id, text=outage.format_message(), parse_mode="HTML")
+                users.save(chat_id, user.set_outage(outage))
                 logging.info(f"Notification sent to {chat_id} - {user.street_name}, {user.building}")
             except Forbidden:
                 users.remove(chat_id)
