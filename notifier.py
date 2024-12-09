@@ -7,8 +7,8 @@ from telegram import Bot
 from telegram.error import Forbidden
 
 from bot import load_bot_token
-from outages import outages_reader
-from users import users
+from outages import outage_reader
+from users import user_storage
 
 LOG_FILE = "notifier.log"
 
@@ -41,10 +41,10 @@ async def main() -> None:
 
     bot = Bot(token=load_bot_token())
 
-    outages = outages_reader.get_outages()
-    subscribed_users = users.all()
+    outages = outage_reader.all()
+    users = user_storage.all()
 
-    for chat_id, user in subscribed_users:
+    for chat_id, user in users:
         outage = user.get_first_outage(outages)
 
         if outage:
@@ -54,10 +54,10 @@ async def main() -> None:
 
             try:
                 await bot.send_message(chat_id=chat_id, text=outage.format_message(), parse_mode="HTML")
-                users.save(chat_id, user.set_outage(outage))
+                user_storage.save(chat_id, user.set_outage(outage))
                 logging.info(f"Notification sent to {chat_id} - {user.street_name}, {user.building}")
             except Forbidden:
-                users.remove(chat_id)
+                user_storage.remove(chat_id)
                 logging.info(f"Subscription removed for blocked user {chat_id}.")
             except Exception as e:
                 logging.error(f"Failed to send message to {chat_id}: {e}")

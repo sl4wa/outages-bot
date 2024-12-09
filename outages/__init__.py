@@ -1,6 +1,6 @@
 from .outage import Outage
-from .outages_reader import OutagesReader
+from .outage_reader import OutageReader
 
-__all__ = ["Outage", "OutagesReader"]
+__all__ = ["Outage", "OutageReader"]
 
-outages_reader = OutagesReader()
+outage_reader = OutageReader()

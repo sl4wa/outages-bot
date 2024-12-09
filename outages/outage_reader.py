@@ -12,9 +12,9 @@ HEADERS = {
 }
 
 
-class OutagesReader:
+class OutageReader:
 
-    def get_outages(self) -> list[Outage]:
+    def all(self) -> list[Outage]:
         """
         Fetch outage data from the LOE API and return cleaned data.
         """

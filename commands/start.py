@@ -4,7 +4,7 @@ import logging
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import ContextTypes, ConversationHandler
 
-from users import User, users
+from users import User, user_storage
 
 
 def load_streets():
@@ -22,7 +22,7 @@ def normalize(text):
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     chat_id = update.effective_chat.id
-    subscription = users.get(chat_id)
+    subscription = user_storage.get(chat_id)
 
     if subscription:
         await update.message.reply_text(
@@ -89,7 +89,7 @@ async def building_selection(update: Update, context: ContextTypes.DEFAULT_TYPE)
         end_date="",
         comment="",
     )
-    users.save(chat_id, subscription)
+    user_storage.save(chat_id, subscription)
 
     await update.message.reply_text(
         f"Ви підписалися на сповіщення про відключення електроенергії для вулиці {street_name}, будинок {building}.",

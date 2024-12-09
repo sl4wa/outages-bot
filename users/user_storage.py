@@ -5,7 +5,7 @@ from typing import Optional
 from .user import User
 
 
-class UsersStorage:
+class UserStorage:
     """File-based implementation for managing users."""
 
     def __init__(self):

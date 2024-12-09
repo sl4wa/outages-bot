@@ -1,6 +1,6 @@
 from .user import User
-from .users_storage import UsersStorage
+from .user_storage import UserStorage
 
-__all__ = ["User", "UsersStorage"]
+__all__ = ["User", "UserStorage"]
 
-users = UsersStorage()
+user_storage = UserStorage()

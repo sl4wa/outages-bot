@@ -1,12 +1,12 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from users import users
+from users import user_storage
 
 
 async def show_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
-    subscription = users.get(chat_id)
+    subscription = user_storage.get(chat_id)
 
     if subscription:
         message = f"Ваша поточна підписка:\nВулиця: {subscription.street_name}\nБудинок: {subscription.building}"
