@@ -38,3 +38,7 @@ To check the API at regular intervals, add `notifier.sh` to cron:
     ```bash
     */5 7-23 * * * /path/to/notifier.sh
     ```
+
+## Tests
+
+    python -m unittest discover -s tests
