@@ -1,10 +1,11 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from users import user_storage
+from users import UserStorage
 
 
 async def show_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_storage = UserStorage()
     chat_id = update.effective_chat.id
     subscription = user_storage.get(chat_id)
 

@@ -1,9 +1,7 @@
 import logging
-import os
 import sys
 from logging.handlers import WatchedFileHandler
 
-from dotenv import load_dotenv
 from telegram.ext import (
     ApplicationBuilder,
     CommandHandler,
@@ -15,10 +13,10 @@ from telegram.ext import (
 from commands.start import building_selection, start, street_selection
 from commands.stop import handle_stop
 from commands.subscription import show_subscription
+from env import load_bot_token
 
 # Constants
 LOG_FILE = "bot.log"
-TELEGRAM_TOKEN_ENV = "TELEGRAM_BOT_TOKEN"
 
 # Conversation states
 STREET, BUILDING = range(2)
@@ -38,23 +36,6 @@ def configure_logging() -> None:
     httpx_logger.setLevel(logging.WARNING)
 
     logging.info("Logging is configured.")
-
-
-def load_bot_token() -> str:
-    """Load the Telegram bot token from environment variables."""
-    load_dotenv()
-
-    token = os.getenv(TELEGRAM_TOKEN_ENV)
-    if not token:
-        error_message = (
-            "No token provided! Please add the TELEGRAM_BOT_TOKEN to the .env file as follows:\n\n"
-            "TELEGRAM_BOT_TOKEN=your-telegram-bot-token"
-        )
-        logging.error(error_message)
-        raise ValueError(error_message)
-    logging.info("Telegram bot token loaded.")
-    return token
-
 
 def setup_bot(token: str):
     """Initialize and set up the Telegram bot with handlers."""

@@ -4,7 +4,7 @@ import logging
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import ContextTypes, ConversationHandler
 
-from users import User, user_storage
+from users import User, UserStorage
 
 
 def load_streets():
@@ -21,6 +21,7 @@ def normalize(text):
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    user_storage = UserStorage()
     chat_id = update.effective_chat.id
     subscription = user_storage.get(chat_id)
 
@@ -70,6 +71,7 @@ async def street_selection(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 
 
 async def building_selection(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    user_storage = UserStorage()
     building = update.message.text
 
     street_name = context.user_data.get("street_name")

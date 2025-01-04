@@ -1,8 +1,5 @@
-import re
 from dataclasses import asdict, dataclass
 from typing import Optional, Self
-
-from outages import Outage
 
 
 @dataclass
@@ -31,19 +28,7 @@ class User:
         """Convert the User to a dictionary."""
         return {key: str(value) for key, value in asdict(self).items() if value is not None}
 
-    def get_first_outage(self, outages: list[Outage]) -> Optional[Outage]:
-        """Get first relevant outage."""
-        return next(
-            (
-                o
-                for o in outages
-                if o.street_id == self.street_id
-                and re.search(rf"\b{re.escape(self.building)}\b", o.building)
-            ),
-            None,
-        )
-
-    def is_notified(self, outage: Outage) -> bool:
+    def is_notified(self, outage: "Outage") -> bool:
         """Check if the outage is already notified for the user."""
         return (
             outage.start_date == self.start_date
@@ -51,7 +36,7 @@ class User:
             and outage.comment == self.comment
         )
 
-    def set_outage(self, outage: Outage) -> Self:
+    def set_outage(self, outage: "Outage") -> Self:
         """Update the user's outage information."""
         self.start_date = outage.start_date
         self.end_date = outage.end_date

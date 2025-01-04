@@ -1,6 +1,8 @@
 import unittest
-from users.user import User
-from outages.outage import Outage
+
+from outages import Outage, OutageProcessor
+from users import User
+
 
 class TestUserOutage(unittest.TestCase):
     def setUp(self):
@@ -34,21 +36,17 @@ class TestUserOutage(unittest.TestCase):
             comment="Застосування ГПВ",
         )
 
-        self.outages = [self.outage1, self.outage2]
+        self.processor = OutageProcessor()
+        self.processor._outages = [self.outage1, self.outage2]
 
-    def test_get_first_outage(self):
-        result1 = self.user1.get_first_outage(self.outages)
-        result2 = self.user2.get_first_outage(self.outages)
-        result3 = self.user3.get_first_outage(self.outages)
-
-        self.assertEqual(result1, self.outage1)
-        self.assertEqual(result2, self.outage1)
-        self.assertEqual(result3, self.outage2)
+    def test_get_user_outage(self):
+        self.assertEqual(self.processor.get_user_outage(self.user1), self.outage1)
+        self.assertEqual(self.processor.get_user_outage(self.user2), self.outage1)
+        self.assertEqual(self.processor.get_user_outage(self.user3), self.outage2)
 
     def test_no_matching_outage(self):
         user = User(street_id=13961, street_name="Залізнична", building="16")
-        result = user.get_first_outage(self.outages)
-        self.assertIsNone(result)
+        self.assertIsNone(self.processor.get_user_outage(user))
 
     def test_multiple_outages_same_building(self):
         outage_duplicate = Outage(
@@ -60,10 +58,9 @@ class TestUserOutage(unittest.TestCase):
             building="271",
             comment="Застосування ГАВ",
         )
+        self.processor._outages = [outage_duplicate] + self.processor._outages
+        self.assertEqual(self.processor.get_user_outage(self.user1), outage_duplicate)
 
-        outages_with_duplicate = [outage_duplicate] + self.outages
-        result = self.user1.get_first_outage(outages_with_duplicate)
-        self.assertEqual(result, outage_duplicate)
 
 if __name__ == "__main__":
     unittest.main()

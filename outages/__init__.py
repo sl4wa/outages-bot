@@ -1,6 +1,4 @@
 from .outage import Outage
-from .outage_reader import OutageReader
+from .outage_processor import OutageProcessor
 
-__all__ = ["Outage", "OutageReader"]
-
-outage_reader = OutageReader()
+__all__ = ["Outage", "OutageProcessor"]

@@ -6,9 +6,9 @@ from logging.handlers import TimedRotatingFileHandler
 from telegram import Bot
 from telegram.error import Forbidden
 
-from bot import load_bot_token
-from outages import outage_reader
-from users import user_storage
+from env import load_bot_token
+from outages import OutageProcessor
+from users import UserStorage
 
 LOG_FILE = "notifier.log"
 
@@ -41,11 +41,13 @@ async def main() -> None:
 
     bot = Bot(token=load_bot_token())
 
-    outages = outage_reader.all()
+    outage_processor = OutageProcessor()
+    user_storage = UserStorage()
+
     users = user_storage.all()
 
     for chat_id, user in users:
-        outage = user.get_first_outage(outages)
+        outage = outage_processor.get_user_outage(user)
 
         if outage:
             if (user.is_notified(outage)):

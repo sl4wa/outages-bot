@@ -6,7 +6,7 @@ from dotenv import find_dotenv, load_dotenv
 from telegram import Bot
 from telegram.error import TelegramError
 
-from users import user_storage
+from users import UserStorage
 
 # Load environment variables from .env file
 dotenv_path = find_dotenv()
@@ -23,6 +23,7 @@ TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 async def list_users():
     bot = Bot(token=TOKEN)
     print("Subscribed Users:")
+    user_storage = UserStorage()
     users = user_storage.all()
     user_count = 0
     for chat_id, user in users:

@@ -1,3 +1,6 @@
+import re
+from typing import Optional
+
 import requests
 
 from .outage import Outage
@@ -12,19 +15,21 @@ HEADERS = {
 }
 
 
-class OutageReader:
+class OutageProcessor:
+    def __init__(self):
+        self._outages = None
 
-    def all(self) -> list[Outage]:
+    def _fetch(self) -> None:
         """
-        Fetch outage data from the LOE API and return cleaned data.
+        Internal method to fetch outage data from the LOE API and store it.
         """
         response = requests.get(API_URL, headers=HEADERS)
         if response.status_code == 200:
             data = response.json()
             outages = data.get("hydra:member", [])
 
-            # Clean and structure the outages
-            cleaned_outages = [
+            # If outages are empty, store an empty list
+            self._outages = [
                 Outage(
                     start_date=outage["dateEvent"],
                     end_date=outage["datePlanIn"],
@@ -35,8 +40,25 @@ class OutageReader:
                     comment=outage["koment"],
                 )
                 for outage in outages
-            ]
-            return cleaned_outages
+            ] if outages else []
         else:
             raise ValueError(
-                f"Failed to fetch data: HTTP {response.status_code}")
+                f"Failed to fetch data: HTTP {response.status_code}"
+            )
+
+    def get_user_outage(self, user: "User") -> Optional[Outage]:
+        """
+        Get the first relevant outage for the specified user.
+        """
+        if self._outages is None:
+            self._fetch()
+
+        return next(
+            (
+                o
+                for o in self._outages
+                if o.street_id == user.street_id
+                and re.search(rf"\b{re.escape(user.building)}\b", o.building)
+            ),
+            None,
+        )
