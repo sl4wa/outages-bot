@@ -3,12 +3,7 @@ import logging
 import sys
 from logging.handlers import TimedRotatingFileHandler
 
-from telegram import Bot
-from telegram.error import Forbidden
-
-from env import load_bot_token
-from outages import OutageProcessor
-from users import UserStorage
+from outages import OutageNotifier
 
 LOG_FILE = "notifier.log"
 
@@ -35,37 +30,11 @@ def configure_logging() -> None:
 
     logging.info("Starting notification script.")
 
-
 async def main() -> None:
-    configure_logging()
-
-    bot = Bot(token=load_bot_token())
-
-    outage_processor = OutageProcessor()
-    user_storage = UserStorage()
-
-    users = user_storage.all()
-
-    for chat_id, user in users:
-        outage = outage_processor.get_user_outage(user)
-
-        if outage:
-            if (user.is_notified(outage)):
-                logging.info(f"Outage already notified for user {chat_id} - {user.street_name}, {user.building}")
-                continue
-
-            try:
-                await bot.send_message(chat_id=chat_id, text=outage.format_message(), parse_mode="HTML")
-                user_storage.save(chat_id, user.set_outage(outage))
-                logging.info(f"Notification sent to {chat_id} - {user.street_name}, {user.building}")
-            except Forbidden:
-                user_storage.remove(chat_id)
-                logging.info(f"Subscription removed for blocked user {chat_id}.")
-            except Exception as e:
-                logging.error(f"Failed to send message to {chat_id}: {e}")
-        else:
-            logging.info(f"No relevant outage found for user {chat_id} - {user.street_name}, {user.building}")
-
+    logger = logging.getLogger("OutageNotifier")
+    outage_notifier = OutageNotifier(logger=logger)
+    await outage_notifier.notify()
 
 if __name__ == "__main__":
+    configure_logging()
     asyncio.run(main())
