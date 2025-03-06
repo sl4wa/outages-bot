@@ -1,27 +1,14 @@
 import asyncio
 import logging
-import os
 
-from dotenv import find_dotenv, load_dotenv
 from telegram import Bot
 from telegram.error import TelegramError
+from env import load_bot_token
 
 from users import UserStorage
 
-# Load environment variables from .env file
-dotenv_path = find_dotenv()
-if not dotenv_path:
-    raise FileNotFoundError(
-        "The .env file is missing. Please create a .env file in the project directory with the following content:\n\nTELEGRAM_BOT_TOKEN=your-telegram-bot-token"
-    )
-
-load_dotenv(dotenv_path)
-
-# Configuration
-TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-
 async def list_users():
-    bot = Bot(token=TOKEN)
+    bot = Bot(token=load_bot_token())
     print("Subscribed Users:")
     user_storage = UserStorage()
     users = user_storage.all()
