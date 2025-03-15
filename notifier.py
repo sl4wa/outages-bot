@@ -1,6 +1,8 @@
 import asyncio
 import logging
+import os
 import sys
+import time
 from logging.handlers import TimedRotatingFileHandler
 
 from telegram import Bot
@@ -12,6 +14,9 @@ from users import UserStorage
 
 LOG_FILE = "notifier.log"
 
+os.environ["TZ"] = "Europe/Kyiv"
+time.tzset()
+
 def configure_logging() -> None:
     file_handler = TimedRotatingFileHandler(
         LOG_FILE,
@@ -19,7 +24,6 @@ def configure_logging() -> None:
         interval=1,
         backupCount=5,
         encoding="utf-8",
-        utc=True,
     )
     file_handler.suffix = "%Y-%m-%d.log"
 

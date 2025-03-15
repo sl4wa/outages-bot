@@ -3,9 +3,10 @@ import logging
 
 from telegram import Bot
 from telegram.error import TelegramError
-from env import load_bot_token
 
+from env import load_bot_token
 from users import UserStorage
+
 
 async def list_users():
     bot = Bot(token=load_bot_token())
