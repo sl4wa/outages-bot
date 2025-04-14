@@ -37,8 +37,6 @@ def configure_logging() -> None:
     httpx_logger = logging.getLogger("httpx")
     httpx_logger.setLevel(logging.WARNING)
 
-    logging.info("Starting notification script.")
-
 async def main() -> None:
     logger = logging.getLogger("notifier")
     bot = Bot(token=load_bot_token())

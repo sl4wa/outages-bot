@@ -8,6 +8,7 @@ def load_bot_token() -> str:
     """Load the Telegram bot token from environment variables."""
     load_dotenv()
     token = os.getenv("TELEGRAM_BOT_TOKEN")
+    
     if not token:
         error_message = (
             "No token provided! Please add the TELEGRAM_BOT_TOKEN to the .env file as follows:\n\n"
@@ -15,5 +16,5 @@ def load_bot_token() -> str:
         )
         logging.error(error_message)
         raise ValueError(error_message)
-    logging.info("Telegram bot token loaded.")
+    
     return token
