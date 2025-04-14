@@ -22,6 +22,12 @@ class OutageNotifier:
         self.outage_processor = outage_processor
 
     async def notify(self):
+        outages = self.outage_processor.fetch()
+
+        if (outages == []):
+            self.logger.info("No outages found")
+            return
+
         for chat_id, user in self.user_storage.all():
             outage = self.outage_processor.get_user_outage(user)
 

@@ -19,7 +19,7 @@ class OutageProcessor:
     def __init__(self):
         self._outages = None
 
-    def _fetch(self) -> None:
+    def fetch(self) -> list[Outage]:
         """
         Internal method to fetch outage data from the LOE API and store it.
         """
@@ -46,12 +46,14 @@ class OutageProcessor:
                 f"Failed to fetch data: HTTP {response.status_code}"
             )
 
+        return self._outages
+
     def get_user_outage(self, user: "User") -> Optional[Outage]:
         """
         Get the first relevant outage for the specified user.
         """
         if self._outages is None:
-            self._fetch()
+            self.fetch()
 
         return next(
             (
