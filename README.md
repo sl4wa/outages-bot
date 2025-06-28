@@ -1,15 +1,26 @@
-# Poweron-Bot
+# Poweron Outages Notifier
 
-## Setup
+Telegram bot for power outages in Lviv, Ukraine.
 
-### 1. Build and Run Containers
+## Console Commands
 
-    docker-compose up --build
+- `symfony console app:bot`  
+  Runs the Telegram bot for managing subscriptions.
 
-### 2. Run Tests
+- `symfony console app:notifier`  
+  Cron command: check if any user has relevant outage.
 
-    docker exec -it poweron-app python -m unittest discover -s tests
+- `symfony console app:outages`  
+  List current outages from API.
 
-### 3. Stop and Remove Containers
+- `symfony console app:users`  
+  *TODO* List subscribed users
 
-    docker-compose down
+## TODO
+
+- [ ] tests
+- [ ] rector
+- [ ] csfix
+- [ ] phpstan
+- [ ] docker
+- [ ] logging

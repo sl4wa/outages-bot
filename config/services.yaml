@@ -1,0 +1,36 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/'
+
+    SergiX44\Nutgram\Nutgram:
+        arguments:
+            $token: '%env(TELEGRAM_BOT_TOKEN)%'
+
+    App\Infrastructure\Repository\FileUserRepository:
+        arguments:
+            $params: '@parameter_bag'
+
+    Symfony\Component\DependencyInjection\ContainerInterface: '@service_container'
+
+    App\Infrastructure\Telegram\Handlers\SubscriptionConversation:
+        public: true
+        shared: false
+        arguments:
+            $userRepository: '@App\Infrastructure\Repository\FileUserRepository'
+            $streetRepository: '@App\Infrastructure\Repository\FileStreetRepository'
+
+    App\Infrastructure\Telegram\Handlers\StopCommand:
+        public: true
+        shared: false
+        arguments:
+            $userRepository: '@App\Infrastructure\Repository\FileUserRepository'
+
+    App\Infrastructure\Telegram\Handlers\SubscriptionInfoCommand:
+        public: true
+        shared: false
+        arguments:
+            $userRepository: '@App\Infrastructure\Repository\FileUserRepository'
