@@ -1,0 +1,11 @@
+services:
+    # Register test doubles as services
+    App\Tests\Support\TestNotificationSender: ~
+    App\Tests\Support\TestOutageProvider: ~
+    App\Tests\Support\TestUserRepository: ~
+
+    # Bind interfaces to test doubles for tests
+    App\Application\Interface\Service\NotificationSenderInterface: '@App\Tests\Support\TestNotificationSender'
+    App\Application\Interface\Provider\OutageProviderInterface: '@App\Tests\Support\TestOutageProvider'
+    App\Application\Interface\Repository\UserRepositoryInterface: '@App\Tests\Support\TestUserRepository'
+

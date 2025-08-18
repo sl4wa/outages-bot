@@ -1,0 +1,89 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\Domain\Service;
+
+use App\Domain\Entity\Outage;
+use App\Domain\Entity\User;
+use App\Domain\Service\OutageProcessor;
+use PHPUnit\Framework\TestCase;
+
+final class OutageProcessorTest extends TestCase
+{
+    private OutageProcessor $processor;
+    private Outage $outage1;
+    private Outage $outage2;
+
+    protected function setUp(): void
+    {
+        $this->processor = new OutageProcessor();
+
+        $buildings = '271, 273, 273-А, 275, 277, 279, 281, 281-А, 282, 283, 283-А, '
+            . '284, 284-А, 285, 285-А, 287, 289, 289-А, 290-А, 291, 291(0083), '
+            . '293, 295, 297, 297-А, 297-Б, 308, 313, 316, 316-А, 318, 318-А, '
+            . '320, 322, 324, 326, 328, 328-А, 330, 332, 334, 336, 338, 340-А, '
+            . '342, 346, 348-А, 350, 350,А, 350-В, 358, 358-А, 360-В';
+
+        $this->outage1 = new Outage(
+            new \DateTimeImmutable('2024-11-28T06:47:00+00:00'),
+            new \DateTimeImmutable('2024-11-28T10:00:00+00:00'),
+            'Львів',
+            12783,
+            'Шевченка Т.',
+            array_map('trim', explode(',', $buildings)),
+            'Застосування ГПВ'
+        );
+
+        $this->outage2 = new Outage(
+            new \DateTimeImmutable('2024-11-28T06:47:00+00:00'),
+            new \DateTimeImmutable('2024-11-28T10:00:00+00:00'),
+            'Львів',
+            6458,
+            'Хмельницького Б.',
+            ['294'],
+            'Застосування ГПВ'
+        );
+    }
+
+    public function testGetUserOutageMatchesUsersOnStreetAndBuilding(): void
+    {
+        $user1 = new User(1, 12783, 'Шевченка Т.', '271', null, null, '');
+        $user2 = new User(2, 12783, 'Шевченка Т.', '279', null, null, '');
+        $user3 = new User(3, 6458, 'Хмельницького Б.', '294', null, null, '');
+
+        $result1 = $this->processor->process($this->outage1, [$user1, $user2, $user3]);
+        self::assertContains($user1, $result1);
+        self::assertContains($user2, $result1);
+        self::assertNotContains($user3, $result1);
+
+        $result2 = $this->processor->process($this->outage2, [$user1, $user2, $user3]);
+        self::assertContains($user3, $result2);
+        self::assertNotContains($user1, $result2);
+        self::assertNotContains($user2, $result2);
+    }
+
+    public function testNoMatchingOutageReturnsEmpty(): void
+    {
+        $user = new User(1, 13961, 'Залізнична', '16', null, null, '');
+        $result = $this->processor->process($this->outage1, [$user]);
+        self::assertSame([], $result);
+    }
+
+    public function testAlreadyNotifiedUserIsSkipped(): void
+    {
+        $already = new User(
+            10,
+            12783,
+            'Шевченка Т.',
+            '271',
+            $this->outage1->start,
+            $this->outage1->end,
+            $this->outage1->comment
+        );
+
+        $result = $this->processor->process($this->outage1, [$already]);
+        self::assertSame([], $result);
+    }
+}
+

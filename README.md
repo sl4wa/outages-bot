@@ -18,7 +18,7 @@ Telegram bot for power outages in Lviv, Ukraine.
 
 ## TODO
 
-- [ ] tests
+- [x] tests
 - [ ] rector
 - [ ] csfix
 - [ ] phpstan

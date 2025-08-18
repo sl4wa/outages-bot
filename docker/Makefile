@@ -5,7 +5,7 @@ IMAGE ?= poweron-app
 TAG ?= latest
 COMPOSE ?= docker compose -f docker-compose.yml
 
-.PHONY: help build up down ps logs logs-bot logs-notifier restart shell-bot shell-notifier notifier-once clean
+.PHONY: help build up down ps logs logs-bot logs-notifier restart shell-bot shell-notifier notifier-once clean test
 
 help:
 	@echo "Available targets:";
@@ -16,10 +16,11 @@ help:
 	@echo "  logs            Tail logs for all services";
 	@echo "  logs-bot        Tail logs for bot";
 	@echo "  logs-notifier   Tail logs for notifier";
-	@echo "  restart 		 Restart services";
+	@echo "  restart         Restart services";
 	@echo "  shell-bot       Open a shell in the bot container";
 	@echo "  shell-notifier  Open a shell in the notifier container";
 	@echo "  notifier-once   Run notifier once (no cron) via bot container";
+	@echo "  test            Build image and run PHPUnit in notifier container";
 	@echo "  clean           Remove local image $(IMAGE):$(TAG)";
 
 # Image operations
@@ -61,3 +62,8 @@ notifier-once:
 clean:
 	@docker rmi $(IMAGE):$(TAG) || true
 	@echo "Removed image if it existed: $(IMAGE):$(TAG)"
+
+# Tests (run in Docker using notifier service image)
+test:
+	$(COMPOSE) build notifier
+	$(COMPOSE) run --rm notifier vendor/bin/phpunit tests --bootstrap tests/bootstrap.php --colors=always
