@@ -14,6 +14,11 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class NotifierServiceTest extends KernelTestCase
 {
+    protected static function getKernelClass(): string
+    {
+        return \App\Kernel::class;
+    }
+
     private NotifierService $notifier;
     private TestNotificationSender $sender;
     private TestUserRepository $userRepo;
