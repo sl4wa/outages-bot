@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Telegram\Handlers;
 
-use App\Infrastructure\Repository\FileUserRepository;
+use App\Application\Service\UserSubscriptionQueryService;
 use SergiX44\Nutgram\Handlers\Type\Command;
 use SergiX44\Nutgram\Nutgram;
 
@@ -11,19 +11,16 @@ class SubscriptionInfoCommand extends Command
     protected string $command = 'subscription';
     protected ?string $description = 'Показати поточну підписку';
 
-    private FileUserRepository $userRepository;
-
-    public function __construct(FileUserRepository $userRepository)
+    public function __construct(private readonly UserSubscriptionQueryService $queryService)
     {
-        $this->userRepository = $userRepository;
         parent::__construct();
     }
 
     public function handle(Nutgram $bot): void
     {
-        $user = $this->userRepository->find($bot->chatId());
-        if ($user) {
-            $bot->sendMessage("Ваша поточна підписка:\nВулиця: {$user->streetName}\nБудинок: {$user->building}");
+        $sub = $this->queryService->get($bot->chatId());
+        if ($sub) {
+            $bot->sendMessage("Ваша поточна підписка:\nВулиця: {$sub->streetName}\nБудинок: {$sub->building}");
         } else {
             $bot->sendMessage("Ви не маєте активної підписки.");
         }

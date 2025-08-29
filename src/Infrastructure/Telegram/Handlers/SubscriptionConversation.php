@@ -2,7 +2,8 @@
 
 namespace App\Infrastructure\Telegram\Handlers;
 
-use App\Infrastructure\Repository\FileUserRepository;
+use App\Application\Service\UserSubscriptionQueryService;
+use App\Application\Service\UserSubscriptionWriteService;
 use App\Infrastructure\Repository\FileStreetRepository;
 use App\Domain\Entity\User;
 use SergiX44\Nutgram\Conversations\Conversation;
@@ -15,27 +16,26 @@ class SubscriptionConversation extends Conversation
 {
     protected ?string $step = 'askStreet';
 
-    private FileUserRepository $userRepository;
     private FileStreetRepository $streetRepository;
+
+    public function __construct(
+        private readonly UserSubscriptionQueryService $queryService,
+        private readonly UserSubscriptionWriteService $writeService,
+        FileStreetRepository $streetRepository
+    ) {
+        $this->streetRepository = $streetRepository;
+    }
 
     // Data persists between steps
     public int $selectedStreetId = 0;
     public string $selectedStreetName = '';
 
-    public function __construct(
-        FileUserRepository $userRepository,
-        FileStreetRepository $streetRepository
-    ) {
-        $this->userRepository = $userRepository;
-        $this->streetRepository = $streetRepository;
-    }
-
     public function askStreet(Nutgram $bot)
     {
-        $user = $this->userRepository->find($bot->chatId());
-        if ($user) {
+        $sub = $this->queryService->get($bot->chatId());
+        if ($sub) {
             $bot->sendMessage(
-                "Ваша поточна підписка:\nВулиця: {$user->streetName}\nБудинок: {$user->building}\n\n"
+                "Ваша поточна підписка:\nВулиця: {$sub->streetName}\nБудинок: {$sub->building}\n\n"
                 ."Будь ласка, оберіть нову вулицю для оновлення підписки або введіть назву вулиці:"
             );
         } else {
@@ -103,19 +103,15 @@ class SubscriptionConversation extends Conversation
             return;
         }
 
-        $user = new User(
-            id: $bot->chatId(),
+        $result = $this->writeService->createOrUpdate(
+            chatId: $bot->chatId(),
             streetId: $this->selectedStreetId,
             streetName: $this->selectedStreetName,
             building: $building,
-            startDate: null,
-            endDate: null,
-            comment: ''
         );
-        $this->userRepository->save($user);
 
         $bot->sendMessage(
-            "Ви підписалися на сповіщення про відключення електроенергії для вулиці {$user->streetName}, будинок {$building}.",
+            "Ви підписалися на сповіщення про відключення електроенергії для вулиці {$result->streetName}, будинок {$result->building}.",
             reply_markup: ReplyKeyboardRemove::make(true)
         );
         $this->end();
