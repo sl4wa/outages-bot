@@ -5,7 +5,7 @@ IMAGE ?= poweron-app
 TAG ?= latest
 COMPOSE ?= docker compose -f docker-compose.yml
 
-.PHONY: help build up down ps logs logs-bot logs-notifier restart shell-bot shell-notifier notifier-once clean test
+.PHONY: help build up down ps logs logs-bot logs-notifier restart shell-bot shell-notifier notifier-once clean test clean-all
 
 help:
 	@echo "Available targets:";
@@ -22,6 +22,7 @@ help:
 	@echo "  notifier-once   Run notifier once (no cron) via bot container";
 	@echo "  test            Build image and run PHPUnit in notifier container";
 	@echo "  clean           Remove local image $(IMAGE):$(TAG)";
+	@echo "  clean-all       Stop, clean image, build, and start services";
 
 # Image operations
 build:
@@ -67,3 +68,7 @@ clean:
 test:
 	$(COMPOSE) build notifier
 	$(COMPOSE) run --rm notifier vendor/bin/phpunit tests --bootstrap tests/bootstrap.php --colors=always
+
+# Compound command
+clean-all: down clean build up
+	@echo "All clean, build, and up complete."
