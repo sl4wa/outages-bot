@@ -5,7 +5,7 @@ use App\Application\DTO\NotificationSenderDTO;
 use App\Application\Exception\NotificationSendException;
 use App\Application\Interface\Repository\UserRepositoryInterface;
 use App\Application\Interface\Service\NotificationSenderInterface;
-use App\Domain\Service\OutageProcessor;
+use App\Domain\Service\OutageFinder;
 
 class NotifierService
 {
@@ -13,29 +13,22 @@ class NotifierService
         private readonly OutageFetchService $outageFetchService,
         private readonly UserRepositoryInterface $userRepository,
         private readonly NotificationSenderInterface $notificationSender,
-        private readonly OutageProcessor $outageProcessor,
+        private readonly OutageFinder $outageFinder,
     ) {}
 
     public function notify(): int
     {
         $outages = $this->outageFetchService->fetch();
-        $usersToBeChecked = $this->userRepository->findAll();
+        $users = $this->userRepository->findAll();
 
-        $notifiedUserIds = [];
+        foreach ($users as $user) {
+            $outageToNotify = $this->outageFinder->findOutageForNotification($user, $outages);
 
-        foreach ($outages as $outage) {
-            $usersToBeNotified = $this->outageProcessor->process($outage, $usersToBeChecked);
-
-            foreach ($usersToBeNotified as $user) {
-                if (in_array($user->id, $notifiedUserIds, true)) {
-                    continue;
-                }
-
+            if ($outageToNotify !== null) {
                 try {
-                    $this->notificationSender->send(new NotificationSenderDTO($user, $outage));
-                    $updatedUser = $user->withUpdatedOutage($outage);
+                    $this->notificationSender->send(new NotificationSenderDTO($user, $outageToNotify));
+                    $updatedUser = $user->withUpdatedOutage($outageToNotify);
                     $this->userRepository->save($updatedUser);
-                    $notifiedUserIds[] = $user->id;
                 } catch (NotificationSendException $e) {
                     if ($e->isBlocked()) {
                         $this->userRepository->remove($e->userId);

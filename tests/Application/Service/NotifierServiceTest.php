@@ -95,21 +95,31 @@ final class NotifierServiceTest extends KernelTestCase
         self::assertCount(0, $this->userRepo->removed);
     }
 
-    public function testMultipleOutagesSameBuildingNotifiesOnceWithFirstComment(): void
+    public function multipleOutagesForSameBuildingNotifiesOnlyOnce(): void
     {
         $user = new User(103, 12783, 'Шевченка Т.', '271', null, null, '');
+        $outageA = $this->createOutage('Outage A');
+        $outageB = $this->createOutage('Outage B');
 
-        $first = $this->createOutage('Застосування ГАВ');
-        $second = $this->createOutage('Застосування ГПВ');
-
+        // First run
         $this->userRepo->all = [$user];
-        $this->provider->outages = [$first, $second];
-
+        $this->provider->outages = [$outageA, $outageB];
         $this->notifier->notify();
 
-        self::assertCount(1, $this->sender->sent, 'should send only once');
-        self::assertCount(1, $this->userRepo->saved, 'should save only once');
-        self::assertEquals('Застосування ГАВ', $this->userRepo->saved[0]->comment, 'first outage wins');
+        self::assertCount(1, $this->sender->sent);
+        self::assertCount(1, $this->userRepo->saved);
+        self::assertEquals('Outage A', $this->userRepo->saved[0]->comment);
+
+        $this->userRepo->all = [$this->userRepo->saved[0]];
+        $this->provider->outages = [$outageA, $outageB];
+        $this->sender->sent = [];
+        $this->userRepo->saved = [];
+
+        // Second run.
+        $this->notifier->notify();
+
+        self::assertCount(0, $this->sender->sent);
+        self::assertCount(0, $this->userRepo->saved);
     }
 
     private function createOutage(string $comment): OutageDTO

@@ -6,18 +6,18 @@ namespace App\Tests\Domain\Service;
 
 use App\Domain\Entity\Outage;
 use App\Domain\Entity\User;
-use App\Domain\Service\OutageProcessor;
+use App\Domain\Service\OutageFinder;
 use PHPUnit\Framework\TestCase;
 
-final class OutageProcessorTest extends TestCase
+final class OutageFinderTest extends TestCase
 {
-    private OutageProcessor $processor;
+    private OutageFinder $finder;
     private Outage $outage1;
     private Outage $outage2;
 
     protected function setUp(): void
     {
-        $this->processor = new OutageProcessor();
+        $this->finder = new OutageFinder();
 
         $buildings = '271, 273, 273-А, 275, 277, 279, 281, 281-А, 282, 283, 283-А, '
             . '284, 284-А, 285, 285-А, 287, 289, 289-А, 290-А, 291, 291(0083), '
@@ -46,31 +46,32 @@ final class OutageProcessorTest extends TestCase
         );
     }
 
-    public function testGetUserOutageMatchesUsersOnStreetAndBuilding(): void
+    public function testFindsMatchingOutageForUser(): void
     {
         $user1 = new User(1, 12783, 'Шевченка Т.', '271', null, null, '');
         $user2 = new User(2, 12783, 'Шевченка Т.', '279', null, null, '');
         $user3 = new User(3, 6458, 'Хмельницького Б.', '294', null, null, '');
 
-        $result1 = $this->processor->process($this->outage1, [$user1, $user2, $user3]);
-        self::assertContains($user1, $result1);
-        self::assertContains($user2, $result1);
-        self::assertNotContains($user3, $result1);
+        $allOutages = [$this->outage1, $this->outage2];
 
-        $result2 = $this->processor->process($this->outage2, [$user1, $user2, $user3]);
-        self::assertContains($user3, $result2);
-        self::assertNotContains($user1, $result2);
-        self::assertNotContains($user2, $result2);
+        $result1 = $this->finder->findOutageForNotification($user1, $allOutages);
+        self::assertSame($this->outage1, $result1);
+
+        $result2 = $this->finder->findOutageForNotification($user2, $allOutages);
+        self::assertSame($this->outage1, $result2);
+
+        $result3 = $this->finder->findOutageForNotification($user3, $allOutages);
+        self::assertSame($this->outage2, $result3);
     }
 
-    public function testNoMatchingOutageReturnsEmpty(): void
+    public function testNoMatchingOutageReturnsNull(): void
     {
         $user = new User(1, 13961, 'Залізнична', '16', null, null, '');
-        $result = $this->processor->process($this->outage1, [$user]);
-        self::assertSame([], $result);
+        $result = $this->finder->findOutageForNotification($user, [$this->outage1, $this->outage2]);
+        self::assertNull($result);
     }
 
-    public function testAlreadyNotifiedUserIsSkipped(): void
+    public function testAlreadyAwareUserReturnsNull(): void
     {
         $already = new User(
             10,
@@ -82,8 +83,7 @@ final class OutageProcessorTest extends TestCase
             $this->outage1->comment
         );
 
-        $result = $this->processor->process($this->outage1, [$already]);
-        self::assertSame([], $result);
+        $result = $this->finder->findOutageForNotification($already, [$this->outage1, $this->outage2]);
+        self::assertNull($result);
     }
 }
-
