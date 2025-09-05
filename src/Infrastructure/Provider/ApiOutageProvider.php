@@ -1,8 +1,9 @@
 <?php
+
 namespace App\Infrastructure\Provider;
 
+use App\Application\DTO\OutageDTO;
 use App\Application\Interface\Provider\OutageProviderInterface;
-use App\Domain\Entity\Outage;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class ApiOutageProvider implements OutageProviderInterface
@@ -12,7 +13,7 @@ class ApiOutageProvider implements OutageProviderInterface
     public function __construct(private readonly HttpClientInterface $httpClient) {}
 
     /**
-     * @return Outage[]
+     * @return OutageDTO[]
      */
     public function fetchOutages(): array
     {
@@ -21,6 +22,27 @@ class ApiOutageProvider implements OutageProviderInterface
             return [];
         }
         $data = $response->toArray();
-        return array_map([Outage::class, 'fromArray'], $data['hydra:member'] ?? []);
+        $items = $data['hydra:member'] ?? [];
+
+        return array_map(function (array $row): OutageDTO {
+            $comment = (string)($row['koment'] ?? '');
+            $comment = preg_replace('/[\r\n]+/', ' ', $comment);
+            $comment = trim($comment);
+
+            $buildings = $row['buildingNames'] ?? '';
+            $buildingNames = is_array($buildings)
+                ? array_map('trim', $buildings)
+                : array_filter(array_map('trim', explode(',', (string)$buildings)));
+
+            return new OutageDTO(
+                new \DateTimeImmutable($row['dateEvent']),
+                new \DateTimeImmutable($row['datePlanIn']),
+                (string)($row['city']['name'] ?? ''),
+                (int)($row['street']['id'] ?? 0),
+                (string)($row['street']['name'] ?? ''),
+                $buildingNames,
+                $comment,
+            );
+        }, $items);
     }
 }

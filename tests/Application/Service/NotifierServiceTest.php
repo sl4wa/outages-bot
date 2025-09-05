@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Application\Service;
 
 use App\Application\Service\NotifierService;
+use App\Application\DTO\OutageDTO;
 use App\Domain\Entity\Outage;
 use App\Domain\Entity\User;
 use App\Tests\Support\TestNotificationSender;
@@ -111,7 +112,7 @@ final class NotifierServiceTest extends KernelTestCase
         self::assertEquals('Застосування ГАВ', $this->userRepo->saved[0]->comment, 'first outage wins');
     }
 
-    private function createOutage(string $comment): Outage
+    private function createOutage(string $comment): OutageDTO
     {
         $buildings = '271, 273, 273-А, 275, 277, 279, 281, 281-А, 282, 283, 283-А, '
             . '284, 284-А, 285, 285-А, 287, 289, 289-А, 290-А, 291, 291(0083), '
@@ -119,7 +120,7 @@ final class NotifierServiceTest extends KernelTestCase
             . '320, 322, 324, 326, 328, 328-А, 330, 332, 334, 336, 338, 340-А, '
             . '342, 346, 348-А, 350, 350,А, 350-В, 358, 358-А, 360-В';
 
-        return new Outage(
+        return new OutageDTO(
             new \DateTimeImmutable('2024-11-28T06:47:00+00:00'),
             new \DateTimeImmutable('2024-11-28T10:00:00+00:00'),
             'Львів',

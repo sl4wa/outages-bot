@@ -3,7 +3,6 @@ namespace App\Application\Service;
 
 use App\Application\DTO\NotificationSenderDTO;
 use App\Application\Exception\NotificationSendException;
-use App\Application\Interface\Provider\OutageProviderInterface;
 use App\Application\Interface\Repository\UserRepositoryInterface;
 use App\Application\Interface\Service\NotificationSenderInterface;
 use App\Domain\Service\OutageProcessor;
@@ -11,7 +10,7 @@ use App\Domain\Service\OutageProcessor;
 class NotifierService
 {
     public function __construct(
-        private readonly OutageProviderInterface $outageProvider,
+        private readonly OutageFetchService $outageFetchService,
         private readonly UserRepositoryInterface $userRepository,
         private readonly NotificationSenderInterface $notificationSender,
         private readonly OutageProcessor $outageProcessor,
@@ -19,7 +18,7 @@ class NotifierService
 
     public function notify(): int
     {
-        $outages = $this->outageProvider->fetchOutages();
+        $outages = $this->outageFetchService->fetch();
         $usersToBeChecked = $this->userRepository->findAll();
 
         $notifiedUserIds = [];

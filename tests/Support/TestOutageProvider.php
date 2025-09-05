@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Tests\Support;
 
 use App\Application\Interface\Provider\OutageProviderInterface;
-use App\Domain\Entity\Outage;
+use App\Application\DTO\OutageDTO;
 
 final class TestOutageProvider implements OutageProviderInterface
 {
-    /** @var Outage[] */
+    /** @var OutageDTO[] */
     public array $outages = [];
 
     public function fetchOutages(): array
@@ -17,4 +17,3 @@ final class TestOutageProvider implements OutageProviderInterface
         return $this->outages;
     }
 }
-

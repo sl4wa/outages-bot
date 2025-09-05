@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Application\Interface\Provider;
 
-use App\Domain\Entity\Outage;
+use App\Application\DTO\OutageDTO;
 
 interface OutageProviderInterface
 {
     /**
-     * @return Outage[]
+     * @return OutageDTO[]
      */
     public function fetchOutages(): array;
 }
