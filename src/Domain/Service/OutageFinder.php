@@ -14,22 +14,23 @@ final class OutageFinder
      */
     public function findOutageForNotification(User $user, array $allOutages): ?Outage
     {
-        $matchingOutages = array_filter(
-            $allOutages,
-            static fn(Outage $outage) => $outage->matchesUser($user)
-        );
+        $potentialOutageToNotify = null;
 
-        if (empty($matchingOutages)) {
-            return null;
-        }
+        foreach ($allOutages as $outage) {
+            if (!$outage->matchesUser($user)) {
+                continue;
+            }
 
-        foreach ($matchingOutages as $outage) {
             if ($outage->isIdenticalPeriodAndComment($user)) {
-                return null; // The user is already aware of an active outage.
+                // The user is already aware of an active outage.
+                return null;
+            }
+
+            if ($potentialOutageToNotify === null) {
+                $potentialOutageToNotify = $outage;
             }
         }
 
-        // A new or changed outage situation exists. Notify about the first one found.
-        return reset($matchingOutages);
+        return $potentialOutageToNotify;
     }
 }
