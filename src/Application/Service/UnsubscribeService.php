@@ -4,9 +4,9 @@ namespace App\Application\Service;
 
 use App\Application\Interface\Repository\UserRepositoryInterface;
 
-class UnsubscribeService
+readonly class UnsubscribeService
 {
-    public function __construct(private readonly UserRepositoryInterface $userRepository) {}
+    public function __construct(private UserRepositoryInterface $userRepository) {}
 
     /**
      * Removes subscription if exists.

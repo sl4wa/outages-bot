@@ -21,3 +21,4 @@
 
 /data/users/
 /.idea/
+.phpunit.result.cache

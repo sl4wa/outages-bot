@@ -5,9 +5,9 @@ namespace App\Application\Service;
 use App\Application\DTO\UserSubscriptionDTO;
 use App\Application\Interface\Repository\UserRepositoryInterface;
 
-class UserSubscriptionQueryService
+readonly class UserSubscriptionQueryService
 {
-    public function __construct(private readonly UserRepositoryInterface $userRepository) {}
+    public function __construct(private UserRepositoryInterface $userRepository) {}
 
     public function get(int $chatId): ?UserSubscriptionDTO
     {

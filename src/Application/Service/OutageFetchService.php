@@ -6,11 +6,11 @@ use App\Application\Factory\OutageFactory;
 use App\Application\Interface\Provider\OutageProviderInterface;
 use App\Domain\Entity\Outage;
 
-class OutageFetchService
+readonly class OutageFetchService
 {
     public function __construct(
-        private readonly OutageProviderInterface $outageProvider,
-        private readonly OutageFactory $outageFactory,
+        private OutageProviderInterface $outageProvider,
+        private OutageFactory $outageFactory,
     ) {}
 
     /**

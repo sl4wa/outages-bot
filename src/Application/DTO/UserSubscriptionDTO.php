@@ -2,13 +2,13 @@
 
 namespace App\Application\DTO;
 
-class UserSubscriptionDTO
+readonly class UserSubscriptionDTO
 {
     public function __construct(
-        public readonly int $chatId,
-        public readonly int $streetId,
-        public readonly string $streetName,
-        public readonly string $building,
+        public int $chatId,
+        public int $streetId,
+        public string $streetName,
+        public string $building,
     ) {}
 }
 

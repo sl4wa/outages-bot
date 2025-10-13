@@ -7,13 +7,13 @@ use App\Application\Interface\Repository\UserRepositoryInterface;
 use App\Application\Interface\Service\NotificationSenderInterface;
 use App\Domain\Service\OutageFinder;
 
-class NotifierService
+readonly class NotifierService
 {
     public function __construct(
-        private readonly OutageFetchService $outageFetchService,
-        private readonly UserRepositoryInterface $userRepository,
-        private readonly NotificationSenderInterface $notificationSender,
-        private readonly OutageFinder $outageFinder,
+        private OutageFetchService $outageFetchService,
+        private UserRepositoryInterface $userRepository,
+        private NotificationSenderInterface $notificationSender,
+        private OutageFinder $outageFinder,
     ) {}
 
     public function notify(): int

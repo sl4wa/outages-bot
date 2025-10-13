@@ -6,9 +6,9 @@ use App\Application\DTO\UserSubscriptionDTO;
 use App\Application\Interface\Repository\UserRepositoryInterface;
 use App\Domain\Entity\User;
 
-class UserSubscriptionWriteService
+readonly class UserSubscriptionWriteService
 {
-    public function __construct(private readonly UserRepositoryInterface $userRepository) {}
+    public function __construct(private UserRepositoryInterface $userRepository) {}
 
     public function createOrUpdate(int $chatId, int $streetId, string $streetName, string $building): UserSubscriptionDTO
     {

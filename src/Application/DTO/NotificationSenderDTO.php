@@ -5,10 +5,10 @@ namespace App\Application\DTO;
 use App\Domain\Entity\Outage;
 use App\Domain\Entity\User;
 
-class NotificationSenderDTO
+readonly class NotificationSenderDTO
 {
     public function __construct(
-        public readonly User $user,
-        public readonly Outage $outage
+        public User $user,
+        public Outage $outage
     ) {}
 }

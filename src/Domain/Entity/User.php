@@ -1,16 +1,16 @@
 <?php
 namespace App\Domain\Entity;
 
-class User
+readonly class User
 {
     public function __construct(
-        public readonly int $id,
-        public readonly int $streetId,
-        public readonly string $streetName,
-        public readonly string $building,
-        public readonly ?\DateTimeImmutable $startDate,
-        public readonly ?\DateTimeImmutable $endDate,
-        public readonly string $comment,
+        public int $id,
+        public int $streetId,
+        public string $streetName,
+        public string $building,
+        public ?\DateTimeImmutable $startDate,
+        public ?\DateTimeImmutable $endDate,
+        public string $comment,
     ) {}
 
     public function withUpdatedOutage(Outage $outage): self
