@@ -7,6 +7,7 @@ namespace App\Tests\Domain\Service;
 use App\Domain\Entity\Outage;
 use App\Domain\Entity\User;
 use App\Domain\Service\OutageFinder;
+use App\Domain\ValueObject\Address;
 use PHPUnit\Framework\TestCase;
 
 final class OutageFinderTest extends TestCase
@@ -25,32 +26,40 @@ final class OutageFinderTest extends TestCase
             . '320, 322, 324, 326, 328, 328-А, 330, 332, 334, 336, 338, 340-А, '
             . '342, 346, 348-А, 350, 350,А, 350-В, 358, 358-А, 360-В';
 
-        $this->outage1 = new Outage(
-            new \DateTimeImmutable('2024-11-28T06:47:00+00:00'),
-            new \DateTimeImmutable('2024-11-28T10:00:00+00:00'),
-            'Львів',
+        $address1 = new Address(
             12783,
             'Шевченка Т.',
             array_map('trim', explode(',', $buildings)),
+            'Львів'
+        );
+
+        $this->outage1 = new Outage(
+            new \DateTimeImmutable('2024-11-28T06:47:00+00:00'),
+            new \DateTimeImmutable('2024-11-28T10:00:00+00:00'),
+            $address1,
             'Застосування ГПВ'
+        );
+
+        $address2 = new Address(
+            6458,
+            'Хмельницького Б.',
+            ['294'],
+            'Львів'
         );
 
         $this->outage2 = new Outage(
             new \DateTimeImmutable('2024-11-28T06:47:00+00:00'),
             new \DateTimeImmutable('2024-11-28T10:00:00+00:00'),
-            'Львів',
-            6458,
-            'Хмельницького Б.',
-            ['294'],
+            $address2,
             'Застосування ГПВ'
         );
     }
 
     public function testFindsMatchingOutageForUser(): void
     {
-        $user1 = new User(1, 12783, 'Шевченка Т.', '271', null, null, '');
-        $user2 = new User(2, 12783, 'Шевченка Т.', '279', null, null, '');
-        $user3 = new User(3, 6458, 'Хмельницького Б.', '294', null, null, '');
+        $user1 = new User(1, new Address(12783, 'Шевченка Т.', ['271']), null, null, '');
+        $user2 = new User(2, new Address(12783, 'Шевченка Т.', ['279']), null, null, '');
+        $user3 = new User(3, new Address(6458, 'Хмельницького Б.', ['294']), null, null, '');
 
         $allOutages = [$this->outage1, $this->outage2];
 
@@ -66,7 +75,7 @@ final class OutageFinderTest extends TestCase
 
     public function testNoMatchingOutageReturnsNull(): void
     {
-        $user = new User(1, 13961, 'Залізнична', '16', null, null, '');
+        $user = new User(1, new Address(13961, 'Залізнична', ['16']), null, null, '');
         $result = $this->finder->findOutageForNotification($user, [$this->outage1, $this->outage2]);
         self::assertNull($result);
     }
@@ -75,9 +84,7 @@ final class OutageFinderTest extends TestCase
     {
         $already = new User(
             10,
-            12783,
-            'Шевченка Т.',
-            '271',
+            new Address(12783, 'Шевченка Т.', ['271']),
             $this->outage1->start,
             $this->outage1->end,
             $this->outage1->comment

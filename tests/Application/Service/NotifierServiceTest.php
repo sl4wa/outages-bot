@@ -8,6 +8,7 @@ use App\Application\Service\NotifierService;
 use App\Application\DTO\OutageDTO;
 use App\Domain\Entity\Outage;
 use App\Domain\Entity\User;
+use App\Domain\ValueObject\Address;
 use App\Tests\Support\TestNotificationSender;
 use App\Tests\Support\TestOutageProvider;
 use App\Tests\Support\TestUserRepository;
@@ -49,7 +50,7 @@ final class NotifierServiceTest extends KernelTestCase
     public function testNotificationSentAndUserSaved(): void
     {
         $outage = $this->createOutage('Застосування ГПВ');
-        $user = new User(100, 12783, 'Шевченка Т.', '271', null, null, '');
+        $user = new User(100, new Address(12783, 'Шевченка Т.', ['271']), null, null, '');
 
         // prepare doubles
         $this->userRepo->all = [$user];
@@ -68,7 +69,7 @@ final class NotifierServiceTest extends KernelTestCase
         $this->sender->blockUserId = 101; // simulate Forbidden
 
         $outage = $this->createOutage('Застосування ГПВ');
-        $user = new User(101, 12783, 'Шевченка Т.', '271', null, null, '');
+        $user = new User(101, new Address(12783, 'Шевченка Т.', ['271']), null, null, '');
 
         $this->userRepo->all = [$user];
         $this->provider->outages = [$outage];
@@ -83,7 +84,7 @@ final class NotifierServiceTest extends KernelTestCase
     public function testNoRelevantOutageProducesNoNotification(): void
     {
         $outage = $this->createOutage('Застосування ГПВ');
-        $user = new User(102, 99999, 'Nonexistent Street', '1', null, null, '');
+        $user = new User(102, new Address(99999, 'Nonexistent Street', ['1']), null, null, '');
 
         $this->userRepo->all = [$user];
         $this->provider->outages = [$outage];
@@ -97,7 +98,7 @@ final class NotifierServiceTest extends KernelTestCase
 
     public function multipleOutagesForSameBuildingNotifiesOnlyOnce(): void
     {
-        $user = new User(103, 12783, 'Шевченка Т.', '271', null, null, '');
+        $user = new User(103, new Address(12783, 'Шевченка Т.', ['271']), null, null, '');
         $outageA = $this->createOutage('Outage A');
         $outageB = $this->createOutage('Outage B');
 

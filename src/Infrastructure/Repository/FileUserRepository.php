@@ -4,6 +4,7 @@ namespace App\Infrastructure\Repository;
 
 use App\Application\Interface\Repository\UserRepositoryInterface;
 use App\Domain\Entity\User;
+use App\Domain\ValueObject\Address;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class FileUserRepository implements UserRepositoryInterface
@@ -40,9 +41,9 @@ class FileUserRepository implements UserRepositoryInterface
     public function save(User $user): void
     {
         $fields = [
-            'street_id'   => $user->streetId,
-            'street_name' => $user->streetName,
-            'building'    => $user->building,
+            'street_id'   => $user->address->streetId,
+            'street_name' => $user->address->streetName,
+            'building'    => $user->address->getSingleBuilding(),
             'start_date'  => $user->startDate instanceof \DateTimeImmutable ? $user->startDate->format(DATE_ATOM) : '',
             'end_date'    => $user->endDate instanceof \DateTimeImmutable ? $user->endDate->format(DATE_ATOM) : '',
             'comment'     => $user->comment,
@@ -87,11 +88,16 @@ class FileUserRepository implements UserRepositoryInterface
                 }
             }
         }
-        return new User(
-            $id,
+
+        $address = new Address(
             (int)$fields['street_id'],
             $fields['street_name'],
-            $fields['building'],
+            [$fields['building']]
+        );
+
+        return new User(
+            $id,
+            $address,
             $fields['start_date'] ? new \DateTimeImmutable($fields['start_date']) : null,
             $fields['end_date'] ? new \DateTimeImmutable($fields['end_date']) : null,
             $fields['comment']

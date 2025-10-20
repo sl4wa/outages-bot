@@ -18,9 +18,9 @@ readonly class UserSubscriptionQueryService
 
         return new UserSubscriptionDTO(
             chatId: $user->id,
-            streetId: $user->streetId,
-            streetName: $user->streetName,
-            building: $user->building,
+            streetId: $user->address->streetId,
+            streetName: $user->address->streetName,
+            building: $user->address->getSingleBuilding(),
         );
     }
 }

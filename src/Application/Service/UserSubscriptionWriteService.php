@@ -5,6 +5,7 @@ namespace App\Application\Service;
 use App\Application\DTO\UserSubscriptionDTO;
 use App\Application\Interface\Repository\UserRepositoryInterface;
 use App\Domain\Entity\User;
+use App\Domain\ValueObject\Address;
 
 readonly class UserSubscriptionWriteService
 {
@@ -12,11 +13,11 @@ readonly class UserSubscriptionWriteService
 
     public function createOrUpdate(int $chatId, int $streetId, string $streetName, string $building): UserSubscriptionDTO
     {
+        $address = new Address($streetId, $streetName, [$building]);
+
         $user = new User(
             id: $chatId,
-            streetId: $streetId,
-            streetName: $streetName,
-            building: $building,
+            address: $address,
             startDate: null,
             endDate: null,
             comment: ''
@@ -26,9 +27,9 @@ readonly class UserSubscriptionWriteService
 
         return new UserSubscriptionDTO(
             chatId: $user->id,
-            streetId: $user->streetId,
-            streetName: $user->streetName,
-            building: $user->building,
+            streetId: $user->address->streetId,
+            streetName: $user->address->streetName,
+            building: $user->address->getSingleBuilding(),
         );
     }
 }

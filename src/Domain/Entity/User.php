@@ -1,13 +1,13 @@
 <?php
 namespace App\Domain\Entity;
 
+use App\Domain\ValueObject\Address;
+
 readonly class User
 {
     public function __construct(
         public int $id,
-        public int $streetId,
-        public string $streetName,
-        public string $building,
+        public Address $address,
         public ?\DateTimeImmutable $startDate,
         public ?\DateTimeImmutable $endDate,
         public string $comment,
@@ -17,13 +17,10 @@ readonly class User
     {
         return new self(
             $this->id,
-            $this->streetId,
-            $this->streetName,
-            $this->building,
+            $this->address,
             $outage->start,
             $outage->end,
             $outage->comment
         );
     }
-
 }
