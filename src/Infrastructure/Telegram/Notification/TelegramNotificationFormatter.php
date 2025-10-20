@@ -7,13 +7,13 @@ class TelegramNotificationFormatter
 {
     public function format(NotificationSenderDTO $dto): string
     {
-        $buildings = implode(', ', $dto->outage->address->buildings);
+        $buildings = implode(', ', $dto->buildings);
 
         return "Поточні відключення:\n"
-            ."Місто: {$dto->outage->address->city}\n"
-            ."Вулиця: {$dto->outage->address->streetName}\n"
-            ."<b>{$dto->outage->start->format('Y-m-d H:i')} – {$dto->outage->end->format('Y-m-d H:i')}</b>\n"
-            ."Коментар: {$dto->outage->comment}\n"
+            ."Місто: {$dto->city}\n"
+            ."Вулиця: {$dto->streetName}\n"
+            ."<b>{$dto->start->format('Y-m-d H:i')} – {$dto->end->format('Y-m-d H:i')}</b>\n"
+            ."Коментар: {$dto->comment}\n"
             ."Будинки: {$buildings}";
     }
 }

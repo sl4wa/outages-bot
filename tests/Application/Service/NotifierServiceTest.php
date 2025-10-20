@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Application\Service;
 
-use App\Application\Service\NotifierService;
 use App\Application\DTO\OutageDTO;
+use App\Application\Factory\OutageFactory;
+use App\Application\Service\NotifierService;
 use App\Domain\Entity\Outage;
 use App\Domain\Entity\User;
 use App\Domain\ValueObject\Address;
 use App\Tests\Support\TestNotificationSender;
-use App\Tests\Support\TestOutageProvider;
 use App\Tests\Support\TestUserRepository;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -24,7 +24,7 @@ final class NotifierServiceTest extends KernelTestCase
     private NotifierService $notifier;
     private TestNotificationSender $sender;
     private TestUserRepository $userRepo;
-    private TestOutageProvider $provider;
+    private OutageFactory $outageFactory;
 
     protected function setUp(): void
     {
@@ -35,31 +35,26 @@ final class NotifierServiceTest extends KernelTestCase
         // Fetch services from the test container (DI)
         $this->sender = $container->get(TestNotificationSender::class);
         $this->userRepo = $container->get(TestUserRepository::class);
-        $this->provider = $container->get(TestOutageProvider::class);
         $this->notifier = $container->get(NotifierService::class);
+        $this->outageFactory = $container->get(OutageFactory::class);
 
         // Reset state between tests (shared services)
         $this->sender->sent = [];
         $this->sender->blockUserId = null;
-        $this->userRepo->all = [];
         $this->userRepo->saved = [];
         $this->userRepo->removed = [];
-        $this->provider->outages = [];
     }
 
     public function testNotificationSentAndUserSaved(): void
     {
-        $outage = $this->createOutage('Застосування ГПВ');
+        $outageDto = $this->createOutage('Застосування ГПВ');
+        $outage = $this->outageFactory->createFromDTO($outageDto);
         $user = new User(100, new Address(12783, 'Шевченка Т.', ['271']), null, null, '');
 
-        // prepare doubles
-        $this->userRepo->all = [$user];
-        $this->provider->outages = [$outage];
-
-        $this->notifier->notify();
+        $this->notifier->notify([$user], [$outage]);
 
         self::assertCount(1, $this->sender->sent); // one notification
-        self::assertEquals(100, $this->sender->sent[0]->user->id);
+        self::assertEquals(100, $this->sender->sent[0]->userId);
         self::assertCount(1, $this->userRepo->saved);
         self::assertEquals('Застосування ГПВ', $this->userRepo->saved[0]->comment);
     }
@@ -68,13 +63,11 @@ final class NotifierServiceTest extends KernelTestCase
     {
         $this->sender->blockUserId = 101; // simulate Forbidden
 
-        $outage = $this->createOutage('Застосування ГПВ');
+        $outageDto = $this->createOutage('Застосування ГПВ');
+        $outage = $this->outageFactory->createFromDTO($outageDto);
         $user = new User(101, new Address(12783, 'Шевченка Т.', ['271']), null, null, '');
 
-        $this->userRepo->all = [$user];
-        $this->provider->outages = [$outage];
-
-        $this->notifier->notify();
+        $this->notifier->notify([$user], [$outage]);
 
         self::assertSame([101], $this->userRepo->removed);
         self::assertCount(0, $this->sender->sent);
@@ -83,13 +76,11 @@ final class NotifierServiceTest extends KernelTestCase
 
     public function testNoRelevantOutageProducesNoNotification(): void
     {
-        $outage = $this->createOutage('Застосування ГПВ');
+        $outageDto = $this->createOutage('Застосування ГПВ');
+        $outage = $this->outageFactory->createFromDTO($outageDto);
         $user = new User(102, new Address(99999, 'Nonexistent Street', ['1']), null, null, '');
 
-        $this->userRepo->all = [$user];
-        $this->provider->outages = [$outage];
-
-        $this->notifier->notify();
+        $this->notifier->notify([$user], [$outage]);
 
         self::assertCount(0, $this->sender->sent);
         self::assertCount(0, $this->userRepo->saved);
@@ -99,25 +90,24 @@ final class NotifierServiceTest extends KernelTestCase
     public function multipleOutagesForSameBuildingNotifiesOnlyOnce(): void
     {
         $user = new User(103, new Address(12783, 'Шевченка Т.', ['271']), null, null, '');
-        $outageA = $this->createOutage('Outage A');
-        $outageB = $this->createOutage('Outage B');
+        $outageDtoA = $this->createOutage('Outage A');
+        $outageDtoB = $this->createOutage('Outage B');
+        $outageA = $this->outageFactory->createFromDTO($outageDtoA);
+        $outageB = $this->outageFactory->createFromDTO($outageDtoB);
 
         // First run
-        $this->userRepo->all = [$user];
-        $this->provider->outages = [$outageA, $outageB];
-        $this->notifier->notify();
+        $this->notifier->notify([$user], [$outageA, $outageB]);
 
         self::assertCount(1, $this->sender->sent);
         self::assertCount(1, $this->userRepo->saved);
         self::assertEquals('Outage A', $this->userRepo->saved[0]->comment);
 
-        $this->userRepo->all = [$this->userRepo->saved[0]];
-        $this->provider->outages = [$outageA, $outageB];
         $this->sender->sent = [];
+        $updatedUser = $this->userRepo->saved[0];
         $this->userRepo->saved = [];
 
         // Second run.
-        $this->notifier->notify();
+        $this->notifier->notify([$updatedUser], [$outageA, $outageB]);
 
         self::assertCount(0, $this->sender->sent);
         self::assertCount(0, $this->userRepo->saved);

@@ -5,28 +5,38 @@ use App\Application\DTO\NotificationSenderDTO;
 use App\Application\Exception\NotificationSendException;
 use App\Application\Interface\Repository\UserRepositoryInterface;
 use App\Application\Interface\Service\NotificationSenderInterface;
+use App\Domain\Entity\Outage;
+use App\Domain\Entity\User;
 use App\Domain\Service\OutageFinder;
 
 readonly class NotifierService
 {
     public function __construct(
-        private OutageFetchService $outageFetchService,
         private UserRepositoryInterface $userRepository,
         private NotificationSenderInterface $notificationSender,
         private OutageFinder $outageFinder,
     ) {}
 
-    public function notify(): int
+    /**
+     * @param User[] $users
+     * @param Outage[] $outages
+     */
+    public function notify(array $users, array $outages): int
     {
-        $outages = $this->outageFetchService->fetch();
-        $users = $this->userRepository->findAll();
-
         foreach ($users as $user) {
             $outageToNotify = $this->outageFinder->findOutageForNotification($user, $outages);
 
             if ($outageToNotify !== null) {
                 try {
-                    $this->notificationSender->send(new NotificationSenderDTO($user, $outageToNotify));
+                    $this->notificationSender->send(new NotificationSenderDTO(
+                        userId: $user->id,
+                        city: $outageToNotify->address->city,
+                        streetName: $outageToNotify->address->streetName,
+                        buildings: $outageToNotify->address->buildings,
+                        start: $outageToNotify->start,
+                        end: $outageToNotify->end,
+                        comment: $outageToNotify->comment,
+                    ));
                     $updatedUser = $user->withUpdatedOutage($outageToNotify);
                     $this->userRepository->save($updatedUser);
                 } catch (NotificationSendException $e) {

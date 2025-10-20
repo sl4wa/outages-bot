@@ -16,8 +16,8 @@ final class TestNotificationSender implements NotificationSenderInterface
 
     public function send(NotificationSenderDTO $dto): void
     {
-        if ($this->blockUserId !== null && $dto->user->id === $this->blockUserId) {
-            throw new NotificationSendException($dto->user->id, 'Forbidden', 403);
+        if ($this->blockUserId !== null && $dto->userId === $this->blockUserId) {
+            throw new NotificationSendException($dto->userId, 'Forbidden', 403);
         }
         $this->sent[] = $dto;
     }

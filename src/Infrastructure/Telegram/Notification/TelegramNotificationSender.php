@@ -19,12 +19,12 @@ readonly class TelegramNotificationSender implements NotificationSenderInterface
         try {
             $this->bot->sendMessage(
                 text: $this->formatter->format($dto),
-                chat_id: $dto->user->id,
+                chat_id: $dto->userId,
                 parse_mode: 'HTML'
             );
         } catch (\Throwable $e) {
             throw new NotificationSendException(
-                $dto->user->id,
+                $dto->userId,
                 $e->getMessage(),
                 0,
                 $e
