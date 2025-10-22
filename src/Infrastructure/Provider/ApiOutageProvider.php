@@ -29,10 +29,10 @@ class ApiOutageProvider implements OutageProviderInterface
             $comment = preg_replace('/[\r\n]+/', ' ', $comment);
             $comment = trim($comment);
 
-            $buildings = $row['buildingNames'] ?? '';
-            $buildingNames = is_array($buildings)
-                ? array_map('trim', $buildings)
-                : array_filter(array_map('trim', explode(',', (string)$buildings)));
+            $buildingsRaw = $row['buildingNames'] ?? '';
+            $buildings = is_array($buildingsRaw)
+                ? array_map('trim', $buildingsRaw)
+                : array_filter(array_map('trim', explode(',', (string)$buildingsRaw)));
 
             return new OutageDTO(
                 new \DateTimeImmutable($row['dateEvent']),
@@ -40,7 +40,7 @@ class ApiOutageProvider implements OutageProviderInterface
                 (string)($row['city']['name'] ?? ''),
                 (int)($row['street']['id'] ?? 0),
                 (string)($row['street']['name'] ?? ''),
-                $buildingNames,
+                $buildings,
                 $comment,
             );
         }, $items);

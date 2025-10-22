@@ -11,7 +11,7 @@ readonly class OutageDTO
         public int $streetId,
         public string $streetName,
         /** @var string[] */
-        public array $buildingNames,
+        public array $buildings,
         public string $comment,
     ) {}
 }

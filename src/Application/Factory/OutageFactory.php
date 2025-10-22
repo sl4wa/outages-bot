@@ -13,7 +13,7 @@ class OutageFactory
         $address = new Address(
             $dto->streetId,
             $dto->streetName,
-            $dto->buildingNames,
+            $dto->buildings,
             $dto->city
         );
 

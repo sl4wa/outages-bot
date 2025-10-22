@@ -12,6 +12,12 @@ use PHPUnit\Framework\TestCase;
 
 final class OutageFinderTest extends TestCase
 {
+    private const TEST_BUILDINGS = '271, 273, 273-А, 275, 277, 279, 281, 281-А, 282, 283, 283-А, '
+        . '284, 284-А, 285, 285-А, 287, 289, 289-А, 290-А, 291, 291(0083), '
+        . '293, 295, 297, 297-А, 297-Б, 308, 313, 316, 316-А, 318, 318-А, '
+        . '320, 322, 324, 326, 328, 328-А, 330, 332, 334, 336, 338, 340-А, '
+        . '342, 346, 348-А, 350, 350,А, 350-В, 358, 358-А, 360-В';
+
     private OutageFinder $finder;
     private Outage $outage1;
     private Outage $outage2;
@@ -20,46 +26,58 @@ final class OutageFinderTest extends TestCase
     {
         $this->finder = new OutageFinder();
 
-        $buildings = '271, 273, 273-А, 275, 277, 279, 281, 281-А, 282, 283, 283-А, '
-            . '284, 284-А, 285, 285-А, 287, 289, 289-А, 290-А, 291, 291(0083), '
-            . '293, 295, 297, 297-А, 297-Б, 308, 313, 316, 316-А, 318, 318-А, '
-            . '320, 322, 324, 326, 328, 328-А, 330, 332, 334, 336, 338, 340-А, '
-            . '342, 346, 348-А, 350, 350,А, 350-В, 358, 358-А, 360-В';
-
         $address1 = new Address(
-            12783,
-            'Шевченка Т.',
-            array_map('trim', explode(',', $buildings)),
-            'Львів'
+            streetId: 12783,
+            streetName: 'Шевченка Т.',
+            buildings: array_map('trim', explode(',', self::TEST_BUILDINGS)),
+            city: 'Львів'
         );
 
         $this->outage1 = new Outage(
-            new \DateTimeImmutable('2024-11-28T06:47:00+00:00'),
-            new \DateTimeImmutable('2024-11-28T10:00:00+00:00'),
-            $address1,
-            'Застосування ГПВ'
+            start: new \DateTimeImmutable('2024-11-28T06:47:00+00:00'),
+            end: new \DateTimeImmutable('2024-11-28T10:00:00+00:00'),
+            address: $address1,
+            comment: 'Застосування ГПВ'
         );
 
         $address2 = new Address(
-            6458,
-            'Хмельницького Б.',
-            ['294'],
-            'Львів'
+            streetId: 6458,
+            streetName: 'Хмельницького Б.',
+            buildings: ['294'],
+            city: 'Львів'
         );
 
         $this->outage2 = new Outage(
-            new \DateTimeImmutable('2024-11-28T06:47:00+00:00'),
-            new \DateTimeImmutable('2024-11-28T10:00:00+00:00'),
-            $address2,
-            'Застосування ГПВ'
+            start: new \DateTimeImmutable('2024-11-28T06:47:00+00:00'),
+            end: new \DateTimeImmutable('2024-11-28T10:00:00+00:00'),
+            address: $address2,
+            comment: 'Застосування ГПВ'
         );
     }
 
     public function testFindsMatchingOutageForUser(): void
     {
-        $user1 = new User(1, new Address(12783, 'Шевченка Т.', ['271']), null, null, '');
-        $user2 = new User(2, new Address(12783, 'Шевченка Т.', ['279']), null, null, '');
-        $user3 = new User(3, new Address(6458, 'Хмельницького Б.', ['294']), null, null, '');
+        $user1 = new User(
+            id: 1,
+            address: new Address(streetId: 12783, streetName: 'Шевченка Т.', buildings: ['271']),
+            startDate: null,
+            endDate: null,
+            comment: ''
+        );
+        $user2 = new User(
+            id: 2,
+            address: new Address(streetId: 12783, streetName: 'Шевченка Т.', buildings: ['279']),
+            startDate: null,
+            endDate: null,
+            comment: ''
+        );
+        $user3 = new User(
+            id: 3,
+            address: new Address(streetId: 6458, streetName: 'Хмельницького Б.', buildings: ['294']),
+            startDate: null,
+            endDate: null,
+            comment: ''
+        );
 
         $allOutages = [$this->outage1, $this->outage2];
 
@@ -75,7 +93,13 @@ final class OutageFinderTest extends TestCase
 
     public function testNoMatchingOutageReturnsNull(): void
     {
-        $user = new User(1, new Address(13961, 'Залізнична', ['16']), null, null, '');
+        $user = new User(
+            id: 1,
+            address: new Address(streetId: 13961, streetName: 'Залізнична', buildings: ['16']),
+            startDate: null,
+            endDate: null,
+            comment: ''
+        );
         $result = $this->finder->findOutageForNotification($user, [$this->outage1, $this->outage2]);
         self::assertNull($result);
     }
@@ -83,11 +107,11 @@ final class OutageFinderTest extends TestCase
     public function testAlreadyAwareUserReturnsNull(): void
     {
         $already = new User(
-            10,
-            new Address(12783, 'Шевченка Т.', ['271']),
-            $this->outage1->start,
-            $this->outage1->end,
-            $this->outage1->comment
+            id: 10,
+            address: new Address(streetId: 12783, streetName: 'Шевченка Т.', buildings: ['271']),
+            startDate: $this->outage1->start,
+            endDate: $this->outage1->end,
+            comment: $this->outage1->comment
         );
 
         $result = $this->finder->findOutageForNotification($already, [$this->outage1, $this->outage2]);

@@ -16,6 +16,12 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class NotifierServiceTest extends KernelTestCase
 {
+    private const TEST_BUILDINGS = '271, 273, 273-А, 275, 277, 279, 281, 281-А, 282, 283, 283-А, '
+        . '284, 284-А, 285, 285-А, 287, 289, 289-А, 290-А, 291, 291(0083), '
+        . '293, 295, 297, 297-А, 297-Б, 308, 313, 316, 316-А, 318, 318-А, '
+        . '320, 322, 324, 326, 328, 328-А, 330, 332, 334, 336, 338, 340-А, '
+        . '342, 346, 348-А, 350, 350,А, 350-В, 358, 358-А, 360-В';
+
     protected static function getKernelClass(): string
     {
         return \App\Kernel::class;
@@ -49,7 +55,13 @@ final class NotifierServiceTest extends KernelTestCase
     {
         $outageDto = $this->createOutage('Застосування ГПВ');
         $outage = $this->outageFactory->createFromDTO($outageDto);
-        $user = new User(100, new Address(12783, 'Шевченка Т.', ['271']), null, null, '');
+        $user = new User(
+            id: 100,
+            address: new Address(streetId: 12783, streetName: 'Шевченка Т.', buildings: ['271']),
+            startDate: null,
+            endDate: null,
+            comment: ''
+        );
 
         $this->notifier->notify([$user], [$outage]);
 
@@ -65,7 +77,13 @@ final class NotifierServiceTest extends KernelTestCase
 
         $outageDto = $this->createOutage('Застосування ГПВ');
         $outage = $this->outageFactory->createFromDTO($outageDto);
-        $user = new User(101, new Address(12783, 'Шевченка Т.', ['271']), null, null, '');
+        $user = new User(
+            id: 101,
+            address: new Address(streetId: 12783, streetName: 'Шевченка Т.', buildings: ['271']),
+            startDate: null,
+            endDate: null,
+            comment: ''
+        );
 
         $this->notifier->notify([$user], [$outage]);
 
@@ -78,7 +96,13 @@ final class NotifierServiceTest extends KernelTestCase
     {
         $outageDto = $this->createOutage('Застосування ГПВ');
         $outage = $this->outageFactory->createFromDTO($outageDto);
-        $user = new User(102, new Address(99999, 'Nonexistent Street', ['1']), null, null, '');
+        $user = new User(
+            id: 102,
+            address: new Address(streetId: 99999, streetName: 'Nonexistent Street', buildings: ['1']),
+            startDate: null,
+            endDate: null,
+            comment: ''
+        );
 
         $this->notifier->notify([$user], [$outage]);
 
@@ -87,9 +111,15 @@ final class NotifierServiceTest extends KernelTestCase
         self::assertCount(0, $this->userRepo->removed);
     }
 
-    public function multipleOutagesForSameBuildingNotifiesOnlyOnce(): void
+    public function testMultipleOutagesForSameBuildingNotifiesOnlyOnce(): void
     {
-        $user = new User(103, new Address(12783, 'Шевченка Т.', ['271']), null, null, '');
+        $user = new User(
+            id: 103,
+            address: new Address(streetId: 12783, streetName: 'Шевченка Т.', buildings: ['271']),
+            startDate: null,
+            endDate: null,
+            comment: ''
+        );
         $outageDtoA = $this->createOutage('Outage A');
         $outageDtoB = $this->createOutage('Outage B');
         $outageA = $this->outageFactory->createFromDTO($outageDtoA);
@@ -115,20 +145,14 @@ final class NotifierServiceTest extends KernelTestCase
 
     private function createOutage(string $comment): OutageDTO
     {
-        $buildings = '271, 273, 273-А, 275, 277, 279, 281, 281-А, 282, 283, 283-А, '
-            . '284, 284-А, 285, 285-А, 287, 289, 289-А, 290-А, 291, 291(0083), '
-            . '293, 295, 297, 297-А, 297-Б, 308, 313, 316, 316-А, 318, 318-А, '
-            . '320, 322, 324, 326, 328, 328-А, 330, 332, 334, 336, 338, 340-А, '
-            . '342, 346, 348-А, 350, 350,А, 350-В, 358, 358-А, 360-В';
-
         return new OutageDTO(
-            new \DateTimeImmutable('2024-11-28T06:47:00+00:00'),
-            new \DateTimeImmutable('2024-11-28T10:00:00+00:00'),
-            'Львів',
-            12783,
-            'Шевченка Т.',
-            array_map('trim', explode(',', $buildings)),
-            $comment
+            start: new \DateTimeImmutable('2024-11-28T06:47:00+00:00'),
+            end: new \DateTimeImmutable('2024-11-28T10:00:00+00:00'),
+            city: 'Львів',
+            streetId: 12783,
+            streetName: 'Шевченка Т.',
+            buildings: array_map('trim', explode(',', self::TEST_BUILDINGS)),
+            comment: $comment
         );
     }
 }

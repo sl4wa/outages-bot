@@ -33,7 +33,7 @@ class OutagesCommand extends Command
         $table->setHeaders(['City', 'Street', 'StreetID', 'Buildings', 'Period', 'Comment']);
 
         foreach ($outages as $outage) {
-            $buildings = is_array($outage->buildingNames) ? implode(', ', $outage->buildingNames) : ($outage->building ?? '');
+            $buildings = is_array($outage->buildings) ? implode(', ', $outage->buildings) : ($outage->building ?? '');
 
             $table->addRow([
                 $outage->city,
