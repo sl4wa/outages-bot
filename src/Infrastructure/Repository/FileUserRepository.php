@@ -5,6 +5,7 @@ namespace App\Infrastructure\Repository;
 use App\Application\Interface\Repository\UserRepositoryInterface;
 use App\Domain\Entity\User;
 use App\Domain\ValueObject\Address;
+use App\Domain\ValueObject\OutageData;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class FileUserRepository implements UserRepositoryInterface
@@ -44,9 +45,9 @@ class FileUserRepository implements UserRepositoryInterface
             'street_id'   => $user->address->streetId,
             'street_name' => $user->address->streetName,
             'building'    => $user->address->getSingleBuilding(),
-            'start_date'  => $user->startDate instanceof \DateTimeImmutable ? $user->startDate->format(DATE_ATOM) : '',
-            'end_date'    => $user->endDate instanceof \DateTimeImmutable ? $user->endDate->format(DATE_ATOM) : '',
-            'comment'     => $user->comment,
+            'start_date'  => $user->lastNotifiedOutage ? $user->lastNotifiedOutage->startDate->format(DATE_ATOM) : '',
+            'end_date'    => $user->lastNotifiedOutage ? $user->lastNotifiedOutage->endDate->format(DATE_ATOM) : '',
+            'comment'     => $user->lastNotifiedOutage?->comment ?? '',
         ];
         $lines = [];
         foreach ($fields as $key => $val) {
@@ -95,12 +96,19 @@ class FileUserRepository implements UserRepositoryInterface
             [$fields['building']]
         );
 
+        $lastNotifiedOutage = null;
+        if ($fields['start_date'] && $fields['end_date'] && $fields['comment']) {
+            $lastNotifiedOutage = new OutageData(
+                new \DateTimeImmutable($fields['start_date']),
+                new \DateTimeImmutable($fields['end_date']),
+                $fields['comment']
+            );
+        }
+
         return new User(
             $id,
             $address,
-            $fields['start_date'] ? new \DateTimeImmutable($fields['start_date']) : null,
-            $fields['end_date'] ? new \DateTimeImmutable($fields['end_date']) : null,
-            $fields['comment']
+            $lastNotifiedOutage
         );
     }
 }

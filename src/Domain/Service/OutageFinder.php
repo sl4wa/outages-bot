@@ -4,6 +4,7 @@ namespace App\Domain\Service;
 
 use App\Domain\Entity\Outage;
 use App\Domain\Entity\User;
+use App\Domain\ValueObject\OutageData;
 
 final class OutageFinder
 {
@@ -19,7 +20,7 @@ final class OutageFinder
                 continue;
             }
 
-            if ($outage->isIdenticalPeriodAndComment($user)) {
+            if ($user->wasAlreadyNotifiedAbout($outage->data)) {
                 return null; // User already aware
             }
 

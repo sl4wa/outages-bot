@@ -18,9 +18,7 @@ readonly class UserSubscriptionWriteService
         $user = new User(
             id: $chatId,
             address: $address,
-            startDate: null,
-            endDate: null,
-            comment: ''
+            lastNotifiedOutage: null
         );
 
         $this->userRepository->save($user);

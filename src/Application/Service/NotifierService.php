@@ -8,6 +8,7 @@ use App\Application\Interface\Service\NotificationSenderInterface;
 use App\Domain\Entity\Outage;
 use App\Domain\Entity\User;
 use App\Domain\Service\OutageFinder;
+use App\Domain\ValueObject\OutageData;
 
 readonly class NotifierService
 {
@@ -33,11 +34,11 @@ readonly class NotifierService
                         city: $outageToNotify->address->city,
                         streetName: $outageToNotify->address->streetName,
                         buildings: $outageToNotify->address->buildings,
-                        start: $outageToNotify->start,
-                        end: $outageToNotify->end,
-                        comment: $outageToNotify->comment,
+                        start: $outageToNotify->data->startDate,
+                        end: $outageToNotify->data->endDate,
+                        comment: $outageToNotify->data->comment,
                     ));
-                    $updatedUser = $user->withUpdatedOutage($outageToNotify);
+                    $updatedUser = $user->withNotifiedOutage($outageToNotify->data);
                     $this->userRepository->save($updatedUser);
                 } catch (NotificationSendException $e) {
                     if ($e->isBlocked()) {

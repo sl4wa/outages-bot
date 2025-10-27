@@ -58,9 +58,7 @@ final class NotifierServiceTest extends KernelTestCase
         $user = new User(
             id: 100,
             address: new Address(streetId: 12783, streetName: 'Шевченка Т.', buildings: ['271']),
-            startDate: null,
-            endDate: null,
-            comment: ''
+            lastNotifiedOutage: null
         );
 
         $this->notifier->notify([$user], [$outage]);
@@ -68,7 +66,7 @@ final class NotifierServiceTest extends KernelTestCase
         self::assertCount(1, $this->sender->sent); // one notification
         self::assertEquals(100, $this->sender->sent[0]->userId);
         self::assertCount(1, $this->userRepo->saved);
-        self::assertEquals('Застосування ГПВ', $this->userRepo->saved[0]->comment);
+        self::assertEquals('Застосування ГПВ', $this->userRepo->saved[0]->lastNotifiedOutage->comment);
     }
 
     public function testSubscriptionRemovedForBlockedUser(): void
@@ -80,9 +78,7 @@ final class NotifierServiceTest extends KernelTestCase
         $user = new User(
             id: 101,
             address: new Address(streetId: 12783, streetName: 'Шевченка Т.', buildings: ['271']),
-            startDate: null,
-            endDate: null,
-            comment: ''
+            lastNotifiedOutage: null
         );
 
         $this->notifier->notify([$user], [$outage]);
@@ -99,9 +95,7 @@ final class NotifierServiceTest extends KernelTestCase
         $user = new User(
             id: 102,
             address: new Address(streetId: 99999, streetName: 'Nonexistent Street', buildings: ['1']),
-            startDate: null,
-            endDate: null,
-            comment: ''
+            lastNotifiedOutage: null
         );
 
         $this->notifier->notify([$user], [$outage]);
@@ -116,9 +110,7 @@ final class NotifierServiceTest extends KernelTestCase
         $user = new User(
             id: 103,
             address: new Address(streetId: 12783, streetName: 'Шевченка Т.', buildings: ['271']),
-            startDate: null,
-            endDate: null,
-            comment: ''
+            lastNotifiedOutage: null
         );
         $outageDtoA = $this->createOutage('Outage A');
         $outageDtoB = $this->createOutage('Outage B');
@@ -130,7 +122,7 @@ final class NotifierServiceTest extends KernelTestCase
 
         self::assertCount(1, $this->sender->sent);
         self::assertCount(1, $this->userRepo->saved);
-        self::assertEquals('Outage A', $this->userRepo->saved[0]->comment);
+        self::assertEquals('Outage A', $this->userRepo->saved[0]->lastNotifiedOutage->comment);
 
         $this->sender->sent = [];
         $updatedUser = $this->userRepo->saved[0];
