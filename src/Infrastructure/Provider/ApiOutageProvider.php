@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Provider;
 
-use App\Application\DTO\OutageDTO;
-use App\Application\Interface\Provider\OutageProviderInterface;
+use App\Application\Notifier\DTO\OutageDTO;
+use App\Application\Notifier\Interface\Provider\OutageProviderInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class ApiOutageProvider implements OutageProviderInterface

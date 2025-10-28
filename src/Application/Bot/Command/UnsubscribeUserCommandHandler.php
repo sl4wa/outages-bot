@@ -1,19 +1,14 @@
 <?php
 
-namespace App\Application\Service;
+namespace App\Application\Bot\Command;
 
 use App\Application\Interface\Repository\UserRepositoryInterface;
 
-readonly class UnsubscribeService
+readonly class UnsubscribeUserCommandHandler
 {
     public function __construct(private UserRepositoryInterface $userRepository) {}
 
-    /**
-     * Removes subscription if exists.
-     *
-     * @return bool True if removed, false if not found
-     */
-    public function unsubscribe(int $chatId): bool
+    public function handle(int $chatId): bool
     {
         $user = $this->userRepository->find($chatId);
         if ($user === null) {

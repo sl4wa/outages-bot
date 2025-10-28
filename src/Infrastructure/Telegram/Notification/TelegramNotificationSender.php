@@ -2,9 +2,9 @@
 
 namespace App\Infrastructure\Telegram\Notification;
 
-use App\Application\DTO\NotificationSenderDTO;
-use App\Application\Exception\NotificationSendException;
-use App\Application\Interface\Service\NotificationSenderInterface;
+use App\Application\Notifier\DTO\NotificationSenderDTO;
+use App\Application\Notifier\Exception\NotificationSendException;
+use App\Application\Notifier\Interface\Service\NotificationSenderInterface;
 use SergiX44\Nutgram\Nutgram;
 
 readonly class TelegramNotificationSender implements NotificationSenderInterface

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Application\Interface\Provider;
+namespace App\Application\Notifier\Interface\Provider;
 
-use App\Application\DTO\OutageDTO;
+use App\Application\Notifier\DTO\OutageDTO;
 
 interface OutageProviderInterface
 {

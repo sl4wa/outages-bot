@@ -1,7 +1,7 @@
 <?php
-namespace App\Application\Command;
+namespace App\Application\Console;
 
-use App\Application\Interface\Provider\OutageProviderInterface;
+use App\Application\Notifier\Interface\Provider\OutageProviderInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;

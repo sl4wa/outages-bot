@@ -1,17 +1,17 @@
 <?php
 
-namespace App\Application\Service;
+namespace App\Application\Bot\Command;
 
-use App\Application\DTO\UserSubscriptionDTO;
+use App\Application\Bot\DTO\UserSubscriptionDTO;
 use App\Application\Interface\Repository\UserRepositoryInterface;
 use App\Domain\Entity\User;
 use App\Domain\ValueObject\Address;
 
-readonly class UserSubscriptionWriteService
+readonly class CreateOrUpdateUserSubscriptionCommandHandler
 {
     public function __construct(private UserRepositoryInterface $userRepository) {}
 
-    public function createOrUpdate(int $chatId, int $streetId, string $streetName, string $building): UserSubscriptionDTO
+    public function handle(int $chatId, int $streetId, string $streetName, string $building): UserSubscriptionDTO
     {
         $address = new Address($streetId, $streetName, [$building]);
 

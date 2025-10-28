@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Telegram\Handlers;
 
-use App\Application\Service\UserSubscriptionQueryService;
-use App\Application\Service\UserSubscriptionWriteService;
+use App\Application\Bot\Query\GetUserSubscriptionQueryHandler;
+use App\Application\Bot\Command\CreateOrUpdateUserSubscriptionCommandHandler;
 use App\Infrastructure\Repository\FileStreetRepository;
 use App\Domain\Entity\User;
 use SergiX44\Nutgram\Conversations\Conversation;
@@ -19,8 +19,8 @@ class SubscriptionConversation extends Conversation
     private FileStreetRepository $streetRepository;
 
     public function __construct(
-        private readonly UserSubscriptionQueryService $queryService,
-        private readonly UserSubscriptionWriteService $writeService,
+        private readonly GetUserSubscriptionQueryHandler $getUserSubscriptionQueryHandler,
+        private readonly CreateOrUpdateUserSubscriptionCommandHandler $createOrUpdateUserSubscriptionCommandHandler,
         FileStreetRepository $streetRepository
     ) {
         $this->streetRepository = $streetRepository;
@@ -32,7 +32,7 @@ class SubscriptionConversation extends Conversation
 
     public function askStreet(Nutgram $bot)
     {
-        $sub = $this->queryService->get($bot->chatId());
+        $sub = $this->getUserSubscriptionQueryHandler->handle($bot->chatId());
         if ($sub) {
             $bot->sendMessage(
                 "Ваша поточна підписка:\nВулиця: {$sub->streetName}\nБудинок: {$sub->building}\n\n"
@@ -103,7 +103,7 @@ class SubscriptionConversation extends Conversation
             return;
         }
 
-        $result = $this->writeService->createOrUpdate(
+        $result = $this->createOrUpdateUserSubscriptionCommandHandler->handle(
             chatId: $bot->chatId(),
             streetId: $this->selectedStreetId,
             streetName: $this->selectedStreetName,

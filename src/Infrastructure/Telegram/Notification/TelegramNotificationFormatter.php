@@ -1,7 +1,7 @@
 <?php
 namespace App\Infrastructure\Telegram\Notification;
 
-use App\Application\DTO\NotificationSenderDTO;
+use App\Application\Notifier\DTO\NotificationSenderDTO;
 
 class TelegramNotificationFormatter
 {
