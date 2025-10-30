@@ -97,7 +97,7 @@ class FileUserRepository implements UserRepositoryInterface
         );
 
         $lastNotifiedOutage = null;
-        if ($fields['start_date'] && $fields['end_date'] && $fields['comment']) {
+        if ($fields['start_date'] && $fields['end_date']) {
             $lastNotifiedOutage = new OutageData(
                 new \DateTimeImmutable($fields['start_date']),
                 new \DateTimeImmutable($fields['end_date']),
