@@ -26,7 +26,7 @@ help:
 
 # Image operations
 build:
-	docker build -f Dockerfile -t $(IMAGE):$(TAG) ..
+	docker build -f Dockerfile -t $(IMAGE):$(TAG) .
 
 # Compose operations
 up:
