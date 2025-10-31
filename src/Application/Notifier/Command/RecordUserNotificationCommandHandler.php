@@ -4,7 +4,7 @@ namespace App\Application\Notifier\Command;
 
 use App\Application\Interface\Repository\UserRepositoryInterface;
 use App\Domain\Entity\User;
-use App\Domain\ValueObject\OutageData;
+use App\Domain\ValueObject\OutageInfo;
 
 readonly class RecordUserNotificationCommandHandler
 {
@@ -12,9 +12,9 @@ readonly class RecordUserNotificationCommandHandler
         private UserRepositoryInterface $userRepository,
     ) {}
 
-    public function handle(User $user, OutageData $outageData): void
+    public function handle(User $user, OutageInfo $outageInfo): void
     {
-        $updatedUser = $user->withNotifiedOutage($outageData);
+        $updatedUser = $user->withNotifiedOutage($outageInfo);
         $this->userRepository->save($updatedUser);
     }
 }

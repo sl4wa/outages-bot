@@ -2,7 +2,7 @@
 
 namespace App\Domain\ValueObject;
 
-readonly class Address
+readonly class OutageAddress
 {
     /** @param string[] $buildings */
     public function __construct(
@@ -24,19 +24,9 @@ readonly class Address
         }
     }
 
-    public function covers(Address $other): bool
+    public function coversUserAddress(UserAddress $userAddress): bool
     {
-        return $this->streetId === $other->streetId
-            && count($other->buildings) === 1
-            && in_array($other->buildings[0], $this->buildings, true);
-    }
-
-    public function getSingleBuilding(): string
-    {
-        if (count($this->buildings) !== 1) {
-            throw new \LogicException('Address must have exactly one building');
-        }
-
-        return $this->buildings[0];
+        return $this->streetId === $userAddress->streetId
+            && in_array($userAddress->building, $this->buildings, true);
     }
 }

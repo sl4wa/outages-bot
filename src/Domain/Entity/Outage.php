@@ -1,13 +1,23 @@
 <?php
 namespace App\Domain\Entity;
 
-use App\Domain\ValueObject\Address;
-use App\Domain\ValueObject\OutageData;
+use App\Domain\ValueObject\OutageAddress;
+use App\Domain\ValueObject\OutageDescription;
+use App\Domain\ValueObject\OutagePeriod;
+use App\Domain\ValueObject\UserAddress;
 
 readonly class Outage
 {
     public function __construct(
-        public OutageData $data,
-        public Address $address,
+        public int $id,
+        public OutagePeriod $period,
+        public OutageAddress $address,
+        public OutageDescription $description,
     ) {}
+
+    public function affectsUserAddress(UserAddress $userAddress): bool
+    {
+        return $this->address->coversUserAddress($userAddress);
+    }
 }
+

@@ -8,8 +8,10 @@ use App\Application\Notifier\DTO\OutageDTO;
 use App\Application\Notifier\Service\NotificationService;
 use App\Domain\Entity\Outage;
 use App\Domain\Entity\User;
-use App\Domain\ValueObject\Address;
-use App\Domain\ValueObject\OutageData;
+use App\Domain\ValueObject\OutageAddress;
+use App\Domain\ValueObject\OutageDescription;
+use App\Domain\ValueObject\OutagePeriod;
+use App\Domain\ValueObject\UserAddress;
 use App\Tests\Support\TestNotificationSender;
 use App\Tests\Support\TestUserRepository;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -53,13 +55,15 @@ final class NotifierServiceTest extends KernelTestCase
     {
         $outageDto = $this->createOutage('Застосування ГПВ');
         $outage = new Outage(
-            new OutageData($outageDto->start, $outageDto->end, $outageDto->comment),
-            new Address($outageDto->streetId, $outageDto->streetName, $outageDto->buildings, $outageDto->city)
+            $outageDto->id,
+            new OutagePeriod($outageDto->start, $outageDto->end),
+            new OutageAddress($outageDto->streetId, $outageDto->streetName, $outageDto->buildings, $outageDto->city),
+            new OutageDescription($outageDto->comment)
         );
         $user = new User(
             id: 100,
-            address: new Address(streetId: 12783, streetName: 'Шевченка Т.', buildings: ['271']),
-            lastNotifiedOutage: null
+            address: new UserAddress(streetId: 12783, streetName: 'Шевченка Т.', building: '271'),
+            outageInfo: null
         );
 
         $this->notifier->handle([$user], [$outage]);
@@ -67,7 +71,7 @@ final class NotifierServiceTest extends KernelTestCase
         self::assertCount(1, $this->sender->sent); // one notification
         self::assertEquals(100, $this->sender->sent[0]->userId);
         self::assertCount(1, $this->userRepo->saved);
-        self::assertEquals('Застосування ГПВ', $this->userRepo->saved[0]->lastNotifiedOutage->comment);
+        self::assertEquals('Застосування ГПВ', $this->sender->sent[0]->comment);
     }
 
     public function testSubscriptionRemovedForBlockedUser(): void
@@ -76,13 +80,15 @@ final class NotifierServiceTest extends KernelTestCase
 
         $outageDto = $this->createOutage('Застосування ГПВ');
         $outage = new Outage(
-            new OutageData($outageDto->start, $outageDto->end, $outageDto->comment),
-            new Address($outageDto->streetId, $outageDto->streetName, $outageDto->buildings, $outageDto->city)
+            $outageDto->id,
+            new OutagePeriod($outageDto->start, $outageDto->end),
+            new OutageAddress($outageDto->streetId, $outageDto->streetName, $outageDto->buildings, $outageDto->city),
+            new OutageDescription($outageDto->comment)
         );
         $user = new User(
             id: 101,
-            address: new Address(streetId: 12783, streetName: 'Шевченка Т.', buildings: ['271']),
-            lastNotifiedOutage: null
+            address: new UserAddress(streetId: 12783, streetName: 'Шевченка Т.', building: '271'),
+            outageInfo: null
         );
 
         $this->notifier->handle([$user], [$outage]);
@@ -96,13 +102,15 @@ final class NotifierServiceTest extends KernelTestCase
     {
         $outageDto = $this->createOutage('Застосування ГПВ');
         $outage = new Outage(
-            new OutageData($outageDto->start, $outageDto->end, $outageDto->comment),
-            new Address($outageDto->streetId, $outageDto->streetName, $outageDto->buildings, $outageDto->city)
+            $outageDto->id,
+            new OutagePeriod($outageDto->start, $outageDto->end),
+            new OutageAddress($outageDto->streetId, $outageDto->streetName, $outageDto->buildings, $outageDto->city),
+            new OutageDescription($outageDto->comment)
         );
         $user = new User(
             id: 102,
-            address: new Address(streetId: 99999, streetName: 'Nonexistent Street', buildings: ['1']),
-            lastNotifiedOutage: null
+            address: new UserAddress(streetId: 99999, streetName: 'Nonexistent Street', building: '1'),
+            outageInfo: null
         );
 
         $this->notifier->handle([$user], [$outage]);
@@ -116,18 +124,22 @@ final class NotifierServiceTest extends KernelTestCase
     {
         $user = new User(
             id: 103,
-            address: new Address(streetId: 12783, streetName: 'Шевченка Т.', buildings: ['271']),
-            lastNotifiedOutage: null
+            address: new UserAddress(streetId: 12783, streetName: 'Шевченка Т.', building: '271'),
+            outageInfo: null
         );
         $outageDtoA = $this->createOutage('Outage A');
         $outageDtoB = $this->createOutage('Outage B');
         $outageA = new Outage(
-            new OutageData($outageDtoA->start, $outageDtoA->end, $outageDtoA->comment),
-            new Address($outageDtoA->streetId, $outageDtoA->streetName, $outageDtoA->buildings, $outageDtoA->city)
+            $outageDtoA->id,
+            new OutagePeriod($outageDtoA->start, $outageDtoA->end),
+            new OutageAddress($outageDtoA->streetId, $outageDtoA->streetName, $outageDtoA->buildings, $outageDtoA->city),
+            new OutageDescription($outageDtoA->comment)
         );
         $outageB = new Outage(
-            new OutageData($outageDtoB->start, $outageDtoB->end, $outageDtoB->comment),
-            new Address($outageDtoB->streetId, $outageDtoB->streetName, $outageDtoB->buildings, $outageDtoB->city)
+            $outageDtoB->id,
+            new OutagePeriod($outageDtoB->start, $outageDtoB->end),
+            new OutageAddress($outageDtoB->streetId, $outageDtoB->streetName, $outageDtoB->buildings, $outageDtoB->city),
+            new OutageDescription($outageDtoB->comment)
         );
 
         // First run
@@ -135,7 +147,7 @@ final class NotifierServiceTest extends KernelTestCase
 
         self::assertCount(1, $this->sender->sent);
         self::assertCount(1, $this->userRepo->saved);
-        self::assertEquals('Outage A', $this->userRepo->saved[0]->lastNotifiedOutage->comment);
+        self::assertEquals('Outage A', $this->sender->sent[0]->comment);
 
         $this->sender->sent = [];
         $updatedUser = $this->userRepo->saved[0];
@@ -150,7 +162,9 @@ final class NotifierServiceTest extends KernelTestCase
 
     private function createOutage(string $comment): OutageDTO
     {
+        static $id = 0;
         return new OutageDTO(
+            id: ++$id,
             start: new \DateTimeImmutable('2024-11-28T06:47:00+00:00'),
             end: new \DateTimeImmutable('2024-11-28T10:00:00+00:00'),
             city: 'Львів',

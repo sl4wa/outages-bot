@@ -7,8 +7,11 @@ namespace App\Tests\Domain\Service;
 use App\Domain\Entity\Outage;
 use App\Domain\Entity\User;
 use App\Domain\Service\OutageFinder;
-use App\Domain\ValueObject\Address;
-use App\Domain\ValueObject\OutageData;
+use App\Domain\ValueObject\OutageAddress;
+use App\Domain\ValueObject\OutageDescription;
+use App\Domain\ValueObject\OutageInfo;
+use App\Domain\ValueObject\OutagePeriod;
+use App\Domain\ValueObject\UserAddress;
 use PHPUnit\Framework\TestCase;
 
 final class OutageFinderTest extends TestCase
@@ -27,13 +30,12 @@ final class OutageFinderTest extends TestCase
     {
         $this->finder = new OutageFinder();
 
-        $outageData1 = new OutageData(
+        $outageData1 = new OutagePeriod(
             startDate: new \DateTimeImmutable('2024-11-28T06:47:00+00:00'),
             endDate: new \DateTimeImmutable('2024-11-28T10:00:00+00:00'),
-            comment: 'Застосування ГПВ'
         );
 
-        $address1 = new Address(
+        $address1 = new OutageAddress(
             streetId: 12783,
             streetName: 'Шевченка Т.',
             buildings: array_map('trim', explode(',', self::TEST_BUILDINGS)),
@@ -41,17 +43,18 @@ final class OutageFinderTest extends TestCase
         );
 
         $this->outage1 = new Outage(
-            data: $outageData1,
+            id: 1,
+            period: $outageData1,
             address: $address1,
+            description: new OutageDescription('Застосування ГПВ')
         );
 
-        $outageData2 = new OutageData(
+        $outageData2 = new OutagePeriod(
             startDate: new \DateTimeImmutable('2024-11-28T06:47:00+00:00'),
             endDate: new \DateTimeImmutable('2024-11-28T10:00:00+00:00'),
-            comment: 'Застосування ГПВ'
         );
 
-        $address2 = new Address(
+        $address2 = new OutageAddress(
             streetId: 6458,
             streetName: 'Хмельницького Б.',
             buildings: ['294'],
@@ -59,8 +62,10 @@ final class OutageFinderTest extends TestCase
         );
 
         $this->outage2 = new Outage(
-            data: $outageData2,
+            id: 2,
+            period: $outageData2,
             address: $address2,
+            description: new OutageDescription('Застосування ГПВ')
         );
     }
 
@@ -68,18 +73,18 @@ final class OutageFinderTest extends TestCase
     {
         $user1 = new User(
             id: 1,
-            address: new Address(streetId: 12783, streetName: 'Шевченка Т.', buildings: ['271']),
-            lastNotifiedOutage: null
+            address: new UserAddress(streetId: 12783, streetName: 'Шевченка Т.', building: '271'),
+            outageInfo: null
         );
         $user2 = new User(
             id: 2,
-            address: new Address(streetId: 12783, streetName: 'Шевченка Т.', buildings: ['279']),
-            lastNotifiedOutage: null
+            address: new UserAddress(streetId: 12783, streetName: 'Шевченка Т.', building: '279'),
+            outageInfo: null
         );
         $user3 = new User(
             id: 3,
-            address: new Address(streetId: 6458, streetName: 'Хмельницького Б.', buildings: ['294']),
-            lastNotifiedOutage: null
+            address: new UserAddress(streetId: 6458, streetName: 'Хмельницького Б.', building: '294'),
+            outageInfo: null
         );
 
         $allOutages = [$this->outage1, $this->outage2];
@@ -98,8 +103,8 @@ final class OutageFinderTest extends TestCase
     {
         $user = new User(
             id: 1,
-            address: new Address(streetId: 13961, streetName: 'Залізнична', buildings: ['16']),
-            lastNotifiedOutage: null
+            address: new UserAddress(streetId: 13961, streetName: 'Залізнична', building: '16'),
+            outageInfo: null
         );
         $result = $this->finder->findOutageForNotification($user, [$this->outage1, $this->outage2]);
         self::assertNull($result);
@@ -109,8 +114,8 @@ final class OutageFinderTest extends TestCase
     {
         $already = new User(
             id: 10,
-            address: new Address(streetId: 12783, streetName: 'Шевченка Т.', buildings: ['271']),
-            lastNotifiedOutage: $this->outage1->data
+            address: new UserAddress(streetId: 12783, streetName: 'Шевченка Т.', building: '271'),
+            outageInfo: new OutageInfo($this->outage1->period, $this->outage1->description)
         );
 
         $result = $this->finder->findOutageForNotification($already, [$this->outage1, $this->outage2]);

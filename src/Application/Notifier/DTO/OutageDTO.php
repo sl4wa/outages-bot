@@ -5,6 +5,7 @@ namespace App\Application\Notifier\DTO;
 readonly class OutageDTO
 {
     public function __construct(
+        public int $id,
         public \DateTimeImmutable $start,
         public \DateTimeImmutable $end,
         public string $city,

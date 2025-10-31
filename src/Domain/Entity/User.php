@@ -1,32 +1,33 @@
 <?php
 namespace App\Domain\Entity;
 
-use App\Domain\ValueObject\Address;
-use App\Domain\ValueObject\OutageData;
+use App\Domain\ValueObject\OutageInfo;
+use App\Domain\ValueObject\UserAddress;
 
 readonly class User
 {
     public function __construct(
         public int $id,
-        public Address $address,
-        public ?OutageData $lastNotifiedOutage,
+        public UserAddress $address,
+        public ?OutageInfo $outageInfo,
     ) {}
 
-    public function withNotifiedOutage(OutageData $outageData): self
+    public function withNotifiedOutage(OutageInfo $outageInfo): self
     {
         return new self(
             $this->id,
             $this->address,
-            $outageData
+            $outageInfo
         );
     }
 
-    public function wasAlreadyNotifiedAbout(OutageData $outageData): bool
+    public function isAlreadyNotifiedAbout(OutageInfo $outageInfo): bool
     {
-        if ($this->lastNotifiedOutage === null) {
+        if ($this->outageInfo === null) {
             return false;
         }
 
-        return $this->lastNotifiedOutage->equals($outageData);
+        return $this->outageInfo->equals($outageInfo);
     }
 }
+

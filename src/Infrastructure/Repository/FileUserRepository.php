@@ -4,8 +4,10 @@ namespace App\Infrastructure\Repository;
 
 use App\Application\Interface\Repository\UserRepositoryInterface;
 use App\Domain\Entity\User;
-use App\Domain\ValueObject\Address;
-use App\Domain\ValueObject\OutageData;
+use App\Domain\ValueObject\OutageDescription;
+use App\Domain\ValueObject\OutageInfo;
+use App\Domain\ValueObject\OutagePeriod;
+use App\Domain\ValueObject\UserAddress;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class FileUserRepository implements UserRepositoryInterface
@@ -44,10 +46,10 @@ class FileUserRepository implements UserRepositoryInterface
         $fields = [
             'street_id'   => $user->address->streetId,
             'street_name' => $user->address->streetName,
-            'building'    => $user->address->getSingleBuilding(),
-            'start_date'  => $user->lastNotifiedOutage ? $user->lastNotifiedOutage->startDate->format(DATE_ATOM) : '',
-            'end_date'    => $user->lastNotifiedOutage ? $user->lastNotifiedOutage->endDate->format(DATE_ATOM) : '',
-            'comment'     => $user->lastNotifiedOutage?->comment ?? '',
+            'building'    => $user->address->building,
+            'start_date'  => $user->outageInfo ? $user->outageInfo->period->startDate->format(DATE_ATOM) : '',
+            'end_date'    => $user->outageInfo ? $user->outageInfo->period->endDate->format(DATE_ATOM) : '',
+            'comment'     => $user->outageInfo ? $user->outageInfo->description->value : '',
         ];
         $lines = [];
         foreach ($fields as $key => $val) {
@@ -90,25 +92,26 @@ class FileUserRepository implements UserRepositoryInterface
             }
         }
 
-        $address = new Address(
+        $address = new UserAddress(
             (int)$fields['street_id'],
             $fields['street_name'],
-            [$fields['building']]
+            $fields['building']
         );
 
-        $lastNotifiedOutage = null;
+        $outageInfo = null;
         if ($fields['start_date'] && $fields['end_date']) {
-            $lastNotifiedOutage = new OutageData(
+            $period = new OutagePeriod(
                 new \DateTimeImmutable($fields['start_date']),
-                new \DateTimeImmutable($fields['end_date']),
-                $fields['comment']
+                new \DateTimeImmutable($fields['end_date'])
             );
+            $description = new OutageDescription($fields['comment']);
+            $outageInfo = new OutageInfo($period, $description);
         }
 
         return new User(
             $id,
             $address,
-            $lastNotifiedOutage
+            $outageInfo
         );
     }
 }

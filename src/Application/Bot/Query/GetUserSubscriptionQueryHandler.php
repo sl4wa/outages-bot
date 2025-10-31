@@ -20,7 +20,7 @@ readonly class GetUserSubscriptionQueryHandler
             chatId: $user->id,
             streetId: $user->address->streetId,
             streetName: $user->address->streetName,
-            building: $user->address->getSingleBuilding(),
+            building: $user->address->building,
         );
     }
 }

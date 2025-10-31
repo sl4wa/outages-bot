@@ -35,6 +35,7 @@ class ApiOutageProvider implements OutageProviderInterface
                 : array_filter(array_map('trim', explode(',', (string)$buildingsRaw)));
 
             return new OutageDTO(
+                (int)($row['id'] ?? 0),
                 new \DateTimeImmutable($row['dateEvent']),
                 new \DateTimeImmutable($row['datePlanIn']),
                 (string)($row['city']['name'] ?? ''),

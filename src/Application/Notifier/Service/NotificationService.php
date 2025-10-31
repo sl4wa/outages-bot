@@ -8,6 +8,7 @@ use App\Application\Notifier\Exception\NotificationSendException;
 use App\Domain\Entity\Outage;
 use App\Domain\Entity\User;
 use App\Domain\Service\OutageFinder;
+use App\Domain\ValueObject\OutageInfo;
 
 readonly class NotificationService
 {
@@ -30,7 +31,8 @@ readonly class NotificationService
             if ($outageToNotify !== null) {
                 try {
                     $this->sendNotificationCommandHandler->handle($user, $outageToNotify);
-                    $this->recordUserNotificationCommandHandler->handle($user, $outageToNotify->data);
+                    $outageInfo = new OutageInfo($outageToNotify->period, $outageToNotify->description);
+                    $this->recordUserNotificationCommandHandler->handle($user, $outageInfo);
                 } catch (NotificationSendException $e) {
                     if ($e->isBlocked()) {
                         $this->removeUserCommandHandler->handle($e->userId);
