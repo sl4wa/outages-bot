@@ -6,6 +6,7 @@ services:
         image: outages-bot:latest
         container_name: outages-bot
         command: ["php", "bin/console", "app:bot"]
+        user: "1000:1001"
         env_file:
             - .env
             - .env.dev
@@ -20,7 +21,8 @@ services:
         depends_on:
             - bot
         container_name: outages-bot-notifier
-        command: ["/app/docker-entrypoint-cron.sh"]
+        command: ["supercronic", "/app/crontab"]
+        user: "1000:1001"
         env_file:
             - .env
             - .env.dev
