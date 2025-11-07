@@ -20,5 +20,6 @@
 ###< symfony/asset-mapper ###
 
 /data/users/
+/data/outages.json
 /.idea/
 .phpunit.result.cache

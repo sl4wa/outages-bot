@@ -1,6 +1,7 @@
 <?php
 namespace App\Application\Console;
 
+use App\Application\Interface\DumperInterface;
 use App\Application\Interface\Repository\UserRepositoryInterface;
 use App\Application\Notifier\Service\NotificationService;
 use App\Application\Notifier\Service\OutageFetchService;
@@ -19,6 +20,7 @@ class NotifierCommand extends Command
         private readonly NotificationService $notificationService,
         private readonly OutageFetchService $outageFetchService,
         private readonly UserRepositoryInterface $userRepository,
+        private readonly DumperInterface $dumper,
     ) {
         parent::__construct();
     }
@@ -26,6 +28,8 @@ class NotifierCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $outages = $this->outageFetchService->handle();
+        $this->dumper->dump($outages, 'outages.json');
+
         $users = $this->userRepository->findAll();
 
         $sent = $this->notificationService->handle($users, $outages);
