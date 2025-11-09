@@ -15,12 +15,3 @@ Telegram bot for power outages in Lviv, Ukraine.
 
 - `bin/console app:users`
   List all subscribed users with their Telegram info and addresses.
-
-## TODO
-
-- [x] tests
-- [ ] rector
-- [ ] csfix
-- [ ] phpstan
-- [x] docker
-- [ ] logging
