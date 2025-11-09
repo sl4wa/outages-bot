@@ -4,17 +4,17 @@ Telegram bot for power outages in Lviv, Ukraine.
 
 ## Console Commands
 
-- `symfony console app:bot`  
+- `bin/console app:bot`  
   Runs the Telegram bot for managing subscriptions.
 
-- `symfony console app:notifier`  
+- `bin/console app:notifier`  
   Cron command: check if any user has relevant outage.
 
-- `symfony console app:outages`  
+- `bin/console app:outages`  
   List current outages from API.
 
-- `symfony console app:users`  
-  *TODO* List subscribed users
+- `bin/console app:users`
+  List all subscribed users with their Telegram info and addresses.
 
 ## TODO
 
