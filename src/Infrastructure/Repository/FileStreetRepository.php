@@ -2,9 +2,10 @@
 
 namespace App\Infrastructure\Repository;
 
+use App\Application\Interface\Repository\StreetRepositoryInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
-class FileStreetRepository
+class FileStreetRepository implements StreetRepositoryInterface
 {
     private string $streetsFile;
     private array $streets = [];
