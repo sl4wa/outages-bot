@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Telegram\Bot;
 
+use App\Application\Bot\Interface\BotRunnerInterface;
 use App\Infrastructure\Telegram\Handlers\StopCommand;
 use App\Infrastructure\Telegram\Handlers\SubscriptionConversation;
 use App\Infrastructure\Telegram\Handlers\SubscriptionInfoCommand;
@@ -9,7 +10,7 @@ use SergiX44\Nutgram\Conversations\Conversation;
 use SergiX44\Nutgram\Nutgram;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-class TelegramBotRunner
+class TelegramBotRunner implements BotRunnerInterface
 {
     private Nutgram $bot;
 

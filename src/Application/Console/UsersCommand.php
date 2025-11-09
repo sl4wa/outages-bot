@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Console;
 
+use App\Application\Bot\Interface\TelegramUserInfoProviderInterface;
 use App\Application\Interface\Repository\UserRepositoryInterface;
-use SergiX44\Nutgram\Nutgram;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
@@ -20,7 +20,7 @@ final class UsersCommand extends Command
 {
     public function __construct(
         private readonly UserRepositoryInterface $userRepository,
-        private readonly Nutgram $nutgram,
+        private readonly TelegramUserInfoProviderInterface $userInfoProvider,
     ) {
         parent::__construct();
     }
@@ -41,13 +41,13 @@ final class UsersCommand extends Command
 
         foreach ($users as $user) {
             try {
-                $chat = $this->nutgram->getChat($user->id);
+                $userInfo = $this->userInfoProvider->getUserInfo($user->id);
 
                 $table->addRow([
-                    $chat->id,
-                    $chat->username ? '@' . $chat->username : '-',
-                    $this->sanitize($chat->first_name),
-                    $this->sanitize($chat->last_name),
+                    $userInfo->chatId,
+                    $userInfo->username ? '@' . $userInfo->username : '-',
+                    $this->sanitize($userInfo->firstName),
+                    $this->sanitize($userInfo->lastName),
                     $user->address->streetName,
                     $user->address->building,
                 ]);
