@@ -2,7 +2,7 @@
 
 namespace App\Domain\ValueObject;
 
-readonly class OutageDescription
+readonly class OutageDescription implements \JsonSerializable
 {
     public function __construct(
         public string $value,
@@ -13,8 +13,8 @@ readonly class OutageDescription
         return $this->value === $other->value;
     }
 
-    public function isEmpty(): bool
+    public function jsonSerialize(): string
     {
-        return $this->value === '';
+        return $this->value;
     }
 }
