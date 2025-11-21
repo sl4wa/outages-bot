@@ -39,7 +39,7 @@ readonly class SelectStreetService
         $exact = $this->streetRepository->findByName($query);
         if ($exact) {
             return new SelectStreetResultDTO(
-                message: "Ви обрали вулицю: {$exact['name']}\nБудь ласка, введіть номер будинку:",
+                message: "Ви обрали вулицю: {$exact['name']}\nБудь ласка, введіть номер будинку (наприклад: 13 або 13-А):",
                 selectedStreetId: $exact['id'],
                 selectedStreetName: $exact['name'],
                 shouldContinue: true

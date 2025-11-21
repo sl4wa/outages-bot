@@ -4,6 +4,7 @@ namespace App\Application\Bot\Service\Subscription;
 
 use App\Application\Bot\Command\CreateOrUpdateUserSubscriptionCommandHandler;
 use App\Application\Bot\DTO\AskBuildingResultDTO;
+use App\Domain\Exception\InvalidBuildingFormatException;
 
 readonly class AskBuildingService
 {
@@ -35,17 +36,23 @@ readonly class AskBuildingService
             );
         }
 
-        // Create/update subscription
-        $result = $this->createOrUpdateUserSubscriptionCommandHandler->handle(
-            chatId: $chatId,
-            streetId: $selectedStreetId,
-            streetName: $selectedStreetName,
-            building: $building,
-        );
+        try {
+            $result = $this->createOrUpdateUserSubscriptionCommandHandler->handle(
+                chatId: $chatId,
+                streetId: $selectedStreetId,
+                streetName: $selectedStreetName,
+                building: $building,
+            );
 
-        return new AskBuildingResultDTO(
-            message: "Ви підписалися на сповіщення про відключення електроенергії для вулиці {$result->streetName}, будинок {$result->building}.",
-            isSuccess: true
-        );
+            return new AskBuildingResultDTO(
+                message: "Ви підписалися на сповіщення про відключення електроенергії для вулиці {$result->streetName}, будинок {$result->building}.",
+                isSuccess: true
+            );
+        } catch (InvalidBuildingFormatException) {
+            return new AskBuildingResultDTO(
+                message: 'Невірний формат номера будинку',
+                isSuccess: false
+            );
+        }
     }
 }
