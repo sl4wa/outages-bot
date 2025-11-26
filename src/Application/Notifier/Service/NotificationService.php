@@ -1,41 +1,43 @@
 <?php
 namespace App\Application\Notifier\Service;
 
-use App\Application\Notifier\Command\RecordUserNotificationCommandHandler;
-use App\Application\Notifier\Command\RemoveUserCommandHandler;
-use App\Application\Notifier\Command\SendNotificationCommandHandler;
+use App\Application\Interface\Repository\UserRepositoryInterface;
 use App\Application\Notifier\Exception\NotificationSendException;
+use App\Application\Notifier\Interface\Service\NotificationSenderInterface;
+use App\Application\Notifier\Mapper\OutageNotificationMapper;
 use App\Domain\Entity\Outage;
 use App\Domain\Entity\User;
 use App\Domain\Service\OutageFinder;
-use App\Domain\ValueObject\OutageInfo;
 
 readonly class NotificationService
 {
     public function __construct(
-        private SendNotificationCommandHandler $sendNotificationCommandHandler,
-        private RecordUserNotificationCommandHandler $recordUserNotificationCommandHandler,
-        private RemoveUserCommandHandler $removeUserCommandHandler,
+        private NotificationSenderInterface $notificationSender,
+        private OutageNotificationMapper $mapper,
+        private UserRepositoryInterface $userRepository,
         private OutageFinder $outageFinder,
     ) {}
 
     /**
-     * @param User[] $users
      * @param Outage[] $outages
      */
-    public function handle(array $users, array $outages): int
+    public function handle(array $outages): int
     {
+        $users = $this->userRepository->findAll();
+
         foreach ($users as $user) {
             $outageToNotify = $this->outageFinder->findOutageForNotification($user, $outages);
 
             if ($outageToNotify !== null) {
                 try {
-                    $this->sendNotificationCommandHandler->handle($user, $outageToNotify);
-                    $outageInfo = new OutageInfo($outageToNotify->period, $outageToNotify->description);
-                    $this->recordUserNotificationCommandHandler->handle($user, $outageInfo);
+                    $this->notificationSender->send(
+                        $this->mapper->toNotificationDTO($outageToNotify, $user->id)
+                    );
+                    $updatedUser = $user->withNotifiedOutage($outageToNotify);
+                    $this->userRepository->save($updatedUser);
                 } catch (NotificationSendException $e) {
                     if ($e->isBlocked()) {
-                        $this->removeUserCommandHandler->handle($e->userId);
+                        $this->userRepository->remove($e->userId);
                     }
                 }
             }

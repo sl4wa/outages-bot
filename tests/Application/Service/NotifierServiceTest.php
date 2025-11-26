@@ -47,6 +47,7 @@ final class NotifierServiceTest extends KernelTestCase
         // Reset state between tests (shared services)
         $this->sender->sent = [];
         $this->sender->blockUserId = null;
+        $this->userRepo->all = [];
         $this->userRepo->saved = [];
         $this->userRepo->removed = [];
     }
@@ -65,8 +66,9 @@ final class NotifierServiceTest extends KernelTestCase
             address: new UserAddress(streetId: 12783, streetName: 'Шевченка Т.', building: '271'),
             outageInfo: null
         );
+        $this->userRepo->all = [$user];
 
-        $this->notifier->handle([$user], [$outage]);
+        $this->notifier->handle([$outage]);
 
         self::assertCount(1, $this->sender->sent); // one notification
         self::assertEquals(100, $this->sender->sent[0]->userId);
@@ -90,8 +92,9 @@ final class NotifierServiceTest extends KernelTestCase
             address: new UserAddress(streetId: 12783, streetName: 'Шевченка Т.', building: '271'),
             outageInfo: null
         );
+        $this->userRepo->all = [$user];
 
-        $this->notifier->handle([$user], [$outage]);
+        $this->notifier->handle([$outage]);
 
         self::assertSame([101], $this->userRepo->removed);
         self::assertCount(0, $this->sender->sent);
@@ -112,8 +115,9 @@ final class NotifierServiceTest extends KernelTestCase
             address: new UserAddress(streetId: 99999, streetName: 'Nonexistent Street', building: '1'),
             outageInfo: null
         );
+        $this->userRepo->all = [$user];
 
-        $this->notifier->handle([$user], [$outage]);
+        $this->notifier->handle([$outage]);
 
         self::assertCount(0, $this->sender->sent);
         self::assertCount(0, $this->userRepo->saved);
@@ -143,7 +147,8 @@ final class NotifierServiceTest extends KernelTestCase
         );
 
         // First run
-        $this->notifier->handle([$user], [$outageA, $outageB]);
+        $this->userRepo->all = [$user];
+        $this->notifier->handle([$outageA, $outageB]);
 
         self::assertCount(1, $this->sender->sent);
         self::assertCount(1, $this->userRepo->saved);
@@ -154,7 +159,8 @@ final class NotifierServiceTest extends KernelTestCase
         $this->userRepo->saved = [];
 
         // Second run.
-        $this->notifier->handle([$updatedUser], [$outageA, $outageB]);
+        $this->userRepo->all = [$updatedUser];
+        $this->notifier->handle([$outageA, $outageB]);
 
         self::assertCount(0, $this->sender->sent);
         self::assertCount(0, $this->userRepo->saved);

@@ -12,8 +12,10 @@ readonly class User
         public ?OutageInfo $outageInfo,
     ) {}
 
-    public function withNotifiedOutage(OutageInfo $outageInfo): self
+    public function withNotifiedOutage(Outage $outage): self
     {
+        $outageInfo = new OutageInfo($outage->period, $outage->description);
+
         return new self(
             $this->id,
             $this->address,

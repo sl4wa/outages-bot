@@ -2,7 +2,6 @@
 namespace App\Application\Console;
 
 use App\Application\Interface\DumperInterface;
-use App\Application\Interface\Repository\UserRepositoryInterface;
 use App\Application\Notifier\Service\NotificationService;
 use App\Application\Notifier\Service\OutageFetchService;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -19,7 +18,6 @@ class NotifierCommand extends Command
     public function __construct(
         private readonly NotificationService $notificationService,
         private readonly OutageFetchService $outageFetchService,
-        private readonly UserRepositoryInterface $userRepository,
         private readonly DumperInterface $dumper,
     ) {
         parent::__construct();
@@ -29,10 +27,7 @@ class NotifierCommand extends Command
     {
         $outages = $this->outageFetchService->handle();
         $this->dumper->dump($outages, 'outages.json');
-
-        $users = $this->userRepository->findAll();
-
-        $sent = $this->notificationService->handle($users, $outages);
+        $sent = $this->notificationService->handle($outages);
         $output->writeln("<info>Successfully dispatched $sent outages.</info>");
         return Command::SUCCESS;
     }
