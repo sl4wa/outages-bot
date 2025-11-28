@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Domain\ValueObject;
 
-readonly class OutageAddress
+use InvalidArgumentException;
+
+final readonly class OutageAddress
 {
     /** @param string[] $buildings */
     public function __construct(
@@ -12,15 +16,15 @@ readonly class OutageAddress
         public ?string $city = null,
     ) {
         if ($streetId <= 0) {
-            throw new \InvalidArgumentException('Street ID must be positive');
+            throw new InvalidArgumentException('Street ID must be positive');
         }
 
         if (trim($streetName) === '') {
-            throw new \InvalidArgumentException('Street name cannot be empty');
+            throw new InvalidArgumentException('Street name cannot be empty');
         }
 
-        if (empty($buildings) || array_filter($buildings, fn($b) => !is_string($b) || trim($b) === '')) {
-            throw new \InvalidArgumentException('Buildings must be non-empty strings');
+        if (empty($buildings) || array_filter($buildings, fn ($b) => !is_string($b) || trim($b) === '')) {
+            throw new InvalidArgumentException('Buildings must be non-empty strings');
         }
     }
 

@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Application\Bot\DTO;
 
-readonly class SelectStreetResultDTO
+final readonly class SelectStreetResultDTO
 {
     public function __construct(
         public string $message,

@@ -7,6 +7,7 @@ namespace App\Tests\Domain\ValueObject;
 use App\Domain\ValueObject\OutageDescription;
 use App\Domain\ValueObject\OutageInfo;
 use App\Domain\ValueObject\OutagePeriod;
+use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
 final class OutageInfoTest extends TestCase
@@ -16,8 +17,8 @@ final class OutageInfoTest extends TestCase
         string $end = '2024-11-28T10:00:00+00:00'
     ): OutagePeriod {
         return new OutagePeriod(
-            new \DateTimeImmutable($start),
-            new \DateTimeImmutable($end)
+            new DateTimeImmutable($start),
+            new DateTimeImmutable($end)
         );
     }
 

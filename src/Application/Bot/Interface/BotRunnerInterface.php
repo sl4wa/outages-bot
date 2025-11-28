@@ -7,7 +7,7 @@ namespace App\Application\Bot\Interface;
 interface BotRunnerInterface
 {
     /**
-     * Start the bot and begin listening for messages/commands
+     * Start the bot and begin listening for messages/commands.
      */
     public function run(): void;
 }

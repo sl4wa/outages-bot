@@ -6,7 +6,9 @@ namespace App\Infrastructure\Telegram\Bot;
 
 use App\Application\Bot\DTO\UserInfoDTO;
 use App\Application\Bot\Interface\TelegramUserInfoProviderInterface;
+use RuntimeException;
 use SergiX44\Nutgram\Nutgram;
+use Throwable;
 
 final readonly class TelegramUserInfoProvider implements TelegramUserInfoProviderInterface
 {
@@ -26,12 +28,8 @@ final readonly class TelegramUserInfoProvider implements TelegramUserInfoProvide
                 firstName: $chat->first_name,
                 lastName: $chat->last_name,
             );
-        } catch (\Throwable $e) {
-            throw new \RuntimeException(
-                "Failed to get user info for chat {$chatId}: {$e->getMessage()}",
-                0,
-                $e
-            );
+        } catch (Throwable $e) {
+            throw new RuntimeException("Failed to get user info for chat {$chatId}: {$e->getMessage()}", 0, $e);
         }
     }
 }

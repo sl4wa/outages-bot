@@ -11,13 +11,30 @@ final class TestUserRepository implements UserRepositoryInterface
 {
     /** @var User[] */
     public array $all = [];
+
     /** @var User[] */
     public array $saved = [];
+
     /** @var int[] */
     public array $removed = [];
 
-    public function findAll(): array { return $this->all; }
-    public function find(int $chatId): ?User { return null; }
-    public function save(User $user): void { $this->saved[] = $user; }
-    public function remove(int $chatId): void { $this->removed[] = $chatId; }
+    public function findAll(): array
+    {
+        return $this->all;
+    }
+
+    public function find(int $chatId): ?User
+    {
+        return null;
+    }
+
+    public function save(User $user): void
+    {
+        $this->saved[] = $user;
+    }
+
+    public function remove(int $chatId): void
+    {
+        $this->removed[] = $chatId;
+    }
 }

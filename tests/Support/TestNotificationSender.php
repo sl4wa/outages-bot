@@ -12,6 +12,7 @@ final class TestNotificationSender implements NotificationSenderInterface
 {
     /** @var NotificationSenderDTO[] */
     public array $sent = [];
+
     public ?int $blockUserId = null;
 
     public function send(NotificationSenderDTO $dto): void
@@ -22,4 +23,3 @@ final class TestNotificationSender implements NotificationSenderInterface
         $this->sent[] = $dto;
     }
 }
-

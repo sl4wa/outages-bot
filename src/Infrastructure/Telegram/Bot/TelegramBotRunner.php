@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Infrastructure\Telegram\Bot;
 
 use App\Application\Bot\Interface\BotRunnerInterface;
@@ -10,7 +12,7 @@ use SergiX44\Nutgram\Conversations\Conversation;
 use SergiX44\Nutgram\Nutgram;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-class TelegramBotRunner implements BotRunnerInterface
+final class TelegramBotRunner implements BotRunnerInterface
 {
     private Nutgram $bot;
 

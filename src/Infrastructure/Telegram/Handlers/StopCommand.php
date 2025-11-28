@@ -1,14 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Infrastructure\Telegram\Handlers;
 
 use App\Application\Bot\Command\UnsubscribeUserCommandHandler;
 use SergiX44\Nutgram\Handlers\Type\Command;
 use SergiX44\Nutgram\Nutgram;
 
-class StopCommand extends Command
+final class StopCommand extends Command
 {
     protected string $command = 'stop';
+
     protected ?string $description = 'Відписатися від сповіщень';
 
     public function __construct(private readonly UnsubscribeUserCommandHandler $unsubscribeUserCommandHandler)

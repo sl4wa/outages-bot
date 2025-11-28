@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Domain\ValueObject;
 
 use App\Domain\Exception\InvalidBuildingFormatException;
+use InvalidArgumentException;
 
-readonly class UserAddress
+final readonly class UserAddress
 {
     public function __construct(
         public int $streetId,
@@ -13,15 +16,15 @@ readonly class UserAddress
         public ?string $city = null,
     ) {
         if ($streetId <= 0) {
-            throw new \InvalidArgumentException('Street ID must be positive');
+            throw new InvalidArgumentException('Street ID must be positive');
         }
 
         if (trim($streetName) === '') {
-            throw new \InvalidArgumentException('Street name cannot be empty');
+            throw new InvalidArgumentException('Street name cannot be empty');
         }
 
         if (trim($building) === '') {
-            throw new \InvalidArgumentException('Building cannot be empty');
+            throw new InvalidArgumentException('Building cannot be empty');
         }
 
         if (!preg_match('/^[0-9]+(-[A-Za-zА-Яа-яІіЇїЄєҐґ])?$/u', $building)) {

@@ -12,6 +12,7 @@ use PHPUnit\Framework\TestCase;
 final class AskBuildingServiceTest extends TestCase
 {
     private AskBuildingService $service;
+
     private UserRepositoryInterface $userRepository;
 
     protected function setUp(): void

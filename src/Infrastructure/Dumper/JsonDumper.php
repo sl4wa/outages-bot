@@ -8,8 +8,9 @@ use App\Application\Interface\DumperInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use Throwable;
 
-readonly class JsonDumper implements DumperInterface
+final readonly class JsonDumper implements DumperInterface
 {
     public function __construct(
         private KernelInterface $kernel,
@@ -28,14 +29,14 @@ readonly class JsonDumper implements DumperInterface
             $debugDir = $this->params->get('kernel.project_dir') . '/data';
 
             if (!is_dir($debugDir)) {
-                mkdir($debugDir, 0770, true);
+                mkdir($debugDir, 0o770, true);
             }
 
             $json = $this->serializer->serialize($data, 'json', [
-                'json_encode_options' => JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES,
+                'json_encode_options' => \JSON_PRETTY_PRINT | \JSON_UNESCAPED_UNICODE | \JSON_UNESCAPED_SLASHES,
             ]);
             file_put_contents($debugDir . '/' . $filename, $json);
-        } catch (\Throwable) {
+        } catch (Throwable) {
             // Silently fail to prevent breaking the application
         }
     }

@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Application\Notifier\Exception;
 
+use RuntimeException;
 use Throwable;
 
-class NotificationSendException extends \RuntimeException
+final class NotificationSendException extends RuntimeException
 {
     public function __construct(
         public readonly int $userId,

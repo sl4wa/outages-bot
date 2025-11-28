@@ -6,6 +6,7 @@ namespace App\Tests\Domain\ValueObject;
 
 use App\Domain\Exception\InvalidBuildingFormatException;
 use App\Domain\ValueObject\UserAddress;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 final class UserAddressTest extends TestCase
@@ -111,7 +112,7 @@ final class UserAddressTest extends TestCase
 
     public function testThrowsExceptionForEmptyBuilding(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Building cannot be empty');
 
         new UserAddress(
@@ -123,7 +124,7 @@ final class UserAddressTest extends TestCase
 
     public function testThrowsExceptionForWhitespaceOnlyBuilding(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Building cannot be empty');
 
         new UserAddress(
@@ -135,7 +136,7 @@ final class UserAddressTest extends TestCase
 
     public function testThrowsExceptionForInvalidStreetId(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Street ID must be positive');
 
         new UserAddress(
@@ -147,7 +148,7 @@ final class UserAddressTest extends TestCase
 
     public function testThrowsExceptionForNegativeStreetId(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Street ID must be positive');
 
         new UserAddress(
@@ -159,7 +160,7 @@ final class UserAddressTest extends TestCase
 
     public function testThrowsExceptionForEmptyStreetName(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Street name cannot be empty');
 
         new UserAddress(
@@ -171,7 +172,7 @@ final class UserAddressTest extends TestCase
 
     public function testThrowsExceptionForWhitespaceOnlyStreetName(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Street name cannot be empty');
 
         new UserAddress(

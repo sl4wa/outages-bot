@@ -1,14 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Domain\ValueObject;
 
-readonly class OutageDescription implements \JsonSerializable
+use JsonSerializable;
+
+final readonly class OutageDescription implements JsonSerializable
 {
     public function __construct(
         public string $value,
-    ) {}
+    ) {
+    }
 
-    public function equals(OutageDescription $other): bool
+    public function equals(self $other): bool
     {
         return $this->value === $other->value;
     }

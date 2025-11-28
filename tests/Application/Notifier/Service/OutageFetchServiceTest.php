@@ -8,6 +8,7 @@ use App\Application\Notifier\DTO\OutageDTO;
 use App\Application\Notifier\Interface\Provider\OutageProviderInterface;
 use App\Application\Notifier\Service\OutageFetchService;
 use App\Domain\Entity\Outage;
+use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
 final class OutageFetchServiceTest extends TestCase
@@ -84,8 +85,8 @@ final class OutageFetchServiceTest extends TestCase
         $result = $service->handle();
 
         $outage = $result[0];
-        self::assertEquals(new \DateTimeImmutable('2024-11-28T06:47:00+00:00'), $outage->period->startDate);
-        self::assertEquals(new \DateTimeImmutable('2024-11-28T10:00:00+00:00'), $outage->period->endDate);
+        self::assertEquals(new DateTimeImmutable('2024-11-28T06:47:00+00:00'), $outage->period->startDate);
+        self::assertEquals(new DateTimeImmutable('2024-11-28T10:00:00+00:00'), $outage->period->endDate);
     }
 
     public function testHandleCreatesOutageAddressFromDTOData(): void
@@ -159,7 +160,7 @@ final class OutageFetchServiceTest extends TestCase
                 '35', '36', '37', '39', '39-Б', '39-Г', '4', '40', '43', '45',
                 '47', '49', '5', '51', '53', '55', '57', '59', '6', '6-А',
                 '61', '7', '76', '76-А', '76-Б', '76-В', '76-Г', '76-Д', '76-Е',
-                '8', '86', '9'
+                '8', '86', '9',
             ],
             comment: 'Застосування ГПВ',
             city: 'Львів',
@@ -198,8 +199,8 @@ final class OutageFetchServiceTest extends TestCase
     ): OutageDTO {
         return new OutageDTO(
             id: $id,
-            start: new \DateTimeImmutable($startDate),
-            end: new \DateTimeImmutable($endDate),
+            start: new DateTimeImmutable($startDate),
+            end: new DateTimeImmutable($endDate),
             city: $city,
             streetId: $streetId,
             streetName: $streetName,

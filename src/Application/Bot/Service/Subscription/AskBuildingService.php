@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Application\Bot\Service\Subscription;
 
 use App\Application\Bot\Command\CreateOrUpdateUserSubscriptionCommandHandler;
 use App\Application\Bot\DTO\AskBuildingResultDTO;
 use App\Domain\Exception\InvalidBuildingFormatException;
 
-readonly class AskBuildingService
+final readonly class AskBuildingService
 {
     public function __construct(
         private CreateOrUpdateUserSubscriptionCommandHandler $createOrUpdateUserSubscriptionCommandHandler
@@ -29,6 +31,7 @@ readonly class AskBuildingService
 
         // Validate building input
         $building = trim($building);
+
         if ($building === '') {
             return new AskBuildingResultDTO(
                 message: 'Введіть номер будинку.',

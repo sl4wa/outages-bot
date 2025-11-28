@@ -11,6 +11,7 @@ use App\Domain\ValueObject\OutageDescription;
 use App\Domain\ValueObject\OutageInfo;
 use App\Domain\ValueObject\OutagePeriod;
 use App\Domain\ValueObject\UserAddress;
+use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
 final class UserTest extends TestCase
@@ -32,8 +33,8 @@ final class UserTest extends TestCase
         string $description = 'Застосування ГПВ'
     ): Outage {
         $period = new OutagePeriod(
-            new \DateTimeImmutable('2024-11-28T06:47:00+00:00'),
-            new \DateTimeImmutable('2024-11-28T10:00:00+00:00')
+            new DateTimeImmutable('2024-11-28T06:47:00+00:00'),
+            new DateTimeImmutable('2024-11-28T10:00:00+00:00')
         );
         $address = new OutageAddress(
             streetId: 12783,
@@ -61,8 +62,8 @@ final class UserTest extends TestCase
     {
         $outageInfo = new OutageInfo(
             new OutagePeriod(
-                new \DateTimeImmutable('2024-11-28T06:47:00+00:00'),
-                new \DateTimeImmutable('2024-11-28T10:00:00+00:00')
+                new DateTimeImmutable('2024-11-28T06:47:00+00:00'),
+                new DateTimeImmutable('2024-11-28T10:00:00+00:00')
             ),
             new OutageDescription('Застосування ГПВ')
         );
@@ -114,8 +115,8 @@ final class UserTest extends TestCase
         $user = new User(123456, $this->createTestUserAddress(), null);
         $outageInfo = new OutageInfo(
             new OutagePeriod(
-                new \DateTimeImmutable('2024-11-28T06:47:00+00:00'),
-                new \DateTimeImmutable('2024-11-28T10:00:00+00:00')
+                new DateTimeImmutable('2024-11-28T06:47:00+00:00'),
+                new DateTimeImmutable('2024-11-28T10:00:00+00:00')
             ),
             new OutageDescription('Застосування ГПВ')
         );
@@ -127,8 +128,8 @@ final class UserTest extends TestCase
     {
         $outageInfo = new OutageInfo(
             new OutagePeriod(
-                new \DateTimeImmutable('2024-11-28T06:47:00+00:00'),
-                new \DateTimeImmutable('2024-11-28T10:00:00+00:00')
+                new DateTimeImmutable('2024-11-28T06:47:00+00:00'),
+                new DateTimeImmutable('2024-11-28T10:00:00+00:00')
             ),
             new OutageDescription('Застосування ГПВ')
         );
@@ -141,15 +142,15 @@ final class UserTest extends TestCase
     {
         $outageInfo1 = new OutageInfo(
             new OutagePeriod(
-                new \DateTimeImmutable('2024-11-28T06:47:00+00:00'),
-                new \DateTimeImmutable('2024-11-28T10:00:00+00:00')
+                new DateTimeImmutable('2024-11-28T06:47:00+00:00'),
+                new DateTimeImmutable('2024-11-28T10:00:00+00:00')
             ),
             new OutageDescription('First description')
         );
         $outageInfo2 = new OutageInfo(
             new OutagePeriod(
-                new \DateTimeImmutable('2024-11-28T06:47:00+00:00'),
-                new \DateTimeImmutable('2024-11-28T10:00:00+00:00')
+                new DateTimeImmutable('2024-11-28T06:47:00+00:00'),
+                new DateTimeImmutable('2024-11-28T10:00:00+00:00')
             ),
             new OutageDescription('Second description')
         );

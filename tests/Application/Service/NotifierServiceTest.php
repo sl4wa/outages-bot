@@ -14,6 +14,7 @@ use App\Domain\ValueObject\OutagePeriod;
 use App\Domain\ValueObject\UserAddress;
 use App\Tests\Support\TestNotificationSender;
 use App\Tests\Support\TestUserRepository;
+use DateTimeImmutable;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class NotifierServiceTest extends KernelTestCase
@@ -30,7 +31,9 @@ final class NotifierServiceTest extends KernelTestCase
     }
 
     private NotificationService $notifier;
+
     private TestNotificationSender $sender;
+
     private TestUserRepository $userRepo;
 
     protected function setUp(): void
@@ -169,10 +172,11 @@ final class NotifierServiceTest extends KernelTestCase
     private function createOutage(string $comment): OutageDTO
     {
         static $id = 0;
+
         return new OutageDTO(
             id: ++$id,
-            start: new \DateTimeImmutable('2024-11-28T06:47:00+00:00'),
-            end: new \DateTimeImmutable('2024-11-28T10:00:00+00:00'),
+            start: new DateTimeImmutable('2024-11-28T06:47:00+00:00'),
+            end: new DateTimeImmutable('2024-11-28T10:00:00+00:00'),
             city: 'Львів',
             streetId: 12783,
             streetName: 'Шевченка Т.',

@@ -1,7 +1,11 @@
 <?php
+
+declare(strict_types=1);
+
 namespace App\Application\Console;
 
 use App\Application\Notifier\Interface\Provider\OutageProviderInterface;
+use DateTimeInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
@@ -12,7 +16,7 @@ use Symfony\Component\Console\Output\OutputInterface;
     name: 'app:outages',
     description: 'Prints a table of outages fetched from the remote API for debug purposes.'
 )]
-class OutagesCommand extends Command
+final class OutagesCommand extends Command
 {
     public function __construct(
         private readonly OutageProviderInterface $outageProvider
@@ -26,6 +30,7 @@ class OutagesCommand extends Command
 
         if (!$outages) {
             $output->writeln('<comment>No outages found.</comment>');
+
             return Command::SUCCESS;
         }
 
@@ -41,9 +46,9 @@ class OutagesCommand extends Command
                 $outage->streetId ?? $outage->street ?? '',
                 $buildings,
                 sprintf(
-                    "%s - %s",
-                    $outage->start instanceof \DateTimeInterface ? $outage->start->format('Y-m-d H:i') : $outage->start,
-                    $outage->end instanceof \DateTimeInterface ? $outage->end->format('Y-m-d H:i') : $outage->end
+                    '%s - %s',
+                    $outage->start instanceof DateTimeInterface ? $outage->start->format('Y-m-d H:i') : $outage->start,
+                    $outage->end instanceof DateTimeInterface ? $outage->end->format('Y-m-d H:i') : $outage->end
                 ),
                 $outage->comment ?? '',
             ]);

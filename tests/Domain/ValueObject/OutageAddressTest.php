@@ -6,6 +6,7 @@ namespace App\Tests\Domain\ValueObject;
 
 use App\Domain\ValueObject\OutageAddress;
 use App\Domain\ValueObject\UserAddress;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 final class OutageAddressTest extends TestCase
@@ -105,7 +106,7 @@ final class OutageAddressTest extends TestCase
      */
     public function testThrowsExceptionForNonPositiveStreetId(int $streetId): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Street ID must be positive');
 
         new OutageAddress(
@@ -126,7 +127,7 @@ final class OutageAddressTest extends TestCase
 
     public function testThrowsExceptionForEmptyStreetName(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Street name cannot be empty');
 
         new OutageAddress(
@@ -138,7 +139,7 @@ final class OutageAddressTest extends TestCase
 
     public function testThrowsExceptionForWhitespaceOnlyStreetName(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Street name cannot be empty');
 
         new OutageAddress(
@@ -150,7 +151,7 @@ final class OutageAddressTest extends TestCase
 
     public function testThrowsExceptionForEmptyBuildingsArray(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Buildings must be non-empty strings');
 
         new OutageAddress(
@@ -162,7 +163,7 @@ final class OutageAddressTest extends TestCase
 
     public function testThrowsExceptionForBuildingsArrayContainingEmptyString(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Buildings must be non-empty strings');
 
         new OutageAddress(
@@ -174,7 +175,7 @@ final class OutageAddressTest extends TestCase
 
     public function testThrowsExceptionForBuildingsArrayContainingWhitespace(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Buildings must be non-empty strings');
 
         new OutageAddress(
@@ -186,7 +187,7 @@ final class OutageAddressTest extends TestCase
 
     public function testThrowsExceptionForBuildingsArrayContainingNonString(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Buildings must be non-empty strings');
 
         new OutageAddress(

@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Application\Bot\Service\Subscription;
 
 use App\Application\Bot\DTO\SelectStreetResultDTO;
 use App\Application\Interface\Repository\StreetRepositoryInterface;
 
-readonly class SelectStreetService
+final readonly class SelectStreetService
 {
     public function __construct(
         private StreetRepositoryInterface $streetRepository
@@ -37,6 +39,7 @@ readonly class SelectStreetService
 
         // Check for exact match
         $exact = $this->streetRepository->findByName($query);
+
         if ($exact) {
             return new SelectStreetResultDTO(
                 message: "Ви обрали вулицю: {$exact['name']}\nБудь ласка, введіть номер будинку (наприклад: 13 або 13-А):",

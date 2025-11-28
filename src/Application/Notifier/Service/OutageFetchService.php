@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Application\Notifier\Service;
 
 use App\Application\Notifier\Interface\Provider\OutageProviderInterface;
@@ -8,11 +10,12 @@ use App\Domain\ValueObject\OutageAddress;
 use App\Domain\ValueObject\OutageDescription;
 use App\Domain\ValueObject\OutagePeriod;
 
-readonly class OutageFetchService
+final readonly class OutageFetchService
 {
     public function __construct(
         private OutageProviderInterface $outageProvider,
-    ) {}
+    ) {
+    }
 
     /**
      * @return Outage[]
@@ -20,8 +23,9 @@ readonly class OutageFetchService
     public function handle(): array
     {
         $dtos = $this->outageProvider->fetchOutages();
+
         return array_map(
-            fn($dto) => new Outage(
+            fn ($dto) => new Outage(
                 $dto->id,
                 new OutagePeriod($dto->start, $dto->end),
                 new OutageAddress($dto->streetId, $dto->streetName, $dto->buildings, $dto->city),
@@ -31,5 +35,3 @@ readonly class OutageFetchService
         );
     }
 }
-
-

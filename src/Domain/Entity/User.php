@@ -1,16 +1,20 @@
 <?php
+
+declare(strict_types=1);
+
 namespace App\Domain\Entity;
 
 use App\Domain\ValueObject\OutageInfo;
 use App\Domain\ValueObject\UserAddress;
 
-readonly class User
+final readonly class User
 {
     public function __construct(
         public int $id,
         public UserAddress $address,
         public ?OutageInfo $outageInfo,
-    ) {}
+    ) {
+    }
 
     public function withNotifiedOutage(Outage $outage): self
     {
@@ -32,4 +36,3 @@ readonly class User
         return $this->outageInfo->equals($outageInfo);
     }
 }
-

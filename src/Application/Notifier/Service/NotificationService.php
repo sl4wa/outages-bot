@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace App\Application\Notifier\Service;
 
 use App\Application\Interface\Repository\UserRepositoryInterface;
@@ -6,17 +9,17 @@ use App\Application\Notifier\Exception\NotificationSendException;
 use App\Application\Notifier\Interface\Service\NotificationSenderInterface;
 use App\Application\Notifier\Mapper\OutageNotificationMapper;
 use App\Domain\Entity\Outage;
-use App\Domain\Entity\User;
 use App\Domain\Service\OutageFinder;
 
-readonly class NotificationService
+final readonly class NotificationService
 {
     public function __construct(
         private NotificationSenderInterface $notificationSender,
         private OutageNotificationMapper $mapper,
         private UserRepositoryInterface $userRepository,
         private OutageFinder $outageFinder,
-    ) {}
+    ) {
+    }
 
     /**
      * @param Outage[] $outages

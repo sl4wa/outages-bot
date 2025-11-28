@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Application\Notifier\Interface\Service;
 
 use App\Application\Notifier\DTO\NotificationSenderDTO;

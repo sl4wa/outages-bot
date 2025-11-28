@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Application\Notifier\DTO;
 
-readonly class NotificationSenderDTO
+use DateTimeImmutable;
+
+final readonly class NotificationSenderDTO
 {
     /**
      * @param array<int, string> $buildings
@@ -12,8 +16,9 @@ readonly class NotificationSenderDTO
         public string $city,
         public string $streetName,
         public array $buildings,
-        public \DateTimeImmutable $start,
-        public \DateTimeImmutable $end,
+        public DateTimeImmutable $start,
+        public DateTimeImmutable $end,
         public string $comment,
-    ) {}
+    ) {
+    }
 }

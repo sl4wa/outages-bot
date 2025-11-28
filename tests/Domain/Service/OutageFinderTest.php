@@ -12,6 +12,7 @@ use App\Domain\ValueObject\OutageDescription;
 use App\Domain\ValueObject\OutageInfo;
 use App\Domain\ValueObject\OutagePeriod;
 use App\Domain\ValueObject\UserAddress;
+use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
 final class OutageFinderTest extends TestCase
@@ -23,7 +24,9 @@ final class OutageFinderTest extends TestCase
         . '342, 346, 348-А, 350, 350-А, 350-В, 358, 358-А, 360-В';
 
     private OutageFinder $finder;
+
     private Outage $outage1;
+
     private Outage $outage2;
 
     protected function setUp(): void
@@ -31,8 +34,8 @@ final class OutageFinderTest extends TestCase
         $this->finder = new OutageFinder();
 
         $outageData1 = new OutagePeriod(
-            startDate: new \DateTimeImmutable('2024-11-28T06:47:00+00:00'),
-            endDate: new \DateTimeImmutable('2024-11-28T10:00:00+00:00'),
+            startDate: new DateTimeImmutable('2024-11-28T06:47:00+00:00'),
+            endDate: new DateTimeImmutable('2024-11-28T10:00:00+00:00'),
         );
 
         $address1 = new OutageAddress(
@@ -50,8 +53,8 @@ final class OutageFinderTest extends TestCase
         );
 
         $outageData2 = new OutagePeriod(
-            startDate: new \DateTimeImmutable('2024-11-28T06:47:00+00:00'),
-            endDate: new \DateTimeImmutable('2024-11-28T10:00:00+00:00'),
+            startDate: new DateTimeImmutable('2024-11-28T06:47:00+00:00'),
+            endDate: new DateTimeImmutable('2024-11-28T10:00:00+00:00'),
         );
 
         $address2 = new OutageAddress(

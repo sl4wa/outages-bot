@@ -11,6 +11,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Throwable;
 
 #[AsCommand(
     name: 'app:users',
@@ -31,6 +32,7 @@ final class UsersCommand extends Command
 
         if (!$users) {
             $output->writeln('<comment>No users found.</comment>');
+
             return Command::SUCCESS;
         }
 
@@ -52,8 +54,8 @@ final class UsersCommand extends Command
                     $user->address->building,
                 ]);
 
-                $successCount++;
-            } catch (\Throwable $e) {
+                ++$successCount;
+            } catch (Throwable $e) {
                 $output->writeln("<error>Failed to get info for chat {$user->id}: {$e->getMessage()}</error>");
             }
         }

@@ -14,7 +14,7 @@ use Symfony\Component\Console\Output\OutputInterface;
     name: 'app:bot',
     description: 'Run the Telegram bot.'
 )]
-class BotCommand extends Command
+final class BotCommand extends Command
 {
     public function __construct(
         private readonly BotRunnerInterface $botRunner
@@ -26,6 +26,7 @@ class BotCommand extends Command
     {
         $output->writeln('<info>Starting Telegram bot...</info>');
         $this->botRunner->run();
+
         return Command::SUCCESS;
     }
 }

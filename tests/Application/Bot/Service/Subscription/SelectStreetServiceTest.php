@@ -11,6 +11,7 @@ use PHPUnit\Framework\TestCase;
 final class SelectStreetServiceTest extends TestCase
 {
     private SelectStreetService $service;
+
     private StreetRepositoryInterface $streetRepository;
 
     protected function setUp(): void

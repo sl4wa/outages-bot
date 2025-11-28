@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Domain\Service;
 
 use App\Domain\Entity\Outage;
@@ -9,9 +11,7 @@ use App\Domain\ValueObject\OutageInfo;
 final class OutageFinder
 {
     /**
-     * @param User $user
      * @param Outage[] $allOutages
-     * @return ?Outage
      */
     public function findOutageForNotification(User $user, array $allOutages): ?Outage
     {
@@ -21,6 +21,7 @@ final class OutageFinder
             }
 
             $outageInfo = new OutageInfo($outage->period, $outage->description);
+
             if ($user->isAlreadyNotifiedAbout($outageInfo)) {
                 return null;
             }

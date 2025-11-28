@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace App\Application\Console;
 
 use App\Application\Interface\DumperInterface;
@@ -13,7 +16,7 @@ use Symfony\Component\Console\Output\OutputInterface;
     name: 'app:notifier',
     description: 'Send outage notifications to users.',
 )]
-class NotifierCommand extends Command
+final class NotifierCommand extends Command
 {
     public function __construct(
         private readonly NotificationService $notificationService,
@@ -29,6 +32,7 @@ class NotifierCommand extends Command
         $this->dumper->dump($outages, 'outages.json');
         $sent = $this->notificationService->handle($outages);
         $output->writeln("<info>Successfully dispatched $sent outages.</info>");
+
         return Command::SUCCESS;
     }
 }

@@ -9,6 +9,7 @@ use App\Domain\ValueObject\OutageAddress;
 use App\Domain\ValueObject\OutageDescription;
 use App\Domain\ValueObject\OutagePeriod;
 use App\Domain\ValueObject\UserAddress;
+use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
 final class OutageTest extends TestCase
@@ -16,8 +17,8 @@ final class OutageTest extends TestCase
     private function createTestPeriod(): OutagePeriod
     {
         return new OutagePeriod(
-            new \DateTimeImmutable('2024-11-28T06:47:00+00:00'),
-            new \DateTimeImmutable('2024-11-28T10:00:00+00:00')
+            new DateTimeImmutable('2024-11-28T06:47:00+00:00'),
+            new DateTimeImmutable('2024-11-28T10:00:00+00:00')
         );
     }
 

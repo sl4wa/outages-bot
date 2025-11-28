@@ -1,17 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Application\Bot\Query;
 
 use App\Application\Bot\DTO\UserSubscriptionDTO;
 use App\Application\Interface\Repository\UserRepositoryInterface;
 
-readonly class GetUserSubscriptionQueryHandler
+final readonly class GetUserSubscriptionQueryHandler
 {
-    public function __construct(private UserRepositoryInterface $userRepository) {}
+    public function __construct(private UserRepositoryInterface $userRepository)
+    {
+    }
 
     public function handle(int $chatId): ?UserSubscriptionDTO
     {
         $user = $this->userRepository->find($chatId);
+
         if ($user === null) {
             return null;
         }
@@ -24,4 +29,3 @@ readonly class GetUserSubscriptionQueryHandler
         );
     }
 }
-
