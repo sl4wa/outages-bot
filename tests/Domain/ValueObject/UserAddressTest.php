@@ -75,7 +75,7 @@ final class UserAddressTest extends TestCase
     public function testRejectsInvalidBuildingFormats(string $building): void
     {
         $this->expectException(InvalidBuildingFormatException::class);
-        $this->expectExceptionMessage('Building format is invalid');
+        $this->expectExceptionMessage('Building format is invalid. Expected format: number or number-letter (e.g., 13 or 13-A)');
 
         new UserAddress(
             streetId: 123,
@@ -101,6 +101,11 @@ final class UserAddressTest extends TestCase
             'no hyphen before letter' => ['13A'],
             'hyphen without letter' => ['13-'],
             'starts with hyphen' => ['-13'],
+            'range with hyphen' => ['59-61'],
+            'range with slash' => ['59/61'],
+            'long range with hyphen' => ['125-131'],
+            'spaced hyphen with cyrillic letter' => ['64 - А'],
+            'fraction format' => ['180/4'],
         ];
     }
 
