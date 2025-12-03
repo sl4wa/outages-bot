@@ -61,8 +61,6 @@ final class UserAddressTest extends TestCase
             'number with cyrillic А' => ['196-А'],
             'number with cyrillic Б' => ['271-Б'],
             'number with cyrillic В' => ['350-В'],
-            'number with cyrillic lowercase' => ['13-а'],
-            'number with latin lowercase' => ['13-b'],
             'number with cyrillic І' => ['25-І'],
             'number with cyrillic Ї' => ['30-Ї'],
             'number with cyrillic Є' => ['40-Є'],
@@ -107,6 +105,8 @@ final class UserAddressTest extends TestCase
             'long range with hyphen' => ['125-131'],
             'spaced hyphen with cyrillic letter' => ['64 - А'],
             'fraction format' => ['180/4'],
+            'lowercase latin letter' => ['13-a'],
+            'lowercase cyrillic letter' => ['13-а'],
         ];
     }
 

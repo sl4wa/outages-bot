@@ -53,7 +53,7 @@ final readonly class AskBuildingService
             );
         } catch (InvalidBuildingFormatException) {
             return new AskBuildingResultDTO(
-                message: 'Невірний формат номера будинку',
+                message: 'Невірний формат номера будинку. Приклад: 13 або 13-А',
                 isSuccess: false
             );
         }

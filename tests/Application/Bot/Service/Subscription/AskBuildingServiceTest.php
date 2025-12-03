@@ -109,7 +109,7 @@ final class AskBuildingServiceTest extends TestCase
         );
 
         self::assertFalse($result->isSuccess);
-        self::assertSame('Невірний формат номера будинку', $result->message);
+        self::assertSame('Невірний формат номера будинку. Приклад: 13 або 13-А', $result->message);
     }
 
     public static function invalidBuildingFormatsProvider(): array

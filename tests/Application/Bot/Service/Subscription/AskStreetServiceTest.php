@@ -123,4 +123,17 @@ final class AskStreetServiceTest extends TestCase
         self::assertStringContainsString('Вулиця: Київська', $result->message);
         self::assertStringContainsString('Будинок: 196-А', $result->message);
     }
+
+    public function testHandlesCorruptedUserDataGracefully(): void
+    {
+        $this->userRepository
+            ->expects($this->once())
+            ->method('find')
+            ->with(12345)
+            ->willThrowException(new \RuntimeException('Corrupted data'));
+
+        $result = $this->service->handle(12345);
+
+        self::assertSame('Будь ласка, введіть назву вулиці:', $result->message);
+    }
 }

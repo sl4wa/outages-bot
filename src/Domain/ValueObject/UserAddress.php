@@ -27,7 +27,7 @@ final readonly class UserAddress
             throw new InvalidArgumentException('Building cannot be empty');
         }
 
-        if (!preg_match('/^[0-9]+(-[A-Za-zА-Яа-яІіЇїЄєҐґ])?$/u', $building)) {
+        if (!preg_match('/^[0-9]+(-[A-ZА-ЯІЇЄҐ])?$/u', $building)) {
             throw new InvalidBuildingFormatException('Building format is invalid. Expected format: number or number-letter (e.g., 13 or 13-A)');
         }
     }

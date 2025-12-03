@@ -16,7 +16,13 @@ final readonly class AskStreetService
 
     public function handle(int $chatId): AskStreetResultDTO
     {
-        $subscription = $this->getUserSubscriptionQueryHandler->handle($chatId);
+        try {
+            $subscription = $this->getUserSubscriptionQueryHandler->handle($chatId);
+        } catch (\Throwable) {
+            // If there's any error loading existing subscription (e.g., corrupted data),
+            // ignore it and treat as new subscription
+            $subscription = null;
+        }
 
         if ($subscription) {
             $message = "Ваша поточна підписка:\nВулиця: {$subscription->streetName}\nБудинок: {$subscription->building}\n\n"
