@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Console;
 
-use App\Application\Notifier\Interface\Provider\OutageProviderInterface;
+use App\Application\Interface\OutageProviderInterface;
 use DateTimeInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Console;
 
-use App\Application\Bot\Interface\TelegramUserInfoProviderInterface;
+use App\Application\Interface\TelegramUserInfoProviderInterface;
 use App\Application\Interface\Repository\UserRepositoryInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;

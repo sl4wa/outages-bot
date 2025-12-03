@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Console;
 
-use App\Application\Bot\Interface\BotRunnerInterface;
+use App\Application\Interface\BotRunnerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;

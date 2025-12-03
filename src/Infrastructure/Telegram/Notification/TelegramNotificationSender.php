@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Telegram\Notification;
 
+use App\Application\Interface\NotificationSenderInterface;
 use App\Application\Notifier\DTO\NotificationSenderDTO;
 use App\Application\Notifier\Exception\NotificationSendException;
-use App\Application\Notifier\Interface\Service\NotificationSenderInterface;
 use SergiX44\Nutgram\Nutgram;
 use Throwable;
 

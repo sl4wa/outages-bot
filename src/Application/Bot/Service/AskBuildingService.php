@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Application\Bot\Service\Subscription;
+namespace App\Application\Bot\Service;
 
 use App\Application\Bot\Command\CreateOrUpdateUserSubscriptionCommandHandler;
 use App\Application\Bot\DTO\AskBuildingResultDTO;

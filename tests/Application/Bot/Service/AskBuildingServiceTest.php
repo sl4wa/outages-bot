@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Application\Bot\Service\Subscription;
+namespace App\Tests\Application\Bot\Service;
 
 use App\Application\Bot\Command\CreateOrUpdateUserSubscriptionCommandHandler;
-use App\Application\Bot\Service\Subscription\AskBuildingService;
+use App\Application\Bot\Service\AskBuildingService;
 use App\Application\Interface\Repository\UserRepositoryInterface;
 use PHPUnit\Framework\TestCase;
 

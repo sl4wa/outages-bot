@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Application\Bot\Service\Subscription;
+namespace App\Tests\Application\Bot\Service;
 
 use App\Application\Bot\Query\GetUserSubscriptionQueryHandler;
-use App\Application\Bot\Service\Subscription\AskStreetService;
+use App\Application\Bot\Service\AskStreetService;
 use App\Application\Interface\Repository\UserRepositoryInterface;
 use App\Domain\Entity\User;
 use App\Domain\ValueObject\UserAddress;

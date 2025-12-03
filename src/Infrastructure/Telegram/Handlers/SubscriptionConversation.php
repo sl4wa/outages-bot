@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Telegram\Handlers;
 
-use App\Application\Bot\Service\Subscription\AskBuildingService;
-use App\Application\Bot\Service\Subscription\AskStreetService;
-use App\Application\Bot\Service\Subscription\SelectStreetService;
+use App\Application\Bot\Service\AskBuildingService;
+use App\Application\Bot\Service\AskStreetService;
+use App\Application\Bot\Service\SelectStreetService;
 use SergiX44\Nutgram\Conversations\Conversation;
 use SergiX44\Nutgram\Nutgram;
 use SergiX44\Nutgram\Telegram\Types\Keyboard\KeyboardButton;

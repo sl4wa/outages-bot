@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Provider;
 
+use App\Application\Interface\OutageProviderInterface;
 use App\Application\Notifier\DTO\OutageDTO;
-use App\Application\Notifier\Interface\Provider\OutageProviderInterface;
 use DateTimeImmutable;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 

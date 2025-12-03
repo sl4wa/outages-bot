@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Telegram\Bot;
 
-use App\Application\Bot\Interface\BotRunnerInterface;
+use App\Application\Interface\BotRunnerInterface;
 use App\Infrastructure\Telegram\Handlers\StopCommand;
 use App\Infrastructure\Telegram\Handlers\SubscriptionConversation;
 use App\Infrastructure\Telegram\Handlers\SubscriptionInfoCommand;

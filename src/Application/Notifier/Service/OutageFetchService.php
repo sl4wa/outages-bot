@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Notifier\Service;
 
-use App\Application\Notifier\Interface\Provider\OutageProviderInterface;
+use App\Application\Interface\OutageProviderInterface;
 use App\Domain\Entity\Outage;
 use App\Domain\ValueObject\OutageAddress;
 use App\Domain\ValueObject\OutageDescription;

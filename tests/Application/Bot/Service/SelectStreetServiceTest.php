@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Application\Bot\Service\Subscription;
+namespace App\Tests\Application\Bot\Service;
 
-use App\Application\Bot\Service\Subscription\SelectStreetService;
+use App\Application\Bot\Service\SelectStreetService;
 use App\Application\Interface\Repository\StreetRepositoryInterface;
 use PHPUnit\Framework\TestCase;
 

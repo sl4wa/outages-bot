@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Application\Notifier\Service;
 
+use App\Application\Interface\OutageProviderInterface;
 use App\Application\Notifier\DTO\OutageDTO;
-use App\Application\Notifier\Interface\Provider\OutageProviderInterface;
 use App\Application\Notifier\Service\OutageFetchService;
 use App\Domain\Entity\Outage;
 use DateTimeImmutable;

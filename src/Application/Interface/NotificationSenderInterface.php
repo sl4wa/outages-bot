@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Application\Notifier\Interface\Service;
+namespace App\Application\Interface;
 
 use App\Application\Notifier\DTO\NotificationSenderDTO;
 use App\Application\Notifier\Exception\NotificationSendException;
