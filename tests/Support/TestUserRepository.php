@@ -33,8 +33,10 @@ final class TestUserRepository implements UserRepositoryInterface
         $this->saved[] = $user;
     }
 
-    public function remove(int $chatId): void
+    public function remove(int $chatId): bool
     {
         $this->removed[] = $chatId;
+
+        return true;
     }
 }

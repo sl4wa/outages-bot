@@ -68,13 +68,17 @@ final class FileUserRepository implements UserRepositoryInterface
         file_put_contents($this->getFilePath($user->id), implode(\PHP_EOL, $lines));
     }
 
-    public function remove(int $chatId): void
+    public function remove(int $chatId): bool
     {
         $file = $this->getFilePath($chatId);
 
-        if (file_exists($file)) {
-            unlink($file);
+        if (!file_exists($file)) {
+            return false;
         }
+
+        unlink($file);
+
+        return true;
     }
 
     private function getFilePath(int $chatId): string

@@ -54,10 +54,6 @@ final class SelectStreetServiceTest extends TestCase
             ->with('Неіснуюча')
             ->willReturn([]);
 
-        $this->streetRepository
-            ->expects($this->never())
-            ->method('findByName');
-
         $result = $this->service->handle('Неіснуюча');
 
         self::assertFalse($result->shouldContinue);
@@ -66,21 +62,15 @@ final class SelectStreetServiceTest extends TestCase
         self::assertFalse($result->hasExactMatch());
     }
 
-    public function testExactMatchFound(): void
+    public function testSingleMatchAutoSelected(): void
     {
-        $exactStreet = ['id' => 12783, 'name' => 'Шевченка Т.'];
+        $street = ['id' => 12783, 'name' => 'Шевченка Т.'];
 
         $this->streetRepository
             ->expects($this->once())
             ->method('filter')
             ->with('Шевченка Т.')
-            ->willReturn([$exactStreet]);
-
-        $this->streetRepository
-            ->expects($this->once())
-            ->method('findByName')
-            ->with('Шевченка Т.')
-            ->willReturn($exactStreet);
+            ->willReturn([$street]);
 
         $result = $this->service->handle('Шевченка Т.');
 
@@ -107,12 +97,6 @@ final class SelectStreetServiceTest extends TestCase
             ->with('вул')
             ->willReturn($streets);
 
-        $this->streetRepository
-            ->expects($this->once())
-            ->method('findByName')
-            ->with('вул')
-            ->willReturn(null);
-
         $result = $this->service->handle('вул');
 
         self::assertFalse($result->shouldContinue);
@@ -123,47 +107,33 @@ final class SelectStreetServiceTest extends TestCase
         self::assertSame($streets, $result->streetOptions);
     }
 
-    public function testSinglePartialMatchWithoutExactMatch(): void
+    public function testSinglePartialMatchAutoSelected(): void
     {
-        $streets = [
-            ['id' => 12783, 'name' => 'Шевченка Т.'],
-        ];
+        $street = ['id' => 12783, 'name' => 'Шевченка Т.'];
 
         $this->streetRepository
             ->expects($this->once())
             ->method('filter')
             ->with('Шевч')
-            ->willReturn($streets);
-
-        $this->streetRepository
-            ->expects($this->once())
-            ->method('findByName')
-            ->with('Шевч')
-            ->willReturn(null);
+            ->willReturn([$street]);
 
         $result = $this->service->handle('Шевч');
 
-        self::assertFalse($result->shouldContinue);
-        self::assertTrue($result->hasMultipleOptions());
-        self::assertFalse($result->hasExactMatch());
-        self::assertCount(1, $result->streetOptions);
+        self::assertTrue($result->shouldContinue);
+        self::assertTrue($result->hasExactMatch());
+        self::assertSame(12783, $result->selectedStreetId);
+        self::assertSame('Шевченка Т.', $result->selectedStreetName);
     }
 
     public function testTrimsWhitespaceFromQuery(): void
     {
-        $exactStreet = ['id' => 12783, 'name' => 'Шевченка Т.'];
+        $street = ['id' => 12783, 'name' => 'Шевченка Т.'];
 
         $this->streetRepository
             ->expects($this->once())
             ->method('filter')
             ->with('Шевченка Т.')
-            ->willReturn([$exactStreet]);
-
-        $this->streetRepository
-            ->expects($this->once())
-            ->method('findByName')
-            ->with('Шевченка Т.')
-            ->willReturn($exactStreet);
+            ->willReturn([$street]);
 
         $result = $this->service->handle('  Шевченка Т.  ');
 
@@ -173,19 +143,13 @@ final class SelectStreetServiceTest extends TestCase
 
     public function testHandlesCyrillicTextCorrectly(): void
     {
-        $exactStreet = ['id' => 12444, 'name' => 'Молдавська'];
+        $street = ['id' => 12444, 'name' => 'Молдавська'];
 
         $this->streetRepository
             ->expects($this->once())
             ->method('filter')
             ->with('Молдавська')
-            ->willReturn([$exactStreet]);
-
-        $this->streetRepository
-            ->expects($this->once())
-            ->method('findByName')
-            ->with('Молдавська')
-            ->willReturn($exactStreet);
+            ->willReturn([$street]);
 
         $result = $this->service->handle('Молдавська');
 
@@ -193,10 +157,9 @@ final class SelectStreetServiceTest extends TestCase
         self::assertSame('Молдавська', $result->selectedStreetName);
     }
 
-    public function testExactMatchTakesPrecedenceOverMultipleResults(): void
+    public function testMultipleResultsShowOptions(): void
     {
-        $exactStreet = ['id' => 12783, 'name' => 'Київська'];
-        $multipleStreets = [
+        $streets = [
             ['id' => 12783, 'name' => 'Київська'],
             ['id' => 99999, 'name' => 'Київська бічна'],
         ];
@@ -205,19 +168,13 @@ final class SelectStreetServiceTest extends TestCase
             ->expects($this->once())
             ->method('filter')
             ->with('Київська')
-            ->willReturn($multipleStreets);
-
-        $this->streetRepository
-            ->expects($this->once())
-            ->method('findByName')
-            ->with('Київська')
-            ->willReturn($exactStreet);
+            ->willReturn($streets);
 
         $result = $this->service->handle('Київська');
 
-        self::assertTrue($result->hasExactMatch());
-        self::assertFalse($result->hasMultipleOptions());
-        self::assertSame(12783, $result->selectedStreetId);
-        self::assertStringContainsString('Ви обрали вулицю: Київська', $result->message);
+        self::assertFalse($result->hasExactMatch());
+        self::assertTrue($result->hasMultipleOptions());
+        self::assertCount(2, $result->streetOptions);
+        self::assertSame('Будь ласка, оберіть вулицю:', $result->message);
     }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Telegram\Handlers;
 
-use App\Application\Bot\Command\UnsubscribeUserCommandHandler;
+use App\Application\Interface\Repository\UserRepositoryInterface;
 use SergiX44\Nutgram\Handlers\Type\Command;
 use SergiX44\Nutgram\Nutgram;
 
@@ -14,7 +14,7 @@ final class StopCommand extends Command
 
     protected ?string $description = 'Відписатися від сповіщень';
 
-    public function __construct(private readonly UnsubscribeUserCommandHandler $unsubscribeUserCommandHandler)
+    public function __construct(private readonly UserRepositoryInterface $userRepository)
     {
         parent::__construct();
     }
@@ -27,7 +27,7 @@ final class StopCommand extends Command
             return;
         }
 
-        $removed = $this->unsubscribeUserCommandHandler->handle($chatId);
+        $removed = $this->userRepository->remove($chatId);
 
         $message = $removed
             ? 'Ви успішно відписалися від сповіщень про відключення електроенергії.'

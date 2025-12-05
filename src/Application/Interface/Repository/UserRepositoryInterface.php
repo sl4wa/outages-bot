@@ -17,5 +17,5 @@ interface UserRepositoryInterface
 
     public function save(User $user): void;
 
-    public function remove(int $chatId): void;
+    public function remove(int $chatId): bool;
 }

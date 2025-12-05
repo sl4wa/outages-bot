@@ -18,7 +18,6 @@ final readonly class SelectStreetService
     {
         $query = trim($query);
 
-        // Validate empty input
         if ($query === '') {
             return new SelectStreetResultDTO(
                 message: 'Введіть назву вулиці.',
@@ -26,33 +25,29 @@ final readonly class SelectStreetService
             );
         }
 
-        // Search for streets
-        $filtered = $this->streetRepository->filter($query);
+        $streets = $this->streetRepository->filter($query);
 
-        // No streets found
-        if (count($filtered) === 0) {
+        if ($streets === []) {
             return new SelectStreetResultDTO(
                 message: 'Вулицю не знайдено. Спробуйте ще раз.',
                 shouldContinue: false
             );
         }
 
-        // Check for exact match
-        $exact = $this->streetRepository->findByName($query);
+        if (count($streets) === 1) {
+            $street = $streets[0];
 
-        if ($exact) {
             return new SelectStreetResultDTO(
-                message: "Ви обрали вулицю: {$exact['name']}\nБудь ласка, введіть номер будинку (наприклад: 13 або 13-А):",
-                selectedStreetId: $exact['id'],
-                selectedStreetName: $exact['name'],
+                message: "Ви обрали вулицю: {$street['name']}\nБудь ласка, введіть номер будинку (наприклад: 13 або 13-А):",
+                selectedStreetId: $street['id'],
+                selectedStreetName: $street['name'],
                 shouldContinue: true
             );
         }
 
-        // Multiple matches - return options for keyboard
         return new SelectStreetResultDTO(
             message: 'Будь ласка, оберіть вулицю:',
-            streetOptions: $filtered,
+            streetOptions: $streets,
             shouldContinue: false
         );
     }
