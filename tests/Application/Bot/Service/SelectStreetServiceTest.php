@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Application\Bot\Service;
 
+use App\Application\Bot\Query\FilterStreetQueryHandler;
 use App\Application\Bot\Service\SelectStreetService;
 use App\Application\Interface\Repository\StreetRepositoryInterface;
+use App\Domain\Entity\Street;
 use PHPUnit\Framework\TestCase;
 
 final class SelectStreetServiceTest extends TestCase
@@ -17,14 +19,15 @@ final class SelectStreetServiceTest extends TestCase
     protected function setUp(): void
     {
         $this->streetRepository = $this->createMock(StreetRepositoryInterface::class);
-        $this->service = new SelectStreetService($this->streetRepository);
+        $queryHandler = new FilterStreetQueryHandler($this->streetRepository);
+        $this->service = new SelectStreetService($queryHandler);
     }
 
     public function testEmptyInputError(): void
     {
         $this->streetRepository
             ->expects($this->never())
-            ->method('filter');
+            ->method('getAllStreets');
 
         $result = $this->service->handle('');
 
@@ -38,7 +41,7 @@ final class SelectStreetServiceTest extends TestCase
     {
         $this->streetRepository
             ->expects($this->never())
-            ->method('filter');
+            ->method('getAllStreets');
 
         $result = $this->service->handle('   ');
 
@@ -50,8 +53,7 @@ final class SelectStreetServiceTest extends TestCase
     {
         $this->streetRepository
             ->expects($this->once())
-            ->method('filter')
-            ->with('Неіснуюча')
+            ->method('getAllStreets')
             ->willReturn([]);
 
         $result = $this->service->handle('Неіснуюча');
@@ -64,12 +66,11 @@ final class SelectStreetServiceTest extends TestCase
 
     public function testSingleMatchAutoSelected(): void
     {
-        $street = ['id' => 12783, 'name' => 'Шевченка Т.'];
+        $street = new Street(id: 12783, name: 'Шевченка Т.');
 
         $this->streetRepository
             ->expects($this->once())
-            ->method('filter')
-            ->with('Шевченка Т.')
+            ->method('getAllStreets')
             ->willReturn([$street]);
 
         $result = $this->service->handle('Шевченка Т.');
@@ -86,15 +87,14 @@ final class SelectStreetServiceTest extends TestCase
     public function testMultipleMatchesFound(): void
     {
         $streets = [
-            ['id' => 12783, 'name' => 'Шевченка Т.'],
-            ['id' => 12444, 'name' => 'Молдавська'],
-            ['id' => 12445, 'name' => 'Стрийська'],
+            new Street(id: 12783, name: 'вул. Шевченка'),
+            new Street(id: 12444, name: 'вул. Молдавська'),
+            new Street(id: 12445, name: 'вул. Стрийська'),
         ];
 
         $this->streetRepository
             ->expects($this->once())
-            ->method('filter')
-            ->with('вул')
+            ->method('getAllStreets')
             ->willReturn($streets);
 
         $result = $this->service->handle('вул');
@@ -104,17 +104,15 @@ final class SelectStreetServiceTest extends TestCase
         self::assertFalse($result->hasExactMatch());
         self::assertSame('Будь ласка, оберіть вулицю:', $result->message);
         self::assertCount(3, $result->streetOptions);
-        self::assertSame($streets, $result->streetOptions);
     }
 
     public function testSinglePartialMatchAutoSelected(): void
     {
-        $street = ['id' => 12783, 'name' => 'Шевченка Т.'];
+        $street = new Street(id: 12783, name: 'Шевченка Т.');
 
         $this->streetRepository
             ->expects($this->once())
-            ->method('filter')
-            ->with('Шевч')
+            ->method('getAllStreets')
             ->willReturn([$street]);
 
         $result = $this->service->handle('Шевч');
@@ -127,12 +125,11 @@ final class SelectStreetServiceTest extends TestCase
 
     public function testTrimsWhitespaceFromQuery(): void
     {
-        $street = ['id' => 12783, 'name' => 'Шевченка Т.'];
+        $street = new Street(id: 12783, name: 'Шевченка Т.');
 
         $this->streetRepository
             ->expects($this->once())
-            ->method('filter')
-            ->with('Шевченка Т.')
+            ->method('getAllStreets')
             ->willReturn([$street]);
 
         $result = $this->service->handle('  Шевченка Т.  ');
@@ -143,12 +140,11 @@ final class SelectStreetServiceTest extends TestCase
 
     public function testHandlesCyrillicTextCorrectly(): void
     {
-        $street = ['id' => 12444, 'name' => 'Молдавська'];
+        $street = new Street(id: 12444, name: 'Молдавська');
 
         $this->streetRepository
             ->expects($this->once())
-            ->method('filter')
-            ->with('Молдавська')
+            ->method('getAllStreets')
             ->willReturn([$street]);
 
         $result = $this->service->handle('Молдавська');
@@ -160,14 +156,13 @@ final class SelectStreetServiceTest extends TestCase
     public function testMultipleResultsShowOptions(): void
     {
         $streets = [
-            ['id' => 12783, 'name' => 'Київська'],
-            ['id' => 99999, 'name' => 'Київська бічна'],
+            new Street(id: 12783, name: 'Київська основна'),
+            new Street(id: 99999, name: 'Київська бічна'),
         ];
 
         $this->streetRepository
             ->expects($this->once())
-            ->method('filter')
-            ->with('Київська')
+            ->method('getAllStreets')
             ->willReturn($streets);
 
         $result = $this->service->handle('Київська');

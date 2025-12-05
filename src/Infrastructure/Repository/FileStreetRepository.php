@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Infrastructure\Repository;
 
 use App\Application\Interface\Repository\StreetRepositoryInterface;
+use App\Domain\Entity\Street;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 final class FileStreetRepository implements StreetRepositoryInterface
 {
-    /** @var array<int, array{id: int, name: string, name_lower: string}> */
+    /** @var Street[] */
     private array $streets = [];
 
     public function __construct(ParameterBagInterface $params)
@@ -32,36 +33,12 @@ final class FileStreetRepository implements StreetRepositoryInterface
         $decoded = json_decode($json, true) ?: [];
 
         foreach ($decoded as $st) {
-            $this->streets[] = [
-                'id' => $st['id'],
-                'name' => $st['name'],
-                'name_lower' => mb_strtolower($st['name']),
-            ];
+            $this->streets[] = new Street($st['id'], $st['name']);
         }
     }
 
-    public function filter(string $query): array
+    public function getAllStreets(): array
     {
-        $q = mb_strtolower(trim($query));
-
-        $exactMatch = null;
-        $results = [];
-
-        foreach ($this->streets as $st) {
-            if ($st['name_lower'] === $q) {
-                $exactMatch = ['id' => $st['id'], 'name' => $st['name']];
-                break;
-            }
-
-            if (str_contains($st['name_lower'], $q)) {
-                $results[] = ['id' => $st['id'], 'name' => $st['name']];
-            }
-        }
-
-        if ($exactMatch !== null) {
-            return [$exactMatch];
-        }
-
-        return $results;
+        return $this->streets;
     }
 }

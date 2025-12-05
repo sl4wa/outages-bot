@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Infrastructure\Repository;
 
+use App\Domain\Entity\Street;
 use App\Infrastructure\Repository\FileStreetRepository;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -22,35 +23,19 @@ final class FileStreetRepositoryTest extends TestCase
         $this->repository = new FileStreetRepository($params);
     }
 
-    public function testExactMatchReturnsSingleResult(): void
+    public function testGetAllStreetsReturnsAllStreets(): void
     {
-        $result = $this->repository->filter('Сихівська');
-
-        self::assertCount(1, $result);
-        self::assertSame(1, $result[0]['id']);
-        self::assertSame('Сихівська', $result[0]['name']);
-    }
-
-    public function testExactMatchCaseInsensitive(): void
-    {
-        $result = $this->repository->filter('сихівська');
-
-        self::assertCount(1, $result);
-        self::assertSame(1, $result[0]['id']);
-        self::assertSame('Сихівська', $result[0]['name']);
-    }
-
-    public function testPartialMatchReturnsMultipleResults(): void
-    {
-        $result = $this->repository->filter('Сих');
+        $result = $this->repository->getAllStreets();
 
         self::assertCount(2, $result);
+        self::assertContainsOnlyInstancesOf(Street::class, $result);
     }
 
-    public function testNoMatchReturnsEmptyArray(): void
+    public function testGetAllStreetsReturnsStreetEntities(): void
     {
-        $result = $this->repository->filter('Неіснуюча');
+        $result = $this->repository->getAllStreets();
 
-        self::assertCount(0, $result);
+        self::assertSame(1, $result[0]->id);
+        self::assertSame('Сихівська', $result[0]->name);
     }
 }

@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Application\Bot\Service;
 
 use App\Application\Bot\DTO\SelectStreetResultDTO;
-use App\Application\Interface\Repository\StreetRepositoryInterface;
+use App\Application\Bot\Query\FilterStreetQueryHandler;
 
 final readonly class SelectStreetService
 {
     public function __construct(
-        private StreetRepositoryInterface $streetRepository
+        private FilterStreetQueryHandler $filterStreetsQueryHandler
     ) {
     }
 
@@ -25,7 +25,7 @@ final readonly class SelectStreetService
             );
         }
 
-        $streets = $this->streetRepository->filter($query);
+        $streets = $this->filterStreetsQueryHandler->handle($query);
 
         if ($streets === []) {
             return new SelectStreetResultDTO(
@@ -38,9 +38,9 @@ final readonly class SelectStreetService
             $street = $streets[0];
 
             return new SelectStreetResultDTO(
-                message: "Ви обрали вулицю: {$street['name']}\nБудь ласка, введіть номер будинку (наприклад: 13 або 13-А):",
-                selectedStreetId: $street['id'],
-                selectedStreetName: $street['name'],
+                message: "Ви обрали вулицю: {$street->name}\nБудь ласка, введіть номер будинку (наприклад: 13 або 13-А):",
+                selectedStreetId: $street->id,
+                selectedStreetName: $street->name,
                 shouldContinue: true
             );
         }

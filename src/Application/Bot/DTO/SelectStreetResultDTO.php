@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Application\Bot\DTO;
 
+use App\Domain\Entity\Street;
+
 final readonly class SelectStreetResultDTO
 {
     /**
-     * @param array<int, array{id: int, name: string}>|null $streetOptions
+     * @param Street[]|null $streetOptions
      */
     public function __construct(
         public string $message,

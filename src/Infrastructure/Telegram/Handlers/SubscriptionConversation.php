@@ -67,7 +67,7 @@ final class SubscriptionConversation extends Conversation
             );
 
             foreach ($result->streetOptions as $street) {
-                $replyMarkup->addRow(KeyboardButton::make($street['name']));
+                $replyMarkup->addRow(KeyboardButton::make($street->name));
             }
             $bot->sendMessage($result->message, reply_markup: $replyMarkup);
         } else {

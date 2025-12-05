@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Application\Interface\Repository;
 
+use App\Domain\Entity\Street;
+
 interface StreetRepositoryInterface
 {
     /**
-     * @return array<int, array{id: int, name: string}>
+     * @return Street[]
      */
-    public function filter(string $query): array;
+    public function getAllStreets(): array;
 }
