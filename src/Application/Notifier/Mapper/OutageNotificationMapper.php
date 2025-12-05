@@ -13,9 +13,9 @@ final class OutageNotificationMapper
     {
         return new NotificationSenderDTO(
             userId: $userId,
-            city: $outage->address->city,
+            city: $outage->address->city ?? '',
             streetName: $outage->address->streetName,
-            buildings: $outage->address->buildings,
+            buildings: array_values($outage->address->buildings),
             start: $outage->period->startDate,
             end: $outage->period->endDate,
             comment: $outage->description->value,

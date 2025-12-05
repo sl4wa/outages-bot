@@ -6,6 +6,9 @@ namespace App\Application\Bot\DTO;
 
 final readonly class SelectStreetResultDTO
 {
+    /**
+     * @param array<int, array{id: int, name: string}>|null $streetOptions
+     */
     public function __construct(
         public string $message,
         public ?array $streetOptions = null,

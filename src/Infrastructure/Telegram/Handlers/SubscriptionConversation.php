@@ -31,7 +31,15 @@ final class SubscriptionConversation extends Conversation
 
     public function askStreet(Nutgram $bot): void
     {
-        $result = $this->askStreetService->handle($bot->chatId());
+        $chatId = $bot->chatId();
+
+        if ($chatId === null) {
+            $this->end();
+
+            return;
+        }
+
+        $result = $this->askStreetService->handle($chatId);
         $bot->sendMessage($result->message);
         $this->next('selectStreet');
     }
@@ -42,7 +50,7 @@ final class SubscriptionConversation extends Conversation
         $result = $this->selectStreetService->handle($query);
 
         // Handle exact match - move to next step
-        if ($result->hasExactMatch()) {
+        if ($result->hasExactMatch() && $result->selectedStreetId !== null && $result->selectedStreetName !== null) {
             $this->selectedStreetId = $result->selectedStreetId;
             $this->selectedStreetName = $result->selectedStreetName;
             $bot->sendMessage($result->message, reply_markup: ReplyKeyboardRemove::make(true));
@@ -52,7 +60,7 @@ final class SubscriptionConversation extends Conversation
         }
 
         // Handle multiple street options - build keyboard
-        if ($result->hasMultipleOptions()) {
+        if ($result->hasMultipleOptions() && $result->streetOptions !== null) {
             $replyMarkup = ReplyKeyboardMarkup::make(
                 resize_keyboard: true,
                 one_time_keyboard: true
@@ -72,10 +80,18 @@ final class SubscriptionConversation extends Conversation
 
     public function askBuilding(Nutgram $bot): void
     {
+        $chatId = $bot->chatId();
+
+        if ($chatId === null) {
+            $this->end();
+
+            return;
+        }
+
         $building = $bot->message()->text ?? '';
 
         $result = $this->askBuildingService->handle(
-            chatId: $bot->chatId(),
+            chatId: $chatId,
             selectedStreetId: $this->selectedStreetId,
             selectedStreetName: $this->selectedStreetName,
             building: $building

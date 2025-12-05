@@ -22,6 +22,10 @@ final readonly class TelegramUserInfoProvider implements TelegramUserInfoProvide
         try {
             $chat = $this->nutgram->getChat($chatId);
 
+            if ($chat === null) {
+                throw new RuntimeException("Chat not found for chat {$chatId}");
+            }
+
             return new UserInfoDTO(
                 chatId: $chat->id,
                 username: $chat->username,

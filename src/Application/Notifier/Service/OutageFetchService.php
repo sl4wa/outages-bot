@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Notifier\Service;
 
 use App\Application\Interface\OutageProviderInterface;
+use App\Application\Notifier\DTO\OutageDTO;
 use App\Domain\Entity\Outage;
 use App\Domain\ValueObject\OutageAddress;
 use App\Domain\ValueObject\OutageDescription;
@@ -25,7 +26,7 @@ final readonly class OutageFetchService
         $dtos = $this->outageProvider->fetchOutages();
 
         return array_map(
-            fn ($dto) => new Outage(
+            fn (OutageDTO $dto) => new Outage(
                 $dto->id,
                 new OutagePeriod($dto->start, $dto->end),
                 new OutageAddress($dto->streetId, $dto->streetName, $dto->buildings, $dto->city),

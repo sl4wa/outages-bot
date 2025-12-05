@@ -27,14 +27,17 @@ final class FileUserRepository implements UserRepositoryInterface
         }
     }
 
+    /**
+     * @return User[]
+     */
     public function findAll(): array
     {
         $users = [];
 
-        foreach (glob($this->dataDir . '/*.txt') as $file) {
-            if ($user = $this->loadFromFile($file)) {
-                $users[] = $user;
-            }
+        $files = glob($this->dataDir . '/*.txt');
+
+        foreach ($files ?: [] as $file) {
+            $users[] = $this->loadFromFile($file);
         }
 
         return $users;
@@ -79,7 +82,7 @@ final class FileUserRepository implements UserRepositoryInterface
         return $this->dataDir . '/' . $chatId . '.txt';
     }
 
-    private function loadFromFile(string $file): ?User
+    private function loadFromFile(string $file): User
     {
         $id = (int) basename($file, '.txt');
         $fields = [
@@ -92,7 +95,7 @@ final class FileUserRepository implements UserRepositoryInterface
         ];
         $data = file($file, \FILE_IGNORE_NEW_LINES | \FILE_SKIP_EMPTY_LINES);
 
-        foreach ($data as $line) {
+        foreach ($data ?: [] as $line) {
             if (str_contains($line, ':')) {
                 [$key, $val] = array_map('trim', explode(':', $line, 2));
 

@@ -21,7 +21,13 @@ final class SubscriptionInfoCommand extends Command
 
     public function handle(Nutgram $bot): void
     {
-        $subscription = $this->getUserSubscriptionQueryHandler->handle($bot->chatId());
+        $chatId = $bot->chatId();
+
+        if ($chatId === null) {
+            return;
+        }
+
+        $subscription = $this->getUserSubscriptionQueryHandler->handle($chatId);
 
         $message = $subscription
             ? "Ваша поточна підписка:\nВулиця: {$subscription->streetName}\nБудинок: {$subscription->building}"

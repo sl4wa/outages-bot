@@ -76,7 +76,7 @@ final class UsersCommand extends Command
 
         // Remove invisible/control characters
         $cleaned = preg_replace('/[\p{Cf}\x{3164}]/u', '', $value);
-        $trimmed = trim($cleaned);
+        $trimmed = trim((string) $cleaned);
 
         return $trimmed !== '' ? $trimmed : '-';
     }

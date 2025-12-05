@@ -28,28 +28,64 @@ final class ApiOutageProvider implements OutageProviderInterface
             return [];
         }
         $data = $response->toArray();
+        /** @var array<int, array<string, mixed>> $items */
         $items = $data['hydra:member'] ?? [];
 
-        return array_map(function (array $row): OutageDTO {
-            $comment = (string) ($row['koment'] ?? '');
-            $comment = preg_replace('/[\r\n]+/', ' ', $comment);
+        $result = [];
+
+        foreach ($items as $row) {
+            $comment = $this->getString($row, 'koment');
+            $comment = preg_replace('/[\r\n]+/', ' ', $comment) ?? '';
             $comment = trim($comment);
 
             $buildingsRaw = $row['buildingNames'] ?? '';
+            /** @var string[] $buildings */
             $buildings = is_array($buildingsRaw)
-                ? array_map('trim', $buildingsRaw)
-                : array_filter(array_map('trim', explode(',', (string) $buildingsRaw)));
+                ? array_map(fn (mixed $b): string => trim($this->castToString($b)), $buildingsRaw)
+                : array_values(array_filter(array_map('trim', explode(',', $this->castToString($buildingsRaw)))));
 
-            return new OutageDTO(
-                (int) ($row['id'] ?? 0),
-                new DateTimeImmutable($row['dateEvent']),
-                new DateTimeImmutable($row['datePlanIn']),
-                (string) ($row['city']['name'] ?? ''),
-                (int) ($row['street']['id'] ?? 0),
-                (string) ($row['street']['name'] ?? ''),
+            /** @var array<string, mixed> $city */
+            $city = is_array($row['city'] ?? null) ? $row['city'] : [];
+            /** @var array<string, mixed> $street */
+            $street = is_array($row['street'] ?? null) ? $row['street'] : [];
+
+            $result[] = new OutageDTO(
+                $this->getInt($row, 'id'),
+                new DateTimeImmutable($this->getString($row, 'dateEvent') ?: 'now'),
+                new DateTimeImmutable($this->getString($row, 'datePlanIn') ?: 'now'),
+                $this->getString($city, 'name'),
+                $this->getInt($street, 'id'),
+                $this->getString($street, 'name'),
                 $buildings,
                 $comment,
             );
-        }, $items);
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    private function getString(array $data, string $key): string
+    {
+        $value = $data[$key] ?? '';
+
+        return is_string($value) || is_numeric($value) ? (string) $value : '';
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    private function getInt(array $data, string $key): int
+    {
+        $value = $data[$key] ?? 0;
+
+        return is_numeric($value) ? (int) $value : 0;
+    }
+
+    private function castToString(mixed $value): string
+    {
+        return is_string($value) || is_numeric($value) ? (string) $value : '';
     }
 }

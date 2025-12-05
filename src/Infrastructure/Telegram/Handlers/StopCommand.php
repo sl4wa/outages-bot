@@ -21,7 +21,13 @@ final class StopCommand extends Command
 
     public function handle(Nutgram $bot): void
     {
-        $removed = $this->unsubscribeUserCommandHandler->handle($bot->chatId());
+        $chatId = $bot->chatId();
+
+        if ($chatId === null) {
+            return;
+        }
+
+        $removed = $this->unsubscribeUserCommandHandler->handle($chatId);
 
         $message = $removed
             ? 'Ви успішно відписалися від сповіщень про відключення електроенергії.'

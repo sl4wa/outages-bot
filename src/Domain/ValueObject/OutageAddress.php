@@ -23,8 +23,15 @@ final readonly class OutageAddress
             throw new InvalidArgumentException('Street name cannot be empty');
         }
 
-        if (empty($buildings) || array_filter($buildings, fn ($b) => !is_string($b) || trim($b) === '')) {
+        if (empty($buildings)) {
             throw new InvalidArgumentException('Buildings must be non-empty strings');
+        }
+
+        foreach ($buildings as $building) {
+            // @phpstan-ignore function.alreadyNarrowedType (runtime validation for mixed input)
+            if (!is_string($building) || trim($building) === '') {
+                throw new InvalidArgumentException('Buildings must be non-empty strings');
+            }
         }
     }
 

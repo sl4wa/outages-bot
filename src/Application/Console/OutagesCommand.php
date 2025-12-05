@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Application\Console;
 
 use App\Application\Interface\OutageProviderInterface;
-use DateTimeInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
@@ -38,19 +37,17 @@ final class OutagesCommand extends Command
         $table->setHeaders(['City', 'Street', 'StreetID', 'Buildings', 'Period', 'Comment']);
 
         foreach ($outages as $outage) {
-            $buildings = is_array($outage->buildings) ? implode(', ', $outage->buildings) : ($outage->building ?? '');
-
             $table->addRow([
                 $outage->city,
-                $outage->streetName ?? $outage->street ?? '',
-                $outage->streetId ?? $outage->street ?? '',
-                $buildings,
+                $outage->streetName,
+                $outage->streetId,
+                implode(', ', $outage->buildings),
                 sprintf(
                     '%s - %s',
-                    $outage->start instanceof DateTimeInterface ? $outage->start->format('Y-m-d H:i') : $outage->start,
-                    $outage->end instanceof DateTimeInterface ? $outage->end->format('Y-m-d H:i') : $outage->end
+                    $outage->start->format('Y-m-d H:i'),
+                    $outage->end->format('Y-m-d H:i')
                 ),
-                $outage->comment ?? '',
+                $outage->comment,
             ]);
         }
 

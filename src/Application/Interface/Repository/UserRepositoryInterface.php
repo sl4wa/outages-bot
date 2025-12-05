@@ -8,6 +8,9 @@ use App\Domain\Entity\User;
 
 interface UserRepositoryInterface
 {
+    /**
+     * @return User[]
+     */
     public function findAll(): array;
 
     public function find(int $chatId): ?User;

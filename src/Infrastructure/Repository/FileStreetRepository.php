@@ -12,6 +12,7 @@ final class FileStreetRepository implements StreetRepositoryInterface
 {
     private string $streetsFile;
 
+    /** @var array<int, array{id: int, name: string}> */
     private array $streets = [];
 
     public function __construct(ParameterBagInterface $params)
@@ -24,12 +25,14 @@ final class FileStreetRepository implements StreetRepositoryInterface
         }
 
         $json = file_get_contents($this->streetsFile);
-        $this->streets = json_decode($json, true) ?: [];
-    }
 
-    public function all(): array
-    {
-        return $this->streets;
+        if ($json === false) {
+            throw new RuntimeException('Failed to read streets file: ' . $this->streetsFile);
+        }
+
+        /** @var array<int, array{id: int, name: string}> $decoded */
+        $decoded = json_decode($json, true) ?: [];
+        $this->streets = $decoded;
     }
 
     public function filter(string $query): array
@@ -48,17 +51,6 @@ final class FileStreetRepository implements StreetRepositoryInterface
 
         foreach ($this->streets as $st) {
             if (mb_strtolower($st['name']) === $norm) {
-                return $st;
-            }
-        }
-
-        return null;
-    }
-
-    public function findById(int $id): ?array
-    {
-        foreach ($this->streets as $st) {
-            if ($st['id'] === $id) {
                 return $st;
             }
         }
