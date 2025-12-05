@@ -10,6 +10,7 @@ use App\Application\Interface\Repository\UserRepositoryInterface;
 use App\Domain\Entity\User;
 use App\Domain\ValueObject\UserAddress;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 
 final class AskStreetServiceTest extends TestCase
 {
@@ -130,7 +131,7 @@ final class AskStreetServiceTest extends TestCase
             ->expects($this->once())
             ->method('find')
             ->with(12345)
-            ->willThrowException(new \RuntimeException('Corrupted data'));
+            ->willThrowException(new RuntimeException('Corrupted data'));
 
         $result = $this->service->handle(12345);
 

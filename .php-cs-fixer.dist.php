@@ -31,6 +31,9 @@ return (new PhpCsFixer\Config())
 
         // Arrays
         'array_syntax' => ['syntax' => 'short'],
+        'binary_operator_spaces' => [
+            'default' => 'single_space',
+        ],
         'no_multiline_whitespace_around_double_arrow' => true,
         'trim_array_spaces' => true,
         'whitespace_after_comma_in_array' => true,

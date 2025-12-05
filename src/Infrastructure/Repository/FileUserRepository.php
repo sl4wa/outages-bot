@@ -50,12 +50,12 @@ final class FileUserRepository implements UserRepositoryInterface
     public function save(User $user): void
     {
         $fields = [
-            'street_id'   => $user->address->streetId,
+            'street_id' => $user->address->streetId,
             'street_name' => $user->address->streetName,
-            'building'    => $user->address->building,
-            'start_date'  => $user->outageInfo ? $user->outageInfo->period->startDate->format(\DATE_ATOM) : '',
-            'end_date'    => $user->outageInfo ? $user->outageInfo->period->endDate->format(\DATE_ATOM) : '',
-            'comment'     => $user->outageInfo ? $user->outageInfo->description->value : '',
+            'building' => $user->address->building,
+            'start_date' => $user->outageInfo ? $user->outageInfo->period->startDate->format(\DATE_ATOM) : '',
+            'end_date' => $user->outageInfo ? $user->outageInfo->period->endDate->format(\DATE_ATOM) : '',
+            'comment' => $user->outageInfo ? $user->outageInfo->description->value : '',
         ];
         $lines = [];
 
@@ -83,12 +83,12 @@ final class FileUserRepository implements UserRepositoryInterface
     {
         $id = (int) basename($file, '.txt');
         $fields = [
-            'street_id'   => 0,
+            'street_id' => 0,
             'street_name' => '',
-            'building'    => '',
-            'start_date'  => '',
-            'end_date'    => '',
-            'comment'     => '',
+            'building' => '',
+            'start_date' => '',
+            'end_date' => '',
+            'comment' => '',
         ];
         $data = file($file, \FILE_IGNORE_NEW_LINES | \FILE_SKIP_EMPTY_LINES);
 

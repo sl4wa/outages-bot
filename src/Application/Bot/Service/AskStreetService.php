@@ -6,6 +6,7 @@ namespace App\Application\Bot\Service;
 
 use App\Application\Bot\DTO\AskStreetResultDTO;
 use App\Application\Bot\Query\GetUserSubscriptionQueryHandler;
+use Throwable;
 
 final readonly class AskStreetService
 {
@@ -18,7 +19,7 @@ final readonly class AskStreetService
     {
         try {
             $subscription = $this->getUserSubscriptionQueryHandler->handle($chatId);
-        } catch (\Throwable) {
+        } catch (Throwable) {
             // If there's any error loading existing subscription (e.g., corrupted data),
             // ignore it and treat as new subscription
             $subscription = null;
