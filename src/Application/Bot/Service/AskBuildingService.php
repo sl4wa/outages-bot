@@ -29,16 +29,6 @@ final readonly class AskBuildingService
             );
         }
 
-        // Validate building input
-        $building = trim($building);
-
-        if ($building === '') {
-            return new AskBuildingResultDTO(
-                message: 'Введіть номер будинку.',
-                isSuccess: false
-            );
-        }
-
         try {
             $result = $this->createOrUpdateUserSubscriptionCommandHandler->handle(
                 chatId: $chatId,

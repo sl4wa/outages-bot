@@ -38,7 +38,7 @@ final readonly class SelectStreetService
             $street = $streets[0];
 
             return new SelectStreetResultDTO(
-                message: "Ви обрали вулицю: {$street->name}\nБудь ласка, введіть номер будинку (наприклад: 13 або 13-А):",
+                message: "Ви обрали вулицю: {$street->name}\nБудь ласка, введіть номер будинку:",
                 selectedStreetId: $street->id,
                 selectedStreetName: $street->name,
                 shouldContinue: true

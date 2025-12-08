@@ -72,7 +72,7 @@ final class AskBuildingServiceTest extends TestCase
         );
 
         self::assertFalse($result->isSuccess);
-        self::assertSame('Введіть номер будинку.', $result->message);
+        self::assertStringContainsString('Невірний формат номера будинку', $result->message);
     }
 
     public function testWhitespaceOnlyBuildingError(): void
@@ -89,7 +89,7 @@ final class AskBuildingServiceTest extends TestCase
         );
 
         self::assertFalse($result->isSuccess);
-        self::assertSame('Введіть номер будинку.', $result->message);
+        self::assertStringContainsString('Невірний формат номера будинку', $result->message);
     }
 
     /**
