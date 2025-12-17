@@ -31,7 +31,6 @@ final class SearchStreetServiceTest extends TestCase
 
         $result = $this->service->handle('');
 
-        self::assertFalse($result->shouldContinue);
         self::assertSame('Введіть назву вулиці.', $result->message);
         self::assertFalse($result->hasMultipleOptions());
         self::assertFalse($result->hasExactMatch());
@@ -45,7 +44,6 @@ final class SearchStreetServiceTest extends TestCase
 
         $result = $this->service->handle('   ');
 
-        self::assertFalse($result->shouldContinue);
         self::assertSame('Введіть назву вулиці.', $result->message);
     }
 
@@ -58,7 +56,6 @@ final class SearchStreetServiceTest extends TestCase
 
         $result = $this->service->handle('Неіснуюча');
 
-        self::assertFalse($result->shouldContinue);
         self::assertSame('Вулицю не знайдено. Спробуйте ще раз.', $result->message);
         self::assertFalse($result->hasMultipleOptions());
         self::assertFalse($result->hasExactMatch());
@@ -75,7 +72,6 @@ final class SearchStreetServiceTest extends TestCase
 
         $result = $this->service->handle('Шевченка Т.');
 
-        self::assertTrue($result->shouldContinue);
         self::assertTrue($result->hasExactMatch());
         self::assertFalse($result->hasMultipleOptions());
         self::assertSame(12783, $result->selectedStreetId);
@@ -99,7 +95,6 @@ final class SearchStreetServiceTest extends TestCase
 
         $result = $this->service->handle('вул');
 
-        self::assertFalse($result->shouldContinue);
         self::assertTrue($result->hasMultipleOptions());
         self::assertFalse($result->hasExactMatch());
         self::assertSame('Будь ласка, оберіть вулицю:', $result->message);
@@ -117,7 +112,6 @@ final class SearchStreetServiceTest extends TestCase
 
         $result = $this->service->handle('Шевч');
 
-        self::assertTrue($result->shouldContinue);
         self::assertTrue($result->hasExactMatch());
         self::assertSame(12783, $result->selectedStreetId);
         self::assertSame('Шевченка Т.', $result->selectedStreetName);

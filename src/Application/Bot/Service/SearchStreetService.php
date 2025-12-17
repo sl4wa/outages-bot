@@ -21,7 +21,6 @@ final readonly class SearchStreetService
         if ($query === '') {
             return new SearchStreetResultDTO(
                 message: 'Введіть назву вулиці.',
-                shouldContinue: false
             );
         }
 
@@ -30,7 +29,6 @@ final readonly class SearchStreetService
         if ($streets === []) {
             return new SearchStreetResultDTO(
                 message: 'Вулицю не знайдено. Спробуйте ще раз.',
-                shouldContinue: false
             );
         }
 
@@ -41,14 +39,12 @@ final readonly class SearchStreetService
                 message: "Ви обрали вулицю: {$street->name}\nБудь ласка, введіть номер будинку:",
                 selectedStreetId: $street->id,
                 selectedStreetName: $street->name,
-                shouldContinue: true
             );
         }
 
         return new SearchStreetResultDTO(
             message: 'Будь ласка, оберіть вулицю:',
             streetOptions: $streets,
-            shouldContinue: false
         );
     }
 }

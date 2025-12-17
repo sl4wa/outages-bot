@@ -90,25 +90,26 @@ final class StartHandler extends Conversation
 
         $building = $bot->message()->text ?? '';
 
+        if ($this->selectedStreetId === 0 || $this->selectedStreetName === '') {
+            $bot->sendMessage('Сесія застаріла. Будь ласка, почніть знову з /start');
+            $this->end();
+
+            return;
+        }
+
         $result = $this->saveSubscriptionService->handle(
             chatId: $chatId,
-            selectedStreetId: $this->selectedStreetId,
-            selectedStreetName: $this->selectedStreetName,
+            streetId: $this->selectedStreetId,
+            streetName: $this->selectedStreetName,
             building: $building
         );
 
-        if ($result->isSuccess) {
+        if ($result->success) {
             $bot->sendMessage($result->message, reply_markup: ReplyKeyboardRemove::make(true));
             $this->end();
         } else {
             $bot->sendMessage($result->message);
-
-            // If state validation failed, end conversation; otherwise retry
-            if (!$this->selectedStreetId || !$this->selectedStreetName) {
-                $this->end();
-            } else {
-                $this->next('saveSubscription');
-            }
+            $this->next('saveSubscription');
         }
     }
 }

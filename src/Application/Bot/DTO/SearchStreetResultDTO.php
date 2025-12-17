@@ -16,7 +16,6 @@ final readonly class SearchStreetResultDTO
         public ?array $streetOptions = null,
         public ?int $selectedStreetId = null,
         public ?string $selectedStreetName = null,
-        public bool $shouldContinue = true
     ) {
     }
 

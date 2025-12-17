@@ -17,34 +17,26 @@ final readonly class SaveSubscriptionService
 
     public function handle(
         int $chatId,
-        ?int $selectedStreetId,
-        ?string $selectedStreetName,
+        int $streetId,
+        string $streetName,
         string $building
     ): SaveSubscriptionResultDTO {
-        // Validate state
-        if (!$selectedStreetId || !$selectedStreetName) {
-            return new SaveSubscriptionResultDTO(
-                message: 'Підписка не завершена. Будь ласка, почніть знову.',
-                isSuccess: false
-            );
-        }
-
         try {
             $result = $this->createOrUpdateUserSubscriptionCommandHandler->handle(
                 chatId: $chatId,
-                streetId: $selectedStreetId,
-                streetName: $selectedStreetName,
+                streetId: $streetId,
+                streetName: $streetName,
                 building: $building,
             );
 
             return new SaveSubscriptionResultDTO(
                 message: "Ви підписалися на сповіщення про відключення електроенергії для вулиці {$result->streetName}, будинок {$result->building}.",
-                isSuccess: true
+                success: true,
             );
-        } catch (InvalidBuildingFormatException) {
+        } catch (InvalidBuildingFormatException $e) {
             return new SaveSubscriptionResultDTO(
-                message: 'Невірний формат номера будинку. Приклад: 13 або 13-А',
-                isSuccess: false
+                message: $e->getMessage(),
+                success: false,
             );
         }
     }

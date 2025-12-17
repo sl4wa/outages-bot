@@ -30,12 +30,12 @@ final class SaveSubscriptionServiceTest extends TestCase
 
         $result = $this->service->handle(
             chatId: 12345,
-            selectedStreetId: 123,
-            selectedStreetName: 'Шевченка',
+            streetId: 123,
+            streetName: 'Шевченка',
             building: '13'
         );
 
-        self::assertTrue($result->isSuccess);
+        self::assertTrue($result->success);
         self::assertStringContainsString('Ви підписалися', $result->message);
         self::assertStringContainsString('Шевченка', $result->message);
         self::assertStringContainsString('13', $result->message);
@@ -49,12 +49,12 @@ final class SaveSubscriptionServiceTest extends TestCase
 
         $result = $this->service->handle(
             chatId: 12345,
-            selectedStreetId: 123,
-            selectedStreetName: 'Шевченка',
+            streetId: 123,
+            streetName: 'Шевченка',
             building: '196-А'
         );
 
-        self::assertTrue($result->isSuccess);
+        self::assertTrue($result->success);
         self::assertStringContainsString('196-А', $result->message);
     }
 
@@ -66,12 +66,12 @@ final class SaveSubscriptionServiceTest extends TestCase
 
         $result = $this->service->handle(
             chatId: 12345,
-            selectedStreetId: 123,
-            selectedStreetName: 'Шевченка',
+            streetId: 123,
+            streetName: 'Шевченка',
             building: ''
         );
 
-        self::assertFalse($result->isSuccess);
+        self::assertFalse($result->success);
         self::assertStringContainsString('Невірний формат номера будинку', $result->message);
     }
 
@@ -83,12 +83,12 @@ final class SaveSubscriptionServiceTest extends TestCase
 
         $result = $this->service->handle(
             chatId: 12345,
-            selectedStreetId: 123,
-            selectedStreetName: 'Шевченка',
+            streetId: 123,
+            streetName: 'Шевченка',
             building: '   '
         );
 
-        self::assertFalse($result->isSuccess);
+        self::assertFalse($result->success);
         self::assertStringContainsString('Невірний формат номера будинку', $result->message);
     }
 
@@ -103,13 +103,13 @@ final class SaveSubscriptionServiceTest extends TestCase
 
         $result = $this->service->handle(
             chatId: 12345,
-            selectedStreetId: 123,
-            selectedStreetName: 'Шевченка',
+            streetId: 123,
+            streetName: 'Шевченка',
             building: $building
         );
 
-        self::assertFalse($result->isSuccess);
-        self::assertSame('Невірний формат номера будинку. Приклад: 13 або 13-А', $result->message);
+        self::assertFalse($result->success);
+        self::assertStringContainsString('Невірний формат номера будинку', $result->message);
     }
 
     public static function invalidBuildingFormatsProvider(): array
@@ -122,56 +122,5 @@ final class SaveSubscriptionServiceTest extends TestCase
             'only letters' => ['abc'],
             'number after hyphen' => ['13-1'],
         ];
-    }
-
-    public function testMissingStreetIdError(): void
-    {
-        $this->userRepository
-            ->expects($this->never())
-            ->method('save');
-
-        $result = $this->service->handle(
-            chatId: 12345,
-            selectedStreetId: null,
-            selectedStreetName: 'Шевченка',
-            building: '13'
-        );
-
-        self::assertFalse($result->isSuccess);
-        self::assertSame('Підписка не завершена. Будь ласка, почніть знову.', $result->message);
-    }
-
-    public function testMissingStreetNameError(): void
-    {
-        $this->userRepository
-            ->expects($this->never())
-            ->method('save');
-
-        $result = $this->service->handle(
-            chatId: 12345,
-            selectedStreetId: 123,
-            selectedStreetName: null,
-            building: '13'
-        );
-
-        self::assertFalse($result->isSuccess);
-        self::assertSame('Підписка не завершена. Будь ласка, почніть знову.', $result->message);
-    }
-
-    public function testMissingBothStreetIdAndNameError(): void
-    {
-        $this->userRepository
-            ->expects($this->never())
-            ->method('save');
-
-        $result = $this->service->handle(
-            chatId: 12345,
-            selectedStreetId: null,
-            selectedStreetName: null,
-            building: '13'
-        );
-
-        self::assertFalse($result->isSuccess);
-        self::assertSame('Підписка не завершена. Будь ласка, почніть знову.', $result->message);
     }
 }

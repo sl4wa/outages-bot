@@ -8,7 +8,7 @@ final readonly class SaveSubscriptionResultDTO
 {
     public function __construct(
         public string $message,
-        public bool $isSuccess
+        public bool $success = true,
     ) {
     }
 }

@@ -74,7 +74,7 @@ final class UserAddressTest extends TestCase
     public function testRejectsInvalidBuildingFormats(string $building): void
     {
         $this->expectException(InvalidBuildingFormatException::class);
-        $this->expectExceptionMessage('Building format is invalid. Expected format: number or number-letter (e.g., 13 or 13-A)');
+        $this->expectExceptionMessage('Невірний формат номера будинку. Приклад: 13 або 13-А');
 
         new UserAddress(
             streetId: 123,
@@ -112,8 +112,8 @@ final class UserAddressTest extends TestCase
 
     public function testThrowsExceptionForEmptyBuilding(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Building cannot be empty');
+        $this->expectException(InvalidBuildingFormatException::class);
+        $this->expectExceptionMessage('Невірний формат номера будинку');
 
         new UserAddress(
             streetId: 123,
@@ -124,8 +124,8 @@ final class UserAddressTest extends TestCase
 
     public function testThrowsExceptionForWhitespaceOnlyBuilding(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Building cannot be empty');
+        $this->expectException(InvalidBuildingFormatException::class);
+        $this->expectExceptionMessage('Невірний формат номера будинку');
 
         new UserAddress(
             streetId: 123,

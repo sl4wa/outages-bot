@@ -24,11 +24,11 @@ final readonly class UserAddress
         }
 
         if (trim($building) === '') {
-            throw new InvalidBuildingFormatException('Building cannot be empty');
+            throw new InvalidBuildingFormatException('Невірний формат номера будинку');
         }
 
         if (!preg_match('/^[0-9]+(-[A-ZА-ЯІЇЄҐ])?$/u', $building)) {
-            throw new InvalidBuildingFormatException('Building format is invalid. Expected format: number or number-letter (e.g., 13 or 13-A)');
+            throw new InvalidBuildingFormatException('Невірний формат номера будинку. Приклад: 13 або 13-А');
         }
     }
 }
