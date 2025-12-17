@@ -4,18 +4,17 @@ declare(strict_types=1);
 
 namespace App\Application\Bot\Service;
 
-use App\Application\Bot\DTO\AskStreetResultDTO;
 use App\Application\Bot\Query\GetUserSubscriptionQueryHandler;
 use Throwable;
 
-final readonly class AskStreetService
+final readonly class ShowSubscriptionService
 {
     public function __construct(
         private GetUserSubscriptionQueryHandler $getUserSubscriptionQueryHandler
     ) {
     }
 
-    public function handle(int $chatId): AskStreetResultDTO
+    public function handle(int $chatId): string
     {
         try {
             $subscription = $this->getUserSubscriptionQueryHandler->handle($chatId);
@@ -26,12 +25,10 @@ final readonly class AskStreetService
         }
 
         if ($subscription) {
-            $message = "Ваша поточна підписка:\nВулиця: {$subscription->streetName}\nБудинок: {$subscription->building}\n\n"
-                . 'Будь ласка, оберіть нову вулицю для оновлення підписки або введіть назву вулиці:';
-        } else {
-            $message = 'Будь ласка, введіть назву вулиці:';
+            return "Ваша поточна підписка:\nВулиця: {$subscription->streetName}\nБудинок: {$subscription->building}\n\n"
+                . 'Будь ласка, введіть нову назву вулиці для оновлення підписки:';
         }
 
-        return new AskStreetResultDTO($message);
+        return 'Будь ласка, введіть назву вулиці:';
     }
 }

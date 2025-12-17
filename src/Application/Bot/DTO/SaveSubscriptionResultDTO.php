@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Application\Bot\DTO;
 
-final readonly class AskStreetResultDTO
+final readonly class SaveSubscriptionResultDTO
 {
     public function __construct(
-        public string $message
+        public string $message,
+        public bool $isSuccess
     ) {
     }
 }

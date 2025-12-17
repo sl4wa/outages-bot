@@ -4,32 +4,32 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Telegram\Handlers;
 
-use App\Application\Bot\Service\AskBuildingService;
-use App\Application\Bot\Service\AskStreetService;
-use App\Application\Bot\Service\SelectStreetService;
+use App\Application\Bot\Service\SaveSubscriptionService;
+use App\Application\Bot\Service\SearchStreetService;
+use App\Application\Bot\Service\ShowSubscriptionService;
 use SergiX44\Nutgram\Conversations\Conversation;
 use SergiX44\Nutgram\Nutgram;
 use SergiX44\Nutgram\Telegram\Types\Keyboard\KeyboardButton;
 use SergiX44\Nutgram\Telegram\Types\Keyboard\ReplyKeyboardMarkup;
 use SergiX44\Nutgram\Telegram\Types\Keyboard\ReplyKeyboardRemove;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 
-final class SubscriptionConversation extends Conversation
+#[Autoconfigure(public: true, shared: false)]
+final class StartHandler extends Conversation
 {
-    protected ?string $step = 'askStreet';
-
     // Data persists between steps
     public int $selectedStreetId = 0;
 
     public string $selectedStreetName = '';
 
     public function __construct(
-        private readonly AskStreetService $askStreetService,
-        private readonly SelectStreetService $selectStreetService,
-        private readonly AskBuildingService $askBuildingService
+        private readonly ShowSubscriptionService $showSubscriptionService,
+        private readonly SearchStreetService $searchStreetService,
+        private readonly SaveSubscriptionService $saveSubscriptionService
     ) {
     }
 
-    public function askStreet(Nutgram $bot): void
+    public function start(Nutgram $bot): void
     {
         $chatId = $bot->chatId();
 
@@ -39,22 +39,22 @@ final class SubscriptionConversation extends Conversation
             return;
         }
 
-        $result = $this->askStreetService->handle($chatId);
-        $bot->sendMessage($result->message);
-        $this->next('selectStreet');
+        $message = $this->showSubscriptionService->handle($chatId);
+        $bot->sendMessage($message);
+        $this->next('searchStreet');
     }
 
-    public function selectStreet(Nutgram $bot): void
+    public function searchStreet(Nutgram $bot): void
     {
         $query = $bot->message()->text ?? '';
-        $result = $this->selectStreetService->handle($query);
+        $result = $this->searchStreetService->handle($query);
 
         // Handle exact match - move to next step
         if ($result->hasExactMatch() && $result->selectedStreetId !== null && $result->selectedStreetName !== null) {
             $this->selectedStreetId = $result->selectedStreetId;
             $this->selectedStreetName = $result->selectedStreetName;
             $bot->sendMessage($result->message, reply_markup: ReplyKeyboardRemove::make(true));
-            $this->next('askBuilding');
+            $this->next('saveSubscription');
 
             return;
         }
@@ -75,10 +75,10 @@ final class SubscriptionConversation extends Conversation
             $bot->sendMessage($result->message);
         }
 
-        $this->next('selectStreet');
+        $this->next('searchStreet');
     }
 
-    public function askBuilding(Nutgram $bot): void
+    public function saveSubscription(Nutgram $bot): void
     {
         $chatId = $bot->chatId();
 
@@ -90,7 +90,7 @@ final class SubscriptionConversation extends Conversation
 
         $building = $bot->message()->text ?? '';
 
-        $result = $this->askBuildingService->handle(
+        $result = $this->saveSubscriptionService->handle(
             chatId: $chatId,
             selectedStreetId: $this->selectedStreetId,
             selectedStreetName: $this->selectedStreetName,
@@ -107,7 +107,7 @@ final class SubscriptionConversation extends Conversation
             if (!$this->selectedStreetId || !$this->selectedStreetName) {
                 $this->end();
             } else {
-                $this->next('askBuilding');
+                $this->next('saveSubscription');
             }
         }
     }

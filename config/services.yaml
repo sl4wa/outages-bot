@@ -15,15 +15,3 @@ services:
             $params: '@parameter_bag'
 
     Symfony\Component\DependencyInjection\ContainerInterface: '@service_container'
-
-    App\Infrastructure\Telegram\Handlers\SubscriptionConversation:
-        public: true
-        shared: false
-
-    App\Infrastructure\Telegram\Handlers\StopCommand:
-        public: true
-        shared: false
-
-    App\Infrastructure\Telegram\Handlers\SubscriptionInfoCommand:
-        public: true
-        shared: false

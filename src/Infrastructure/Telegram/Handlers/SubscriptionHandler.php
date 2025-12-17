@@ -7,13 +7,11 @@ namespace App\Infrastructure\Telegram\Handlers;
 use App\Application\Bot\Query\GetUserSubscriptionQueryHandler;
 use SergiX44\Nutgram\Handlers\Type\Command;
 use SergiX44\Nutgram\Nutgram;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 
-final class SubscriptionInfoCommand extends Command
+#[Autoconfigure(public: true)]
+final class SubscriptionHandler extends Command
 {
-    protected string $command = 'subscription';
-
-    protected ?string $description = 'Показати поточну підписку';
-
     public function __construct(private readonly GetUserSubscriptionQueryHandler $getUserSubscriptionQueryHandler)
     {
         parent::__construct();

@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Tests\Application\Bot\Service;
 
 use App\Application\Bot\Command\CreateOrUpdateUserSubscriptionCommandHandler;
-use App\Application\Bot\Service\AskBuildingService;
+use App\Application\Bot\Service\SaveSubscriptionService;
 use App\Application\Interface\Repository\UserRepositoryInterface;
 use PHPUnit\Framework\TestCase;
 
-final class AskBuildingServiceTest extends TestCase
+final class SaveSubscriptionServiceTest extends TestCase
 {
-    private AskBuildingService $service;
+    private SaveSubscriptionService $service;
 
     private UserRepositoryInterface $userRepository;
 
@@ -19,7 +19,7 @@ final class AskBuildingServiceTest extends TestCase
     {
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
         $commandHandler = new CreateOrUpdateUserSubscriptionCommandHandler($this->userRepository);
-        $this->service = new AskBuildingService($commandHandler);
+        $this->service = new SaveSubscriptionService($commandHandler);
     }
 
     public function testSuccessfulBuildingSubmission(): void

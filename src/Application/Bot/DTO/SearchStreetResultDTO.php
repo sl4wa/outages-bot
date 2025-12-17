@@ -6,7 +6,7 @@ namespace App\Application\Bot\DTO;
 
 use App\Domain\Entity\Street;
 
-final readonly class SelectStreetResultDTO
+final readonly class SearchStreetResultDTO
 {
     /**
      * @param Street[]|null $streetOptions

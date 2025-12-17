@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace App\Tests\Application\Bot\Service;
 
 use App\Application\Bot\Query\GetUserSubscriptionQueryHandler;
-use App\Application\Bot\Service\AskStreetService;
+use App\Application\Bot\Service\ShowSubscriptionService;
 use App\Application\Interface\Repository\UserRepositoryInterface;
 use App\Domain\Entity\User;
 use App\Domain\ValueObject\UserAddress;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-final class AskStreetServiceTest extends TestCase
+final class ShowSubscriptionServiceTest extends TestCase
 {
-    private AskStreetService $service;
+    private ShowSubscriptionService $service;
 
     private UserRepositoryInterface $userRepository;
 
@@ -22,7 +22,7 @@ final class AskStreetServiceTest extends TestCase
     {
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
         $queryHandler = new GetUserSubscriptionQueryHandler($this->userRepository);
-        $this->service = new AskStreetService($queryHandler);
+        $this->service = new ShowSubscriptionService($queryHandler);
     }
 
     public function testReturnsSimplePromptForNewUser(): void
@@ -35,7 +35,7 @@ final class AskStreetServiceTest extends TestCase
 
         $result = $this->service->handle(12345);
 
-        self::assertSame('Будь ласка, введіть назву вулиці:', $result->message);
+        self::assertSame('Будь ласка, введіть назву вулиці:', $result);
     }
 
     public function testReturnsPromptWithCurrentSubscriptionForExistingUser(): void
@@ -58,10 +58,10 @@ final class AskStreetServiceTest extends TestCase
 
         $result = $this->service->handle(12345);
 
-        self::assertStringContainsString('Ваша поточна підписка:', $result->message);
-        self::assertStringContainsString('Шевченка Т.', $result->message);
-        self::assertStringContainsString('271', $result->message);
-        self::assertStringContainsString('оберіть нову вулицю', $result->message);
+        self::assertStringContainsString('Ваша поточна підписка:', $result);
+        self::assertStringContainsString('Шевченка Т.', $result);
+        self::assertStringContainsString('271', $result);
+        self::assertStringContainsString('нову назву вулиці для оновлення підписки', $result);
     }
 
     public function testHandlesDifferentChatIds(): void
@@ -74,7 +74,7 @@ final class AskStreetServiceTest extends TestCase
 
         $result = $this->service->handle(99999);
 
-        self::assertStringContainsString('Будь ласка, введіть назву вулиці:', $result->message);
+        self::assertStringContainsString('Будь ласка, введіть назву вулиці:', $result);
     }
 
     public function testShowsCorrectStreetNameInSubscription(): void
@@ -97,8 +97,8 @@ final class AskStreetServiceTest extends TestCase
 
         $result = $this->service->handle(12345);
 
-        self::assertStringContainsString('Молдавська', $result->message);
-        self::assertStringContainsString('13-А', $result->message);
+        self::assertStringContainsString('Молдавська', $result);
+        self::assertStringContainsString('13-А', $result);
     }
 
     public function testMessageFormatWithCyrillicCharacters(): void
@@ -121,8 +121,8 @@ final class AskStreetServiceTest extends TestCase
 
         $result = $this->service->handle(12345);
 
-        self::assertStringContainsString('Вулиця: Київська', $result->message);
-        self::assertStringContainsString('Будинок: 196-А', $result->message);
+        self::assertStringContainsString('Вулиця: Київська', $result);
+        self::assertStringContainsString('Будинок: 196-А', $result);
     }
 
     public function testHandlesCorruptedUserDataGracefully(): void
@@ -135,6 +135,6 @@ final class AskStreetServiceTest extends TestCase
 
         $result = $this->service->handle(12345);
 
-        self::assertSame('Будь ласка, введіть назву вулиці:', $result->message);
+        self::assertSame('Будь ласка, введіть назву вулиці:', $result);
     }
 }

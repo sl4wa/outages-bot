@@ -7,13 +7,11 @@ namespace App\Infrastructure\Telegram\Handlers;
 use App\Application\Interface\Repository\UserRepositoryInterface;
 use SergiX44\Nutgram\Handlers\Type\Command;
 use SergiX44\Nutgram\Nutgram;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 
-final class StopCommand extends Command
+#[Autoconfigure(public: true)]
+final class StopHandler extends Command
 {
-    protected string $command = 'stop';
-
-    protected ?string $description = 'Відписатися від сповіщень';
-
     public function __construct(private readonly UserRepositoryInterface $userRepository)
     {
         parent::__construct();

@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Tests\Application\Bot\Service;
 
 use App\Application\Bot\Query\FilterStreetQueryHandler;
-use App\Application\Bot\Service\SelectStreetService;
+use App\Application\Bot\Service\SearchStreetService;
 use App\Application\Interface\Repository\StreetRepositoryInterface;
 use App\Domain\Entity\Street;
 use PHPUnit\Framework\TestCase;
 
-final class SelectStreetServiceTest extends TestCase
+final class SearchStreetServiceTest extends TestCase
 {
-    private SelectStreetService $service;
+    private SearchStreetService $service;
 
     private StreetRepositoryInterface $streetRepository;
 
@@ -20,7 +20,7 @@ final class SelectStreetServiceTest extends TestCase
     {
         $this->streetRepository = $this->createMock(StreetRepositoryInterface::class);
         $queryHandler = new FilterStreetQueryHandler($this->streetRepository);
-        $this->service = new SelectStreetService($queryHandler);
+        $this->service = new SearchStreetService($queryHandler);
     }
 
     public function testEmptyInputError(): void
