@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Application\Console;
+namespace App\Application\Bot\Console;
 
 use App\Application\Interface\BotRunnerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;

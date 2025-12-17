@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Application\Console;
+namespace App\Application\Admin\Console;
 
 use App\Application\Interface\Repository\UserRepositoryInterface;
 use App\Application\Interface\TelegramUserInfoProviderInterface;

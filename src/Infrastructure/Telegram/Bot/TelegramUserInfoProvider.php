@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Telegram\Bot;
 
-use App\Application\Bot\DTO\UserInfoDTO;
+use App\Application\Admin\DTO\UserInfoDTO;
 use App\Application\Interface\TelegramUserInfoProviderInterface;
 use RuntimeException;
 use SergiX44\Nutgram\Nutgram;

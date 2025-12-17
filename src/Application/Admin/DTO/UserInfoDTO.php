@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Application\Bot\DTO;
+namespace App\Application\Admin\DTO;
 
 final readonly class UserInfoDTO
 {

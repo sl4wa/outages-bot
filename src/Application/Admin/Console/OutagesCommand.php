@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Application\Console;
+namespace App\Application\Admin\Console;
 
 use App\Application\Interface\OutageProviderInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
