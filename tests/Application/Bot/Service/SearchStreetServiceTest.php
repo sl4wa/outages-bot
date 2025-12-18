@@ -6,8 +6,8 @@ namespace App\Tests\Application\Bot\Service;
 
 use App\Application\Bot\Query\FilterStreetQueryHandler;
 use App\Application\Bot\Service\SearchStreetService;
-use App\Application\Interface\Repository\StreetRepositoryInterface;
 use App\Domain\Entity\Street;
+use App\Domain\Repository\StreetRepositoryInterface;
 use PHPUnit\Framework\TestCase;
 
 final class SearchStreetServiceTest extends TestCase

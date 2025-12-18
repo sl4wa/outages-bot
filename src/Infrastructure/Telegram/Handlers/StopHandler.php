@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Telegram\Handlers;
 
-use App\Application\Interface\Repository\UserRepositoryInterface;
+use App\Domain\Repository\UserRepositoryInterface;
 use SergiX44\Nutgram\Handlers\Type\Command;
 use SergiX44\Nutgram\Nutgram;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;

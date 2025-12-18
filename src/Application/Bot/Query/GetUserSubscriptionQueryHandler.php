@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Bot\Query;
 
 use App\Application\Bot\DTO\UserSubscriptionDTO;
-use App\Application\Interface\Repository\UserRepositoryInterface;
+use App\Domain\Repository\UserRepositoryInterface;
 
 final readonly class GetUserSubscriptionQueryHandler
 {

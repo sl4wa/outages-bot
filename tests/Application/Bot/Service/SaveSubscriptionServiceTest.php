@@ -6,7 +6,7 @@ namespace App\Tests\Application\Bot\Service;
 
 use App\Application\Bot\Command\CreateOrUpdateUserSubscriptionCommandHandler;
 use App\Application\Bot\Service\SaveSubscriptionService;
-use App\Application\Interface\Repository\UserRepositoryInterface;
+use App\Domain\Repository\UserRepositoryInterface;
 use PHPUnit\Framework\TestCase;
 
 final class SaveSubscriptionServiceTest extends TestCase

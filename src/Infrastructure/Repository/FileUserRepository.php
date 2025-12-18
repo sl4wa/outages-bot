@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Repository;
 
-use App\Application\Interface\Repository\UserRepositoryInterface;
 use App\Domain\Entity\User;
+use App\Domain\Repository\UserRepositoryInterface;
 use App\Domain\ValueObject\OutageDescription;
 use App\Domain\ValueObject\OutageInfo;
 use App\Domain\ValueObject\OutagePeriod;

@@ -7,4 +7,4 @@ services:
     # Bind interfaces to test doubles for tests
     App\Application\Interface\NotificationSenderInterface: '@App\Tests\Support\TestNotificationSender'
     App\Application\Interface\OutageProviderInterface: '@App\Tests\Support\TestOutageProvider'
-    App\Application\Interface\Repository\UserRepositoryInterface: '@App\Tests\Support\TestUserRepository'
+    App\Domain\Repository\UserRepositoryInterface: '@App\Tests\Support\TestUserRepository'

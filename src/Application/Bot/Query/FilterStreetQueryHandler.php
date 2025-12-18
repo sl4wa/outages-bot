@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Bot\Query;
 
-use App\Application\Interface\Repository\StreetRepositoryInterface;
 use App\Domain\Entity\Street;
+use App\Domain\Repository\StreetRepositoryInterface;
 
 final readonly class FilterStreetQueryHandler
 {

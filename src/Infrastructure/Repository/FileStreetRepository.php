@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Repository;
 
-use App\Application\Interface\Repository\StreetRepositoryInterface;
 use App\Domain\Entity\Street;
+use App\Domain\Repository\StreetRepositoryInterface;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 

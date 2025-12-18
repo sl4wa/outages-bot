@@ -6,8 +6,8 @@ namespace App\Tests\Application\Bot\Service;
 
 use App\Application\Bot\Query\GetUserSubscriptionQueryHandler;
 use App\Application\Bot\Service\ShowSubscriptionService;
-use App\Application\Interface\Repository\UserRepositoryInterface;
 use App\Domain\Entity\User;
+use App\Domain\Repository\UserRepositoryInterface;
 use App\Domain\ValueObject\UserAddress;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;

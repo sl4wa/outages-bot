@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Application\Bot\Command;
 
 use App\Application\Bot\DTO\UserSubscriptionDTO;
-use App\Application\Interface\Repository\UserRepositoryInterface;
 use App\Domain\Entity\User;
+use App\Domain\Repository\UserRepositoryInterface;
 use App\Domain\ValueObject\UserAddress;
 
 final readonly class CreateOrUpdateUserSubscriptionCommandHandler
