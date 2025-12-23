@@ -6,7 +6,7 @@ namespace App\Application\Bot\Service;
 
 use App\Application\Bot\Command\CreateOrUpdateUserSubscriptionCommandHandler;
 use App\Application\Bot\DTO\SaveSubscriptionResultDTO;
-use App\Domain\Exception\InvalidBuildingFormatException;
+use InvalidArgumentException;
 
 final readonly class SaveSubscriptionService
 {
@@ -33,7 +33,7 @@ final readonly class SaveSubscriptionService
                 message: "Ви підписалися на сповіщення про відключення електроенергії для вулиці {$result->streetName}, будинок {$result->building}.",
                 success: true,
             );
-        } catch (InvalidBuildingFormatException $e) {
+        } catch (InvalidArgumentException $e) {
             return new SaveSubscriptionResultDTO(
                 message: $e->getMessage(),
                 success: false,

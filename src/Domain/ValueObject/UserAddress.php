@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Domain\ValueObject;
 
-use App\Domain\Exception\InvalidBuildingFormatException;
 use InvalidArgumentException;
 
 final readonly class UserAddress
@@ -16,19 +15,19 @@ final readonly class UserAddress
         public ?string $city = null,
     ) {
         if ($streetId <= 0) {
-            throw new InvalidArgumentException('Street ID must be positive');
+            throw new InvalidArgumentException('Невірний ідентифікатор вулиці');
         }
 
         if (trim($streetName) === '') {
-            throw new InvalidArgumentException('Street name cannot be empty');
+            throw new InvalidArgumentException('Назва вулиці не може бути порожньою');
         }
 
         if (trim($building) === '') {
-            throw new InvalidBuildingFormatException('Невірний формат номера будинку');
+            throw new InvalidArgumentException('Невірний формат номера будинку');
         }
 
         if (!preg_match('/^[0-9]+(-[A-ZА-ЯІЇЄҐ])?$/u', $building)) {
-            throw new InvalidBuildingFormatException('Невірний формат номера будинку. Приклад: 13 або 13-А');
+            throw new InvalidArgumentException('Невірний формат номера будинку. Приклад: 13 або 13-А');
         }
     }
 }

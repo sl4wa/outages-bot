@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Domain\ValueObject;
 
-use App\Domain\Exception\InvalidBuildingFormatException;
 use App\Domain\ValueObject\UserAddress;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
@@ -73,7 +72,7 @@ final class UserAddressTest extends TestCase
      */
     public function testRejectsInvalidBuildingFormats(string $building): void
     {
-        $this->expectException(InvalidBuildingFormatException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Невірний формат номера будинку. Приклад: 13 або 13-А');
 
         new UserAddress(
@@ -112,7 +111,7 @@ final class UserAddressTest extends TestCase
 
     public function testThrowsExceptionForEmptyBuilding(): void
     {
-        $this->expectException(InvalidBuildingFormatException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Невірний формат номера будинку');
 
         new UserAddress(
@@ -124,7 +123,7 @@ final class UserAddressTest extends TestCase
 
     public function testThrowsExceptionForWhitespaceOnlyBuilding(): void
     {
-        $this->expectException(InvalidBuildingFormatException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Невірний формат номера будинку');
 
         new UserAddress(
@@ -137,7 +136,7 @@ final class UserAddressTest extends TestCase
     public function testThrowsExceptionForInvalidStreetId(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Street ID must be positive');
+        $this->expectExceptionMessage('Невірний ідентифікатор вулиці');
 
         new UserAddress(
             streetId: 0,
@@ -149,7 +148,7 @@ final class UserAddressTest extends TestCase
     public function testThrowsExceptionForNegativeStreetId(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Street ID must be positive');
+        $this->expectExceptionMessage('Невірний ідентифікатор вулиці');
 
         new UserAddress(
             streetId: -1,
@@ -161,7 +160,7 @@ final class UserAddressTest extends TestCase
     public function testThrowsExceptionForEmptyStreetName(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Street name cannot be empty');
+        $this->expectExceptionMessage('Назва вулиці не може бути порожньою');
 
         new UserAddress(
             streetId: 123,
@@ -173,7 +172,7 @@ final class UserAddressTest extends TestCase
     public function testThrowsExceptionForWhitespaceOnlyStreetName(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Street name cannot be empty');
+        $this->expectExceptionMessage('Назва вулиці не може бути порожньою');
 
         new UserAddress(
             streetId: 123,
