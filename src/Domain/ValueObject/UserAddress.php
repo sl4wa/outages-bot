@@ -8,6 +8,8 @@ use InvalidArgumentException;
 
 final readonly class UserAddress
 {
+    private const BUILDING_PATTERN = '/^[0-9]+(-[A-ZА-ЯІЇЄҐ])?$/u';
+
     public function __construct(
         public int $streetId,
         public string $streetName,
@@ -26,7 +28,7 @@ final readonly class UserAddress
             throw new InvalidArgumentException('Невірний формат номера будинку');
         }
 
-        if (!preg_match('/^[0-9]+(-[A-ZА-ЯІЇЄҐ])?$/u', $building)) {
+        if (!preg_match(self::BUILDING_PATTERN, $building)) {
             throw new InvalidArgumentException('Невірний формат номера будинку. Приклад: 13 або 13-А');
         }
     }
