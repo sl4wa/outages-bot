@@ -34,6 +34,9 @@ final class OutagesCommand extends Command
         }
 
         $table = new Table($output);
+        $table->setStyle('compact');
+        $table->setColumnMaxWidth(3, 30);
+        $table->setColumnMaxWidth(5, 40);
         $table->setHeaders(['City', 'Street', 'StreetID', 'Buildings', 'Period', 'Comment']);
 
         foreach ($outages as $outage) {
@@ -42,11 +45,7 @@ final class OutagesCommand extends Command
                 $outage->streetName,
                 $outage->streetId,
                 implode(', ', $outage->buildings),
-                sprintf(
-                    '%s - %s',
-                    $outage->start->format('Y-m-d H:i'),
-                    $outage->end->format('Y-m-d H:i')
-                ),
+                PeriodFormatter::format($outage->start, $outage->end),
                 $outage->comment,
             ]);
         }

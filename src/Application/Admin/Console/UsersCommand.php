@@ -36,8 +36,23 @@ final class UsersCommand extends Command
             return Command::SUCCESS;
         }
 
+        usort($users, static function ($a, $b) {
+            if ($a->outageInfo === null && $b->outageInfo === null) {
+                return 0;
+            }
+            if ($a->outageInfo === null) {
+                return 1;
+            }
+            if ($b->outageInfo === null) {
+                return -1;
+            }
+
+            return $b->outageInfo->period->startDate <=> $a->outageInfo->period->startDate;
+        });
+
         $table = new Table($output);
-        $table->setHeaders(['Chat ID', 'Username', 'First Name', 'Last Name', 'Street', 'Building']);
+        $table->setStyle('compact');
+        $table->setHeaders(['Chat ID', 'Username', 'First Name', 'Last Name', 'Street', 'Building', 'Outage', 'Comment']);
 
         $successCount = 0;
 
@@ -52,6 +67,10 @@ final class UsersCommand extends Command
                     $this->sanitize($userInfo->lastName),
                     $user->address->streetName,
                     $user->address->building,
+                    $user->outageInfo !== null
+                        ? PeriodFormatter::format($user->outageInfo->period->startDate, $user->outageInfo->period->endDate)
+                        : '-',
+                    $user->outageInfo?->description->value ?? '-',
                 ]);
 
                 ++$successCount;
