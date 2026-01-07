@@ -34,6 +34,8 @@ final class ApiOutageProvider implements OutageProviderInterface
         $result = [];
 
         foreach ($items as $row) {
+            $id = $this->getInt($row, 'id');
+
             $comment = $this->getString($row, 'koment');
             $comment = preg_replace('/[\r\n]+/', ' ', $comment) ?? '';
             $comment = trim($comment);
@@ -49,8 +51,8 @@ final class ApiOutageProvider implements OutageProviderInterface
             /** @var array<string, mixed> $street */
             $street = is_array($row['street'] ?? null) ? $row['street'] : [];
 
-            $result[] = new OutageDTO(
-                $this->getInt($row, 'id'),
+            $result[$id] = new OutageDTO(
+                $id,
                 new DateTimeImmutable($this->getString($row, 'dateEvent') ?: 'now'),
                 new DateTimeImmutable($this->getString($row, 'datePlanIn') ?: 'now'),
                 $this->getString($city, 'name'),
@@ -61,7 +63,7 @@ final class ApiOutageProvider implements OutageProviderInterface
             );
         }
 
-        return $result;
+        return array_values($result);
     }
 
     /**
