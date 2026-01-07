@@ -51,12 +51,18 @@ final class ApiOutageProvider implements OutageProviderInterface
             /** @var array<string, mixed> $street */
             $street = is_array($row['street'] ?? null) ? $row['street'] : [];
 
-            $result[$id] = new OutageDTO(
+            $streetId = $this->getInt($street, 'id');
+            $start = new DateTimeImmutable($this->getString($row, 'dateEvent') ?: 'now');
+            $end = new DateTimeImmutable($this->getString($row, 'datePlanIn') ?: 'now');
+
+            $key = $streetId . '|' . implode(',', $buildings) . '|' . $start->getTimestamp() . '|' . $end->getTimestamp();
+
+            $result[$key] = new OutageDTO(
                 $id,
-                new DateTimeImmutable($this->getString($row, 'dateEvent') ?: 'now'),
-                new DateTimeImmutable($this->getString($row, 'datePlanIn') ?: 'now'),
+                $start,
+                $end,
                 $this->getString($city, 'name'),
-                $this->getInt($street, 'id'),
+                $streetId,
                 $this->getString($street, 'name'),
                 $buildings,
                 $comment,
