@@ -40,9 +40,11 @@ final class UsersCommand extends Command
             if ($a->outageInfo === null && $b->outageInfo === null) {
                 return 0;
             }
+
             if ($a->outageInfo === null) {
                 return 1;
             }
+
             if ($b->outageInfo === null) {
                 return -1;
             }

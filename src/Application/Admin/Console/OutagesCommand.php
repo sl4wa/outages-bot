@@ -35,14 +35,14 @@ final class OutagesCommand extends Command
 
         $table = new Table($output);
         $table->setStyle('compact');
-        $table->setColumnMaxWidth(0, 30);
+        $table->setColumnMaxWidth(1, 30);
         $table->setColumnMaxWidth(2, 40);
-        $table->setHeaders(['Street', 'StreetID', 'Buildings', 'Period', 'Comment']);
+        $table->setHeaders(['StreetID', 'Street', 'Buildings', 'Period', 'Comment']);
 
         foreach ($outages as $outage) {
             $table->addRow([
-                $outage->streetName,
                 $outage->streetId,
+                $outage->streetName,
                 implode(', ', $outage->buildings),
                 PeriodFormatter::format($outage->start, $outage->end),
                 $outage->comment,
