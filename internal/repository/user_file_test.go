@@ -211,6 +211,87 @@ func TestFileUserRepository_MigrateSkipsWhenYmlExists(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestFileUserRepository_FindAllSkipsMalformedFiles(t *testing.T) {
+	dir := t.TempDir()
+	repo, err := NewFileUserRepository(dir)
+	require.NoError(t, err)
+
+	// Save a valid user
+	repo.Save(makeTestUser(t, 111))
+
+	// Write a malformed YAML file
+	malformedPath := filepath.Join(dir, "222.yml")
+	require.NoError(t, os.WriteFile(malformedPath, []byte("not: valid: yaml: [[["), 0o644))
+
+	users, err := repo.FindAll()
+	require.NoError(t, err)
+	assert.Len(t, users, 1)
+	assert.Equal(t, int64(111), users[0].ID)
+}
+
+func TestFileUserRepository_LoadFromFile_InvalidYAML(t *testing.T) {
+	dir := t.TempDir()
+	repo, err := NewFileUserRepository(dir)
+	require.NoError(t, err)
+
+	badPath := filepath.Join(dir, "999.yml")
+	require.NoError(t, os.WriteFile(badPath, []byte(": : : invalid"), 0o644))
+
+	user, err := repo.Find(999)
+	assert.Error(t, err)
+	assert.Nil(t, user)
+}
+
+func TestFileUserRepository_LoadFromFile_InvalidAddress(t *testing.T) {
+	dir := t.TempDir()
+	repo, err := NewFileUserRepository(dir)
+	require.NoError(t, err)
+
+	// street_id of 0 is invalid
+	badYAML := "street_id: 0\nstreet_name: Test\nbuilding: 10\n"
+	badPath := filepath.Join(dir, "999.yml")
+	require.NoError(t, os.WriteFile(badPath, []byte(badYAML), 0o644))
+
+	user, err := repo.Find(999)
+	assert.Error(t, err)
+	assert.Nil(t, user)
+	assert.Contains(t, err.Error(), "invalid user address")
+}
+
+func TestFileUserRepository_LoadFromFile_InvalidOutageDates(t *testing.T) {
+	dir := t.TempDir()
+	repo, err := NewFileUserRepository(dir)
+	require.NoError(t, err)
+
+	badYAML := "street_id: 1\nstreet_name: Test\nbuilding: 10\nstart_date: not-a-date\nend_date: also-not\n"
+	badPath := filepath.Join(dir, "999.yml")
+	require.NoError(t, os.WriteFile(badPath, []byte(badYAML), 0o644))
+
+	user, err := repo.Find(999)
+	assert.Error(t, err)
+	assert.Nil(t, user)
+	assert.Contains(t, err.Error(), "invalid start_date")
+}
+
+func TestFileUserRepository_SaveOverwriteExisting(t *testing.T) {
+	repo := setupUserRepo(t)
+	user := makeTestUser(t, 12345)
+	require.NoError(t, repo.Save(user))
+
+	// Overwrite with different address
+	addr, err := domain.NewUserAddress(2, "Молдавська", "5")
+	require.NoError(t, err)
+	updatedUser := &domain.User{ID: 12345, Address: addr}
+	require.NoError(t, repo.Save(updatedUser))
+
+	found, err := repo.Find(12345)
+	require.NoError(t, err)
+	require.NotNil(t, found)
+	assert.Equal(t, "Молдавська", found.Address.StreetName)
+	assert.Equal(t, "5", found.Address.Building)
+	assert.Equal(t, 2, found.Address.StreetID)
+}
+
 func TestFileUserRepository_MigrateSkipsMissingStreetID(t *testing.T) {
 	dir := t.TempDir()
 

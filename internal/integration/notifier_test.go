@@ -3,9 +3,11 @@ package integration
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"outages-bot/internal/application"
+	"strings"
 	"outages-bot/internal/application/notification"
 	"outages-bot/internal/client/outageapi"
 	"outages-bot/internal/domain"
@@ -166,6 +168,72 @@ func (s *NotifierSuite) TestMultipleUsers_CorrectSubsetNotified() {
 	}
 	assert.Contains(s.T(), sentIDs, int64(100))
 	assert.Contains(s.T(), sentIDs, int64(300))
+}
+
+func (s *NotifierSuite) makeAPIBodyMultiple(outages []struct {
+	ID        int
+	StreetID  int
+	Buildings []string
+	Comment   string
+	Start     string
+	End       string
+}) {
+	members := make([]string, 0, len(outages))
+	for _, o := range outages {
+		buildingsJSON, _ := json.Marshal(o.Buildings)
+		member := fmt.Sprintf(
+			`{"id":%d,"dateEvent":"%s","datePlanIn":"%s","koment":"%s","buildingNames":%s,"city":{"name":"Львів"},"street":{"id":%d,"name":"Стрийська"}}`,
+			o.ID, o.Start, o.End, o.Comment, string(buildingsJSON), o.StreetID,
+		)
+		members = append(members, member)
+	}
+	s.apiBody = `{"hydra:member":[` + strings.Join(members, ",") + `]}`
+}
+
+func (s *NotifierSuite) TestMultipleOutages_UserMatchesFirst() {
+	s.makeAPIBodyMultiple([]struct {
+		ID        int
+		StreetID  int
+		Buildings []string
+		Comment   string
+		Start     string
+		End       string
+	}{
+		{ID: 1, StreetID: 1, Buildings: []string{"10"}, Comment: "first", Start: "2024-01-01T08:00:00+00:00", End: "2024-01-01T16:00:00+00:00"},
+		{ID: 2, StreetID: 2, Buildings: []string{"20"}, Comment: "second", Start: "2024-01-01T08:00:00+00:00", End: "2024-01-01T16:00:00+00:00"},
+	})
+	s.saveUser(100, 1, "10") // matches outage 1 only
+
+	s.runPipeline()
+
+	assert.Len(s.T(), s.sender.sent, 1)
+	assert.Equal(s.T(), int64(100), s.sender.sent[0].UserID)
+	assert.Equal(s.T(), "first", s.sender.sent[0].Comment)
+}
+
+func (s *NotifierSuite) TestDedup_DifferentOutage_SecondRunSendsNew() {
+	s.makeAPIBody(1, []string{"10"}, "first outage")
+	s.saveUser(100, 1, "10")
+
+	// First run: sends notification for "first outage"
+	s.runPipeline()
+	assert.Len(s.T(), s.sender.sent, 1)
+
+	// Second run with a different outage (different comment = different description)
+	s.sender.sent = nil
+	s.makeAPIBodyMultiple([]struct {
+		ID        int
+		StreetID  int
+		Buildings []string
+		Comment   string
+		Start     string
+		End       string
+	}{
+		{ID: 2, StreetID: 1, Buildings: []string{"10"}, Comment: "new outage", Start: "2024-02-01T08:00:00+00:00", End: "2024-02-01T16:00:00+00:00"},
+	})
+	s.runPipeline()
+	assert.Len(s.T(), s.sender.sent, 1)
+	assert.Equal(s.T(), "new outage", s.sender.sent[0].Comment)
 }
 
 func TestNotifierSuite(t *testing.T) {

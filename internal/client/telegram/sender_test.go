@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"outages-bot/internal/application"
+	"outages-bot/internal/application/notification"
 	"testing"
 	"time"
 
@@ -128,6 +129,54 @@ func TestSender_NetworkError_Code0(t *testing.T) {
 	sendErr, ok := err.(*application.NotificationSendError)
 	require.True(t, ok)
 	assert.Equal(t, 0, sendErr.Code) // fallback code
+}
+
+func TestSender_MalformedJSON(t *testing.T) {
+	_, api := makeTelegramServer(t, func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		w.Write([]byte("not json at all"))
+	})
+
+	sender := NewTelegramNotificationSender(api)
+	err := sender.Send(testDTO())
+	require.Error(t, err)
+
+	sendErr, ok := err.(*application.NotificationSendError)
+	require.True(t, ok)
+	assert.Equal(t, 0, sendErr.Code) // non-API error falls back to 0
+}
+
+func TestSender_HTMLParseMode(t *testing.T) {
+	var capturedParseMode string
+	_, api := makeTelegramServer(t, func(w http.ResponseWriter, r *http.Request) {
+		r.ParseForm()
+		capturedParseMode = r.FormValue("parse_mode")
+		resp := tgbotapi.APIResponse{Ok: true, Result: json.RawMessage(`{"message_id":1,"chat":{"id":100},"text":"test"}`)}
+		json.NewEncoder(w).Encode(resp)
+	})
+
+	sender := NewTelegramNotificationSender(api)
+	err := sender.Send(testDTO())
+	require.NoError(t, err)
+	assert.Equal(t, "HTML", capturedParseMode)
+}
+
+func TestSender_MessageText(t *testing.T) {
+	var capturedText string
+	_, api := makeTelegramServer(t, func(w http.ResponseWriter, r *http.Request) {
+		r.ParseForm()
+		capturedText = r.FormValue("text")
+		resp := tgbotapi.APIResponse{Ok: true, Result: json.RawMessage(`{"message_id":1,"chat":{"id":100},"text":"test"}`)}
+		json.NewEncoder(w).Encode(resp)
+	})
+
+	sender := NewTelegramNotificationSender(api)
+	dto := testDTO()
+	err := sender.Send(dto)
+	require.NoError(t, err)
+
+	expected := notification.FormatNotification(dto)
+	assert.Equal(t, expected, capturedText)
 }
 
 func TestSender_ForbiddenInMessage_IsBlocked(t *testing.T) {
