@@ -112,12 +112,12 @@ func TestFileUserRepository_AtomicWrite(t *testing.T) {
 	require.NoError(t, err)
 
 	// Verify no temp file remains
-	tmpPath := filepath.Join(repo.dataDir, "12345.txt.tmp")
+	tmpPath := filepath.Join(repo.dataDir, "12345.yml.tmp")
 	_, err = os.Stat(tmpPath)
 	assert.True(t, os.IsNotExist(err))
 
 	// Verify the actual file exists
-	actualPath := filepath.Join(repo.dataDir, "12345.txt")
+	actualPath := filepath.Join(repo.dataDir, "12345.yml")
 	_, err = os.Stat(actualPath)
 	assert.NoError(t, err)
 }
@@ -141,4 +141,91 @@ func TestFileUserRepository_RaceCondition(t *testing.T) {
 	users, err := repo.FindAll()
 	require.NoError(t, err)
 	assert.Len(t, users, 10)
+}
+
+func TestFileUserRepository_MigrateLegacyTxtToYml(t *testing.T) {
+	dir := t.TempDir()
+
+	// Write old-format .txt files
+	simple := "street_id: 1\nstreet_name: Стрийська\nbuilding: 10\n"
+	withColon := "street_id: 2\nstreet_name: Личаківська\nbuilding: 5\nstart_date: 2024-01-01T08:00:00Z\nend_date: 2024-01-01T16:00:00Z\ncomment: Причина: ремонт\n"
+
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "111.txt"), []byte(simple), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "222.txt"), []byte(withColon), 0o644))
+
+	// Creating repo triggers migration
+	repo, err := NewFileUserRepository(dir)
+	require.NoError(t, err)
+
+	// .txt files should be gone
+	txtFiles, _ := filepath.Glob(filepath.Join(dir, "*.txt"))
+	assert.Empty(t, txtFiles)
+
+	// .yml files should exist
+	ymlFiles, _ := filepath.Glob(filepath.Join(dir, "*.yml"))
+	assert.Len(t, ymlFiles, 2)
+
+	// Find should work
+	user1, err := repo.Find(111)
+	require.NoError(t, err)
+	require.NotNil(t, user1)
+	assert.Equal(t, "Стрийська", user1.Address.StreetName)
+	assert.Equal(t, "10", user1.Address.Building)
+
+	user2, err := repo.Find(222)
+	require.NoError(t, err)
+	require.NotNil(t, user2)
+	assert.Equal(t, "Личаківська", user2.Address.StreetName)
+	assert.Equal(t, "5", user2.Address.Building)
+	require.NotNil(t, user2.OutageInfo)
+	assert.Equal(t, "Причина: ремонт", user2.OutageInfo.Description.Value)
+
+	// FindAll should return both
+	users, err := repo.FindAll()
+	require.NoError(t, err)
+	assert.Len(t, users, 2)
+}
+
+func TestFileUserRepository_MigrateSkipsWhenYmlExists(t *testing.T) {
+	dir := t.TempDir()
+
+	// Write a stale .txt and a newer .yml with different data
+	txt := "street_id: 1\nstreet_name: Стрийська\nbuilding: 10\n"
+	yml := "street_id: 2\nstreet_name: Личаківська\nbuilding: 5\n"
+
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "111.txt"), []byte(txt), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "111.yml"), []byte(yml), 0o644))
+
+	repo, err := NewFileUserRepository(dir)
+	require.NoError(t, err)
+
+	// .yml should retain its original content (not overwritten by .txt)
+	user, err := repo.Find(111)
+	require.NoError(t, err)
+	require.NotNil(t, user)
+	assert.Equal(t, "Личаківська", user.Address.StreetName)
+	assert.Equal(t, "5", user.Address.Building)
+
+	// .txt should still be present (skipped, not deleted)
+	_, err = os.Stat(filepath.Join(dir, "111.txt"))
+	assert.NoError(t, err)
+}
+
+func TestFileUserRepository_MigrateSkipsMissingStreetID(t *testing.T) {
+	dir := t.TempDir()
+
+	// .txt without street_id
+	txt := "street_name: Стрийська\nbuilding: 10\n"
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "111.txt"), []byte(txt), 0o644))
+
+	_, err := NewFileUserRepository(dir)
+	require.NoError(t, err)
+
+	// .txt should still be present (not deleted)
+	_, err = os.Stat(filepath.Join(dir, "111.txt"))
+	assert.NoError(t, err)
+
+	// .yml should NOT have been created
+	_, err = os.Stat(filepath.Join(dir, "111.yml"))
+	assert.True(t, os.IsNotExist(err))
 }
