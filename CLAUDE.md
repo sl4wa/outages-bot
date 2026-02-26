@@ -4,54 +4,44 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Telegram bot that notifies users about power outages in Lviv, Ukraine. Users subscribe via Telegram with their street and building number; a periodic notifier checks an external API and sends Telegram messages when a relevant outage is found.
+Telegram bot that notifies users about power outages in Lviv, Ukraine. Users subscribe via Telegram by selecting their street and building number; the notifier periodically fetches outage data from the Lviv power outage API and sends Telegram messages to affected subscribers. All user-facing text is in Ukrainian.
 
-## Common Commands
+## Commands
 
 ```bash
-# Run all tests
-go test ./...
-
-# Run a single test file
-go test ./internal/domain/ -run TestOutage
-
-# Build the binary (use a temp dir for verification builds, not the project root)
-go build -o /tmp/outages-bot .
-
-# CLI commands
-./outages-bot bot        # Run the Telegram bot (long-running)
-./outages-bot notifier   # Fetch outages and send notifications (once)
-./outages-bot notifier --interval=60s  # Run in a loop every 60s
-./outages-bot outages    # Print a table of current outages
-./outages-bot users      # List all subscribed users
+make build          # Build binary to bin/outages-bot
+make test           # Run all tests (go test ./...)
+go test ./internal/domain/...   # Run tests for a single package
+go test -run TestName ./internal/domain/  # Run a single test
 ```
+
+Four CLI subcommands (cobra): `bot` (long-running Telegram bot), `notifier` (fetch outages & send notifications, optional `--interval` for looping), `outages` (print outages table), `users` (list subscribers).
 
 ## Architecture
 
-The codebase follows a layered architecture under `internal/`:
+Hexagonal architecture with strict dependency direction: `domain` ← `application` ← `cmd`/`client`/`repository`.
 
-- **domain** — Pure business logic with no external dependencies. Types (`User`, `Outage`, `Street`), value objects (`UserAddress`, `OutageAddress`, `OutagePeriod`, `OutageDescription`, `OutageInfo`), and domain services (`OutageFinder`).
-- **application** — Application use cases and service orchestration. Organized by feature: `subscription/` (street search, save/show subscription), `notification/` (outage fetching, formatting, notification dispatch), `admin/` (CLI listing DTOs). Defines port interfaces in `ports.go` and shared types in `types.go`.
-- **repository** — Data persistence: `FileUserRepository` and `CachedUserRepository` for users, `FileStreetRepository` for streets. All stored as flat files.
-- **client** — External service clients: `outageapi/` fetches from the Lviv power outage API, `telegram/` contains notification sender and user info provider.
-- **cmd** — Command runners: CLI commands (notifier, outages, users) and the Telegram bot runner with conversation state machine.
+- **`internal/domain/`** — Core entities (`Outage`, `User`, `Street`, `UserAddress`, `OutageAddress`, `OutagePeriod`, `OutageDescription`, `OutageInfo`) and repository interfaces (`UserRepository`, `StreetRepository`). Pure logic, no external dependencies.
+- **`internal/application/`** — Use cases and port interfaces. `ports.go` defines `OutageProvider`, `NotificationSender`, `TelegramUserInfoProvider`. `types.go` defines DTOs. Sub-packages: `notification/` (fetch + notify services), `subscription/` (search street, show/save subscription), `admin/` (list users/outages).
+- **`internal/client/`** — External adapters. `outageapi/` fetches from Lviv power API. `telegram/` implements notification sender and user info provider.
+- **`internal/repository/`** — File-based persistence. Users stored as individual YAML files (`data/users/<chatID>.yml`). Streets loaded from `data/streets.csv`.
+- **`internal/cmd/`** — CLI command runners that wire everything together.
+- **`internal/integration/`** — Integration tests using testify suites with real repositories and mocked Telegram API.
+- **`main.go`** — Cobra root command setup and dependency wiring.
 
-### Key Data Flow
+## Key Patterns
 
-1. `outages-bot notifier` (cron every 5 min) → `OutageFetchService` fetches outages from API → `NotificationService` iterates users, uses `OutageFinder` to match outages to user addresses, sends via `NotificationSender`, and records what was notified to avoid duplicates.
-2. `outages-bot bot` (long-running) → Telegram bot handlers manage user subscriptions (street search, address saving, stop/unsubscribe).
+- Domain entities use constructor functions with validation (e.g., `NewUserAddress`, `NewOutagePeriod`) — always use these, don't construct structs directly.
+- Repository `Save` uses atomic writes (temp file + rename).
+- The bot uses an in-memory conversation state machine (`StepNone` → `StepSearchStreet` → `StepSaveSubscription`) with TTL-based expiry.
+- `NotificationService` auto-removes users who have blocked the bot (HTTP 403).
+- Duplicate outages from the API are deduplicated by a composite key (street ID + buildings + time range).
 
-### Persistence
+## Environment Variables
 
-No database — users are stored as individual text files (`data/users/{chatId}.txt`) with key-value lines. Streets are loaded from `data/streets.csv`. Outages are fetched live from the external API on each notifier run.
+- `TELEGRAM_BOT_TOKEN` — required for `bot`, `notifier`, and `users` commands
+- `DATA_DIR` — data directory path (default: `data`)
 
-### Testing
+## Testing
 
-Tests use in-memory test doubles and are co-located with the code they test (`_test.go` files). Integration tests are in `internal/integration/`.
-
-## Environment
-
-- Go 1.25+
-- `TELEGRAM_BOT_TOKEN` env var — Telegram bot token (required for bot, notifier, users commands)
-- `DATA_DIR` env var — path to data directory (default: `data`)
-- supervisord runs two processes: `bot` (long-running Telegram bot) and `notifier` (long-running with `--interval` flag)
+Tests use `github.com/stretchr/testify` (assert/require/suite). Integration tests in `internal/integration/` use testify suites with `SetupTest` for per-test isolation via `t.TempDir()`. The bot integration tests mock the Telegram API with `httptest.NewServer`.
