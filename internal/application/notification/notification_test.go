@@ -39,12 +39,12 @@ func newMockUserRepo() *mockUserRepo {
 	return &mockUserRepo{users: make(map[int64]*domain.User)}
 }
 
-func (m *mockUserRepo) FindAll() ([]*domain.User, error) {
+func (m *mockUserRepo) FindAll() []*domain.User {
 	var result []*domain.User
 	for _, u := range m.users {
 		result = append(result, u)
 	}
-	return result, nil
+	return result
 }
 
 func (m *mockUserRepo) Find(chatID int64) (*domain.User, error) {

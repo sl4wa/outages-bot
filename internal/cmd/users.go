@@ -17,10 +17,7 @@ func RunUsersCommand(
 	w io.Writer,
 	logger *log.Logger,
 ) error {
-	users, err := admin.ListUsers(userRepo)
-	if err != nil {
-		return fmt.Errorf("failed to list users: %w", err)
-	}
+	users := admin.ListUsers(userRepo)
 
 	if len(users) == 0 {
 		fmt.Fprintln(w, "No users found.")

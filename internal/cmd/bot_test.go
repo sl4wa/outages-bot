@@ -28,14 +28,14 @@ func newTestUserRepo() *testUserRepo {
 	return &testUserRepo{users: make(map[int64]*domain.User)}
 }
 
-func (r *testUserRepo) FindAll() ([]*domain.User, error) {
+func (r *testUserRepo) FindAll() []*domain.User {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	var result []*domain.User
 	for _, u := range r.users {
 		result = append(result, u)
 	}
-	return result, nil
+	return result
 }
 
 func (r *testUserRepo) Find(chatID int64) (*domain.User, error) {

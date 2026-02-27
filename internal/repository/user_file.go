@@ -71,11 +71,8 @@ func NewFileUserRepository(dataDir string) (*FileUserRepository, error) {
 }
 
 // FindAll returns all users from disk.
-func (r *FileUserRepository) FindAll() ([]*domain.User, error) {
-	entries, err := filepath.Glob(filepath.Join(r.dataDir, "*.yml"))
-	if err != nil {
-		return nil, fmt.Errorf("failed to list user files: %w", err)
-	}
+func (r *FileUserRepository) FindAll() []*domain.User {
+	entries, _ := filepath.Glob(filepath.Join(r.dataDir, "*.yml"))
 
 	users := make([]*domain.User, 0, len(entries))
 	for _, path := range entries {
@@ -86,7 +83,7 @@ func (r *FileUserRepository) FindAll() ([]*domain.User, error) {
 		}
 		users = append(users, user)
 	}
-	return users, nil
+	return users
 }
 
 // Find returns a user by chat ID, or (nil, nil) if not found.

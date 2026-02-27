@@ -27,7 +27,7 @@ func (u *User) IsAlreadyNotifiedAbout(info OutageInfo) bool {
 
 // UserRepository defines the interface for user data access.
 type UserRepository interface {
-	FindAll() ([]*User, error)
+	FindAll() []*User
 	Find(chatID int64) (*User, error)
 	Save(user *User) error
 	Remove(chatID int64) (bool, error)

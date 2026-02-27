@@ -1,7 +1,6 @@
 package admin
 
 import (
-	"errors"
 	"outages-bot/internal/domain"
 	"testing"
 	"time"
@@ -12,11 +11,10 @@ import (
 
 type mockUserRepo struct {
 	users []*domain.User
-	err   error
 }
 
-func (m *mockUserRepo) FindAll() ([]*domain.User, error) {
-	return m.users, m.err
+func (m *mockUserRepo) FindAll() []*domain.User {
+	return m.users
 }
 
 func (m *mockUserRepo) Find(_ int64) (*domain.User, error) { return nil, nil }
@@ -42,8 +40,7 @@ func makeOutageInfo(t *testing.T, start time.Time) *domain.OutageInfo {
 func TestListUsers_Empty(t *testing.T) {
 	repo := &mockUserRepo{users: []*domain.User{}}
 
-	users, err := ListUsers(repo)
-	require.NoError(t, err)
+	users := ListUsers(repo)
 	assert.Empty(t, users)
 }
 
@@ -57,8 +54,7 @@ func TestListUsers_SortedByOutageStartDescending(t *testing.T) {
 		{ID: 2, Address: addr, OutageInfo: makeOutageInfo(t, late)},
 	}}
 
-	users, err := ListUsers(repo)
-	require.NoError(t, err)
+	users := ListUsers(repo)
 	require.Len(t, users, 2)
 	assert.Equal(t, int64(2), users[0].ID) // late first
 	assert.Equal(t, int64(1), users[1].ID) // early second
@@ -73,8 +69,7 @@ func TestListUsers_WithoutOutageSortedToEnd(t *testing.T) {
 		{ID: 2, Address: addr, OutageInfo: makeOutageInfo(t, ts)}, // has outage
 	}}
 
-	users, err := ListUsers(repo)
-	require.NoError(t, err)
+	users := ListUsers(repo)
 	require.Len(t, users, 2)
 	assert.Equal(t, int64(2), users[0].ID) // with outage first
 	assert.Equal(t, int64(1), users[1].ID) // without outage last
@@ -88,15 +83,6 @@ func TestListUsers_AllWithoutOutage(t *testing.T) {
 		{ID: 2, Address: addr},
 	}}
 
-	users, err := ListUsers(repo)
-	require.NoError(t, err)
+	users := ListUsers(repo)
 	assert.Len(t, users, 2)
-}
-
-func TestListUsers_RepositoryError(t *testing.T) {
-	repo := &mockUserRepo{err: errors.New("disk error")}
-
-	users, err := ListUsers(repo)
-	assert.Error(t, err)
-	assert.Nil(t, users)
 }

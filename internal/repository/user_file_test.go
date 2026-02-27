@@ -100,8 +100,7 @@ func TestFileUserRepository_FindAll(t *testing.T) {
 	repo.Save(makeTestUser(t, 222))
 	repo.Save(makeTestUser(t, 333))
 
-	users, err := repo.FindAll()
-	require.NoError(t, err)
+	users := repo.FindAll()
 	assert.Len(t, users, 3)
 }
 
@@ -138,8 +137,7 @@ func TestFileUserRepository_RaceCondition(t *testing.T) {
 
 	wg.Wait()
 
-	users, err := repo.FindAll()
-	require.NoError(t, err)
+	users := repo.FindAll()
 	assert.Len(t, users, 10)
 }
 
@@ -181,8 +179,7 @@ func TestFileUserRepository_MigrateLegacyTxtToYml(t *testing.T) {
 	assert.Equal(t, "Причина: ремонт", user2.OutageInfo.Description.Value)
 
 	// FindAll should return both
-	users, err := repo.FindAll()
-	require.NoError(t, err)
+	users := repo.FindAll()
 	assert.Len(t, users, 2)
 }
 
@@ -223,8 +220,7 @@ func TestFileUserRepository_FindAllSkipsMalformedFiles(t *testing.T) {
 	malformedPath := filepath.Join(dir, "222.yml")
 	require.NoError(t, os.WriteFile(malformedPath, []byte("not: valid: yaml: [[["), 0o644))
 
-	users, err := repo.FindAll()
-	require.NoError(t, err)
+	users := repo.FindAll()
 	assert.Len(t, users, 1)
 	assert.Equal(t, int64(111), users[0].ID)
 }

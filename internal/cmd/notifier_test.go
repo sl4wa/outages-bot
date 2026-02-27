@@ -38,7 +38,7 @@ type mockUserRepo struct {
 	users []*domain.User
 }
 
-func (m *mockUserRepo) FindAll() ([]*domain.User, error) { return m.users, nil }
+func (m *mockUserRepo) FindAll() []*domain.User { return m.users }
 func (m *mockUserRepo) Find(_ int64) (*domain.User, error) {
 	return nil, nil
 }
@@ -88,40 +88,3 @@ func TestRunNotifierCommand_FetchError(t *testing.T) {
 	assert.Contains(t, err.Error(), "api down")
 }
 
-func TestRunNotifierCommand_NotificationError(t *testing.T) {
-	provider := &mockOutageProvider{
-		outages: []application.OutageDTO{
-			{
-				ID:         1,
-				StreetID:   1,
-				StreetName: "Стрийська",
-				Buildings:  []string{"10"},
-				Start:      time.Date(2024, 1, 1, 8, 0, 0, 0, time.UTC),
-				End:        time.Date(2024, 1, 1, 16, 0, 0, 0, time.UTC),
-			},
-		},
-	}
-	sender := &mockNotifSender{}
-	userRepo := &mockUserRepoWithError{err: errors.New("disk full")}
-
-	fetchService := notification.NewOutageFetchService(provider)
-	notifService := notification.NewNotificationService(sender, userRepo, nil)
-
-	logger := log.New(&bytes.Buffer{}, "", 0)
-
-	err := RunNotifierCommand(context.Background(), fetchService, notifService, logger)
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "failed to send notifications")
-}
-
-// mockUserRepoWithError returns error on FindAll to trigger notification failure
-type mockUserRepoWithError struct {
-	err error
-}
-
-func (m *mockUserRepoWithError) FindAll() ([]*domain.User, error) { return nil, m.err }
-func (m *mockUserRepoWithError) Find(_ int64) (*domain.User, error) {
-	return nil, nil
-}
-func (m *mockUserRepoWithError) Save(_ *domain.User) error    { return nil }
-func (m *mockUserRepoWithError) Remove(_ int64) (bool, error) { return false, nil }

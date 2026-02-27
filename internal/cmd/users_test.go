@@ -15,10 +15,9 @@ import (
 
 type mockUserRepoForUsers struct {
 	users []*domain.User
-	err   error
 }
 
-func (m *mockUserRepoForUsers) FindAll() ([]*domain.User, error) { return m.users, m.err }
+func (m *mockUserRepoForUsers) FindAll() []*domain.User { return m.users }
 func (m *mockUserRepoForUsers) Find(_ int64) (*domain.User, error) {
 	return nil, nil
 }
@@ -192,15 +191,3 @@ func TestRunUsersCommand_SanitizationApplied(t *testing.T) {
 	assert.NotContains(t, output, "\u200c")
 }
 
-func TestRunUsersCommand_RepositoryError(t *testing.T) {
-	repo := &mockUserRepoForUsers{err: errors.New("disk error")}
-	infoProvider := &mockUserInfoProvider{}
-
-	var buf bytes.Buffer
-	logger := log.New(&bytes.Buffer{}, "", 0)
-
-	err := RunUsersCommand(repo, infoProvider, &buf, logger)
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "failed to list users")
-	assert.Contains(t, err.Error(), "disk error")
-}
