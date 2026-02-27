@@ -27,7 +27,7 @@ func NewNotificationService(sender application.NotificationSender, userRepo doma
 }
 
 // Handle sends notifications for the given outages to all affected users.
-func (s *NotificationService) Handle(outages []*domain.Outage) (int, error) {
+func (s *NotificationService) Handle(outages []*domain.Outage) int {
 	users := s.userRepo.FindAll()
 
 	for _, user := range users {
@@ -63,5 +63,5 @@ func (s *NotificationService) Handle(outages []*domain.Outage) (int, error) {
 		}
 	}
 
-	return len(outages), nil
+	return len(outages)
 }

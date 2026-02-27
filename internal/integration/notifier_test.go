@@ -82,8 +82,7 @@ func (s *NotifierSuite) runPipeline() {
 
 	outages, err := fetchService.Handle(context.Background())
 	require.NoError(s.T(), err)
-	_, err = notifService.Handle(outages)
-	require.NoError(s.T(), err)
+	notifService.Handle(outages)
 }
 
 func (s *NotifierSuite) TestMatchingUser_NotificationSent() {

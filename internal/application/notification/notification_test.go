@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 type mockSender struct {
@@ -92,8 +91,7 @@ func TestNotification_MatchingSendsAndSaves(t *testing.T) {
 	svc := NewNotificationService(sender, repo, log.New(io.Discard, "", 0))
 	outages := []*domain.Outage{makeTestOutage(1, []string{"10", "12"})}
 
-	count, err := svc.Handle(outages)
-	require.NoError(t, err)
+	count := svc.Handle(outages)
 	assert.Equal(t, 1, count)
 	assert.Len(t, sender.sent, 1)
 	assert.Equal(t, int64(100), sender.sent[0].UserID)
@@ -176,8 +174,7 @@ func TestNotification_SaveError_LogsAndContinues(t *testing.T) {
 	svc := NewNotificationService(sender, repo, logger)
 	outages := []*domain.Outage{makeTestOutage(1, []string{"10"})}
 
-	count, err := svc.Handle(outages)
-	require.NoError(t, err)
+	count := svc.Handle(outages)
 	assert.Equal(t, 1, count)
 	assert.Len(t, sender.sent, 1)
 	assert.Contains(t, buf.String(), "failed to save user 100")
@@ -197,8 +194,7 @@ func TestNotification_RemoveError_LogsAndContinues(t *testing.T) {
 	svc := NewNotificationService(sender, repo, logger)
 	outages := []*domain.Outage{makeTestOutage(1, []string{"10"})}
 
-	count, err := svc.Handle(outages)
-	require.NoError(t, err)
+	count := svc.Handle(outages)
 	assert.Equal(t, 1, count)
 	assert.Contains(t, buf.String(), "failed to remove blocked user 100")
 }

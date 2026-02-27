@@ -19,11 +19,7 @@ func RunNotifierCommand(
 		return fmt.Errorf("failed to fetch outages: %w", err)
 	}
 
-	count, err := notificationService.Handle(outages)
-	if err != nil {
-		return fmt.Errorf("failed to send notifications: %w", err)
-	}
-
+	count := notificationService.Handle(outages)
 	logger.Printf("Successfully dispatched %d outages.", count)
 	return nil
 }
