@@ -16,12 +16,12 @@ func RunUsersCommand(
 	userInfoProvider application.TelegramUserInfoProvider,
 	w io.Writer,
 	logger *log.Logger,
-) error {
+) {
 	users := admin.ListUsers(userRepo)
 
 	if len(users) == 0 {
 		fmt.Fprintln(w, "No users found.")
-		return nil
+		return
 	}
 
 	tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
@@ -68,5 +68,4 @@ func RunUsersCommand(
 
 	tw.Flush()
 	fmt.Fprintf(w, "\nTotal Users: %d\n", successCount)
-	return nil
 }

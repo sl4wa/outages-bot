@@ -61,8 +61,7 @@ func TestRunUsersCommand_PrintsUsers(t *testing.T) {
 	var buf bytes.Buffer
 	logger := log.New(&bytes.Buffer{}, "", 0)
 
-	err := RunUsersCommand(repo, infoProvider, &buf, logger)
-	require.NoError(t, err)
+	RunUsersCommand(repo, infoProvider, &buf, logger)
 
 	output := buf.String()
 	assert.Contains(t, output, "100")
@@ -81,8 +80,7 @@ func TestRunUsersCommand_Empty(t *testing.T) {
 	var buf bytes.Buffer
 	logger := log.New(&bytes.Buffer{}, "", 0)
 
-	err := RunUsersCommand(repo, infoProvider, &buf, logger)
-	require.NoError(t, err)
+	RunUsersCommand(repo, infoProvider, &buf, logger)
 	assert.Equal(t, "No users found.\n", buf.String())
 }
 
@@ -102,8 +100,7 @@ func TestRunUsersCommand_GetUserInfoError_SkipsUser(t *testing.T) {
 	var logBuf bytes.Buffer
 	logger := log.New(&logBuf, "", 0)
 
-	err := RunUsersCommand(repo, infoProvider, &buf, logger)
-	require.NoError(t, err)
+	RunUsersCommand(repo, infoProvider, &buf, logger)
 
 	output := buf.String()
 	assert.NotContains(t, output, "100")
@@ -128,8 +125,7 @@ func TestRunUsersCommand_UsernameFormatting(t *testing.T) {
 	var buf bytes.Buffer
 	logger := log.New(&bytes.Buffer{}, "", 0)
 
-	err := RunUsersCommand(repo, infoProvider, &buf, logger)
-	require.NoError(t, err)
+	RunUsersCommand(repo, infoProvider, &buf, logger)
 
 	output := buf.String()
 	assert.Contains(t, output, "@hasuser")
@@ -158,8 +154,7 @@ func TestRunUsersCommand_OutageInfoFormatting(t *testing.T) {
 	var buf bytes.Buffer
 	logger := log.New(&bytes.Buffer{}, "", 0)
 
-	err := RunUsersCommand(repo, infoProvider, &buf, logger)
-	require.NoError(t, err)
+	RunUsersCommand(repo, infoProvider, &buf, logger)
 
 	output := buf.String()
 	assert.Contains(t, output, "15.03.2024 08:00 - 16:00")
@@ -180,8 +175,7 @@ func TestRunUsersCommand_SanitizationApplied(t *testing.T) {
 	var buf bytes.Buffer
 	logger := log.New(&bytes.Buffer{}, "", 0)
 
-	err := RunUsersCommand(repo, infoProvider, &buf, logger)
-	require.NoError(t, err)
+	RunUsersCommand(repo, infoProvider, &buf, logger)
 
 	output := buf.String()
 	assert.Contains(t, output, "John")

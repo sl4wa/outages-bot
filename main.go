@@ -180,7 +180,8 @@ func usersCmd() *cobra.Command {
 			}
 
 			userInfoProvider := tgclient.NewTelegramUserInfoProvider(api)
-			return cli.RunUsersCommand(userRepo, userInfoProvider, os.Stdout, log.Default())
+			cli.RunUsersCommand(userRepo, userInfoProvider, os.Stdout, log.Default())
+			return nil
 		},
 	}
 }
