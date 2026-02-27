@@ -13,7 +13,6 @@ import (
 
 // Conversation steps.
 const (
-	StepNone             = 0
 	StepSearchStreet     = 1
 	StepSaveSubscription = 2
 )

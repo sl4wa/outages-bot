@@ -27,7 +27,7 @@ func NewNotificationService(sender application.NotificationSender, userRepo doma
 }
 
 // Handle sends notifications for the given outages to all affected users.
-func (s *NotificationService) Handle(outages []*domain.Outage) int {
+func (s *NotificationService) Handle(outages []*domain.Outage) {
 	users := s.userRepo.FindAll()
 
 	for _, user := range users {
@@ -62,6 +62,4 @@ func (s *NotificationService) Handle(outages []*domain.Outage) int {
 			s.logger.Printf("failed to save user %d: %v", user.ID, err)
 		}
 	}
-
-	return len(outages)
 }

@@ -13,7 +13,7 @@ import (
 // RunUsersCommand lists all users with their Telegram info and addresses.
 func RunUsersCommand(
 	userRepo domain.UserRepository,
-	userInfoProvider application.TelegramUserInfoProvider,
+	userInfoProvider application.UserInfoProvider,
 	w io.Writer,
 	logger *log.Logger,
 ) {

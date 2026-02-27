@@ -69,7 +69,7 @@ func TestRunNotifierCommand_Success(t *testing.T) {
 
 	err := RunNotifierCommand(context.Background(), fetchService, notifService, logger)
 	require.NoError(t, err)
-	assert.Contains(t, buf.String(), "Successfully dispatched 1 outages.")
+	assert.Contains(t, buf.String(), "Successfully dispatched notifications.")
 }
 
 func TestRunNotifierCommand_FetchError(t *testing.T) {

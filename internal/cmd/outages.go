@@ -12,7 +12,7 @@ import (
 
 // RunOutagesCommand fetches and prints outages in a table.
 func RunOutagesCommand(ctx context.Context, provider application.OutageProvider, w io.Writer) error {
-	outages, err := admin.ListOutages(ctx, provider)
+	outages, err := provider.FetchOutages(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to fetch outages: %w", err)
 	}

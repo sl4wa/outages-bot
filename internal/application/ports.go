@@ -12,7 +12,7 @@ type NotificationSender interface {
 	Send(dto NotificationSenderDTO) error
 }
 
-// TelegramUserInfoProvider retrieves Telegram user info.
-type TelegramUserInfoProvider interface {
+// UserInfoProvider retrieves user info.
+type UserInfoProvider interface {
 	GetUserInfo(chatID int64) (UserInfoDTO, error)
 }

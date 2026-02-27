@@ -91,8 +91,7 @@ func TestNotification_MatchingSendsAndSaves(t *testing.T) {
 	svc := NewNotificationService(sender, repo, log.New(io.Discard, "", 0))
 	outages := []*domain.Outage{makeTestOutage(1, []string{"10", "12"})}
 
-	count := svc.Handle(outages)
-	assert.Equal(t, 1, count)
+	svc.Handle(outages)
 	assert.Len(t, sender.sent, 1)
 	assert.Equal(t, int64(100), sender.sent[0].UserID)
 	assert.Len(t, repo.saved, 1)
@@ -174,8 +173,7 @@ func TestNotification_SaveError_LogsAndContinues(t *testing.T) {
 	svc := NewNotificationService(sender, repo, logger)
 	outages := []*domain.Outage{makeTestOutage(1, []string{"10"})}
 
-	count := svc.Handle(outages)
-	assert.Equal(t, 1, count)
+	svc.Handle(outages)
 	assert.Len(t, sender.sent, 1)
 	assert.Contains(t, buf.String(), "failed to save user 100")
 }
@@ -194,7 +192,6 @@ func TestNotification_RemoveError_LogsAndContinues(t *testing.T) {
 	svc := NewNotificationService(sender, repo, logger)
 	outages := []*domain.Outage{makeTestOutage(1, []string{"10"})}
 
-	count := svc.Handle(outages)
-	assert.Equal(t, 1, count)
+	svc.Handle(outages)
 	assert.Contains(t, buf.String(), "failed to remove blocked user 100")
 }

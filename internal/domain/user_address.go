@@ -13,7 +13,6 @@ type UserAddress struct {
 	StreetID   int
 	StreetName string
 	Building   string
-	City       string
 }
 
 // NewUserAddress creates a new UserAddress with validation.
