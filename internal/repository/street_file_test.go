@@ -13,8 +13,7 @@ func TestFileStreetRepository_LoadsStreets(t *testing.T) {
 	repo, err := NewFileStreetRepository("testdata/streets.csv")
 	require.NoError(t, err)
 
-	streets, err := repo.GetAllStreets()
-	require.NoError(t, err)
+	streets := repo.GetAllStreets()
 	assert.Len(t, streets, 2)
 }
 
@@ -22,7 +21,7 @@ func TestFileStreetRepository_StreetsContent(t *testing.T) {
 	repo, err := NewFileStreetRepository("testdata/streets.csv")
 	require.NoError(t, err)
 
-	streets, _ := repo.GetAllStreets()
+	streets := repo.GetAllStreets()
 	assert.Equal(t, 12444, streets[0].ID)
 	assert.Equal(t, "Молдавська", streets[0].Name)
 	assert.Equal(t, 12445, streets[1].ID)
@@ -43,8 +42,7 @@ func TestFileStreetRepository_EmptyCSV(t *testing.T) {
 	repo, err := NewFileStreetRepository(path)
 	require.NoError(t, err)
 
-	streets, err := repo.GetAllStreets()
-	require.NoError(t, err)
+	streets := repo.GetAllStreets()
 	assert.Empty(t, streets)
 }
 
@@ -66,7 +64,6 @@ func TestFileStreetRepository_EmptyFile(t *testing.T) {
 	repo, err := NewFileStreetRepository(path)
 	require.NoError(t, err)
 
-	streets, err := repo.GetAllStreets()
-	require.NoError(t, err)
+	streets := repo.GetAllStreets()
 	assert.Empty(t, streets)
 }

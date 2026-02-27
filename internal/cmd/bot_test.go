@@ -71,8 +71,8 @@ type testStreetRepo struct {
 	streets []domain.Street
 }
 
-func (r *testStreetRepo) GetAllStreets() ([]domain.Street, error) {
-	return r.streets, nil
+func (r *testStreetRepo) GetAllStreets() []domain.Street {
+	return r.streets
 }
 
 // sentMessage captures sent messages

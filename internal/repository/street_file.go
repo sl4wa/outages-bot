@@ -47,6 +47,6 @@ func NewFileStreetRepository(filePath string) (*FileStreetRepository, error) {
 }
 
 // GetAllStreets returns all loaded streets.
-func (r *FileStreetRepository) GetAllStreets() ([]domain.Street, error) {
-	return r.streets, nil
+func (r *FileStreetRepository) GetAllStreets() []domain.Street {
+	return r.streets
 }

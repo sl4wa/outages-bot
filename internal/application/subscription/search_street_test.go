@@ -12,8 +12,8 @@ type mockStreetRepo struct {
 	streets []domain.Street
 }
 
-func (m *mockStreetRepo) GetAllStreets() ([]domain.Street, error) {
-	return m.streets, nil
+func (m *mockStreetRepo) GetAllStreets() []domain.Street {
+	return m.streets
 }
 
 func newSearchService() *SearchStreetService {

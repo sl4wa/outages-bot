@@ -43,10 +43,7 @@ func (s *SearchStreetService) Handle(query string) (*SearchStreetResult, error) 
 	}
 
 	q := strings.ToLower(query)
-	streets, err := s.streetRepo.GetAllStreets()
-	if err != nil {
-		return nil, err
-	}
+	streets := s.streetRepo.GetAllStreets()
 
 	var results []domain.Street
 	for _, street := range streets {

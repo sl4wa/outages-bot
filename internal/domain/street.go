@@ -20,5 +20,5 @@ func (s Street) NameEquals(query string) bool {
 
 // StreetRepository defines the interface for street data access.
 type StreetRepository interface {
-	GetAllStreets() ([]Street, error)
+	GetAllStreets() []Street
 }
