@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 type mockStreetRepo struct {
@@ -29,8 +28,7 @@ func newSearchService() *SearchStreetService {
 
 func TestSearchStreet_EmptyQuery(t *testing.T) {
 	svc := newSearchService()
-	result, err := svc.Handle("")
-	require.NoError(t, err)
+	result := svc.Handle("")
 	assert.Equal(t, "Введіть назву вулиці.", result.Message)
 	assert.False(t, result.HasExactMatch())
 	assert.False(t, result.HasMultipleOptions())
@@ -38,23 +36,20 @@ func TestSearchStreet_EmptyQuery(t *testing.T) {
 
 func TestSearchStreet_WhitespaceQuery(t *testing.T) {
 	svc := newSearchService()
-	result, err := svc.Handle("   ")
-	require.NoError(t, err)
+	result := svc.Handle("   ")
 	assert.Equal(t, "Введіть назву вулиці.", result.Message)
 }
 
 func TestSearchStreet_NotFound(t *testing.T) {
 	svc := newSearchService()
-	result, err := svc.Handle("Невідома")
-	require.NoError(t, err)
+	result := svc.Handle("Невідома")
 	assert.Equal(t, "Вулицю не знайдено. Спробуйте ще раз.", result.Message)
 	assert.False(t, result.HasExactMatch())
 }
 
 func TestSearchStreet_ExactMatch(t *testing.T) {
 	svc := newSearchService()
-	result, err := svc.Handle("Наукова")
-	require.NoError(t, err)
+	result := svc.Handle("Наукова")
 	assert.True(t, result.HasExactMatch())
 	assert.Equal(t, 2, *result.SelectedStreetID)
 	assert.Equal(t, "Наукова", *result.SelectedStreetName)
@@ -64,24 +59,21 @@ func TestSearchStreet_ExactMatch(t *testing.T) {
 
 func TestSearchStreet_ExactMatchCaseInsensitive(t *testing.T) {
 	svc := newSearchService()
-	result, err := svc.Handle("наукова")
-	require.NoError(t, err)
+	result := svc.Handle("наукова")
 	assert.True(t, result.HasExactMatch())
 	assert.Equal(t, 2, *result.SelectedStreetID)
 }
 
 func TestSearchStreet_SinglePartialMatch(t *testing.T) {
 	svc := newSearchService()
-	result, err := svc.Handle("науков")
-	require.NoError(t, err)
+	result := svc.Handle("науков")
 	assert.True(t, result.HasExactMatch())
 	assert.Equal(t, 2, *result.SelectedStreetID)
 }
 
 func TestSearchStreet_MultipleMatches(t *testing.T) {
 	svc := newSearchService()
-	result, err := svc.Handle("стр")
-	require.NoError(t, err)
+	result := svc.Handle("стр")
 	assert.True(t, result.HasMultipleOptions())
 	assert.False(t, result.HasExactMatch())
 	assert.Equal(t, "Будь ласка, оберіть вулицю:", result.Message)
@@ -90,8 +82,7 @@ func TestSearchStreet_MultipleMatches(t *testing.T) {
 
 func TestSearchStreet_MultipleMatchesContainsCorrectStreets(t *testing.T) {
 	svc := newSearchService()
-	result, err := svc.Handle("стр")
-	require.NoError(t, err)
+	result := svc.Handle("стр")
 	names := make([]string, len(result.StreetOptions))
 	for i, s := range result.StreetOptions {
 		names[i] = s.Name
@@ -102,8 +93,7 @@ func TestSearchStreet_MultipleMatchesContainsCorrectStreets(t *testing.T) {
 
 func TestSearchStreet_ExactMatchTakesPrecedence(t *testing.T) {
 	svc := newSearchService()
-	result, err := svc.Handle("Стрийська")
-	require.NoError(t, err)
+	result := svc.Handle("Стрийська")
 	assert.True(t, result.HasExactMatch())
 	assert.Equal(t, 1, *result.SelectedStreetID)
 }

@@ -35,11 +35,11 @@ func NewSearchStreetService(streetRepo domain.StreetRepository) *SearchStreetSer
 }
 
 // Handle searches for streets matching the query.
-func (s *SearchStreetService) Handle(query string) (*SearchStreetResult, error) {
+func (s *SearchStreetService) Handle(query string) *SearchStreetResult {
 	query = strings.TrimSpace(query)
 
 	if query == "" {
-		return &SearchStreetResult{Message: "Введіть назву вулиці."}, nil
+		return &SearchStreetResult{Message: "Введіть назву вулиці."}
 	}
 
 	q := strings.ToLower(query)
@@ -54,7 +54,7 @@ func (s *SearchStreetService) Handle(query string) (*SearchStreetResult, error) 
 				Message:            fmt.Sprintf("Ви обрали вулицю: %s\nБудь ласка, введіть номер будинку:", street.Name),
 				SelectedStreetID:   &id,
 				SelectedStreetName: &name,
-			}, nil
+			}
 		}
 		if street.NameContains(q) {
 			results = append(results, street)
@@ -62,7 +62,7 @@ func (s *SearchStreetService) Handle(query string) (*SearchStreetResult, error) 
 	}
 
 	if len(results) == 0 {
-		return &SearchStreetResult{Message: "Вулицю не знайдено. Спробуйте ще раз."}, nil
+		return &SearchStreetResult{Message: "Вулицю не знайдено. Спробуйте ще раз."}
 	}
 
 	if len(results) == 1 {
@@ -72,11 +72,11 @@ func (s *SearchStreetService) Handle(query string) (*SearchStreetResult, error) 
 			Message:            fmt.Sprintf("Ви обрали вулицю: %s\nБудь ласка, введіть номер будинку:", results[0].Name),
 			SelectedStreetID:   &id,
 			SelectedStreetName: &name,
-		}, nil
+		}
 	}
 
 	return &SearchStreetResult{
 		Message:       "Будь ласка, оберіть вулицю:",
 		StreetOptions: results,
-	}, nil
+	}
 }

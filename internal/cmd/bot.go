@@ -212,11 +212,7 @@ func (br *BotRunner) handleSearchStreet(chatID int64, text string) {
 		return
 	}
 
-	result, err := br.searchStreetService.Handle(text)
-	if err != nil {
-		br.logger.Printf("error searching street: %v", err)
-		return
-	}
+	result := br.searchStreetService.Handle(text)
 
 	if result.HasMultipleOptions() {
 		rows := make([][]tgbotapi.KeyboardButton, len(result.StreetOptions))
