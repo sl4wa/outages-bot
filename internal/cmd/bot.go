@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"outages-bot/internal/application/subscription"
-	"outages-bot/internal/domain"
 	"sync"
 	"time"
 
@@ -31,7 +30,7 @@ type BotRunner struct {
 	searchStreetService     *subscription.SearchStreetService
 	showSubscriptionService *subscription.ShowSubscriptionService
 	saveSubscriptionService *subscription.SaveSubscriptionService
-	userRepo                domain.UserRepository
+	unsubscribeService      *subscription.UnsubscribeService
 	logger                  *log.Logger
 	clock                   func() time.Time
 	ttl                     time.Duration
@@ -49,7 +48,7 @@ type BotRunnerConfig struct {
 	SearchStreetService     *subscription.SearchStreetService
 	ShowSubscriptionService *subscription.ShowSubscriptionService
 	SaveSubscriptionService *subscription.SaveSubscriptionService
-	UserRepo                domain.UserRepository
+	UnsubscribeService      *subscription.UnsubscribeService
 	Logger                  *log.Logger
 	Clock                   func() time.Time
 	CleanupTicker           <-chan time.Time
@@ -74,7 +73,7 @@ func NewBotRunner(cfg BotRunnerConfig) *BotRunner {
 		searchStreetService:     cfg.SearchStreetService,
 		showSubscriptionService: cfg.ShowSubscriptionService,
 		saveSubscriptionService: cfg.SaveSubscriptionService,
-		userRepo:                cfg.UserRepo,
+		unsubscribeService:      cfg.UnsubscribeService,
 		logger:                  cfg.Logger,
 		clock:                   cfg.Clock,
 		ttl:                     cfg.TTL,
@@ -168,23 +167,15 @@ func (br *BotRunner) handleStart(chatID int64) {
 }
 
 func (br *BotRunner) handleStop(chatID int64) {
-	// Clear any active conversation
 	br.mu.Lock()
 	delete(br.conversations, chatID)
 	br.mu.Unlock()
 
-	removed, err := br.userRepo.Remove(chatID)
-	if err != nil {
-		br.logger.Printf("error removing user %d: %v", chatID, err)
-		br.sendMessage(chatID, "Сталася помилка. Спробуйте пізніше.")
-		return
+	result := br.unsubscribeService.Handle(chatID)
+	if result.Err != nil {
+		br.logger.Printf("error removing user %d: %v", chatID, result.Err)
 	}
-
-	if removed {
-		br.sendMessage(chatID, "Ви успішно відписалися від сповіщень про відключення електроенергії.")
-	} else {
-		br.sendMessage(chatID, "Ви не маєте активної підписки.")
-	}
+	br.sendMessage(chatID, result.Message)
 }
 
 func (br *BotRunner) handleSubscription(chatID int64) {

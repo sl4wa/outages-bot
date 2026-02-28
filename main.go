@@ -89,7 +89,7 @@ func botCmd() *cobra.Command {
 				SearchStreetService:     subscription.NewSearchStreetService(streetRepo),
 				ShowSubscriptionService: subscription.NewShowSubscriptionService(userRepo),
 				SaveSubscriptionService: subscription.NewSaveSubscriptionService(userRepo),
-				UserRepo:                userRepo,
+				UnsubscribeService:      subscription.NewUnsubscribeService(userRepo),
 			})
 			defer runner.Close()
 

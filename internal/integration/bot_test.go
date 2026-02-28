@@ -56,7 +56,7 @@ func (s *BotSuite) SetupTest() {
 		SearchStreetService:     subscription.NewSearchStreetService(s.streetRepo),
 		ShowSubscriptionService: subscription.NewShowSubscriptionService(s.userRepo),
 		SaveSubscriptionService: subscription.NewSaveSubscriptionService(s.userRepo),
-		UserRepo:                s.userRepo,
+		UnsubscribeService:      subscription.NewUnsubscribeService(s.userRepo),
 		CleanupTicker:           cleanupCh,
 		TTL:                     30 * time.Minute,
 	})
