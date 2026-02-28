@@ -11,7 +11,7 @@ import (
 func RunNotifierCommand(
 	ctx context.Context,
 	fetchService *notification.OutageFetchService,
-	notificationService *notification.NotificationService,
+	notificationService *notification.Service,
 	logger *log.Logger,
 ) error {
 	outages, err := fetchService.Handle(ctx)

@@ -62,7 +62,7 @@ func TestRunNotifierCommand_Success(t *testing.T) {
 	userRepo := &mockUserRepo{}
 
 	fetchService := notification.NewOutageFetchService(provider)
-	notifService := notification.NewNotificationService(sender, userRepo, nil)
+	notifService := notification.NewService(sender, userRepo, nil)
 
 	var buf bytes.Buffer
 	logger := log.New(&buf, "", 0)
@@ -78,7 +78,7 @@ func TestRunNotifierCommand_FetchError(t *testing.T) {
 	userRepo := &mockUserRepo{}
 
 	fetchService := notification.NewOutageFetchService(provider)
-	notifService := notification.NewNotificationService(sender, userRepo, nil)
+	notifService := notification.NewService(sender, userRepo, nil)
 
 	logger := log.New(&bytes.Buffer{}, "", 0)
 

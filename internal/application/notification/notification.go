@@ -7,19 +7,19 @@ import (
 	"outages-bot/internal/domain"
 )
 
-// NotificationService handles sending outage notifications to affected users.
-type NotificationService struct {
+// Service handles sending outage notifications to affected users.
+type Service struct {
 	sender   application.NotificationSender
 	userRepo domain.UserRepository
 	logger   *log.Logger
 }
 
-// NewNotificationService creates a new NotificationService.
-func NewNotificationService(sender application.NotificationSender, userRepo domain.UserRepository, logger *log.Logger) *NotificationService {
+// NewService creates a new Service.
+func NewService(sender application.NotificationSender, userRepo domain.UserRepository, logger *log.Logger) *Service {
 	if logger == nil {
 		logger = log.Default()
 	}
-	return &NotificationService{
+	return &Service{
 		sender:   sender,
 		userRepo: userRepo,
 		logger:   logger,
@@ -27,7 +27,7 @@ func NewNotificationService(sender application.NotificationSender, userRepo doma
 }
 
 // Handle sends notifications for the given outages to all affected users.
-func (s *NotificationService) Handle(outages []*domain.Outage) {
+func (s *Service) Handle(outages []*domain.Outage) {
 	users := s.userRepo.FindAll()
 
 	for _, user := range users {

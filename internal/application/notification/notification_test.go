@@ -88,7 +88,7 @@ func TestNotification_MatchingSendsAndSaves(t *testing.T) {
 	addr, _ := domain.NewUserAddress(1, "Стрийська", "10")
 	repo.users[100] = &domain.User{ID: 100, Address: addr}
 
-	svc := NewNotificationService(sender, repo, log.New(io.Discard, "", 0))
+	svc := NewService(sender, repo, log.New(io.Discard, "", 0))
 	outages := []*domain.Outage{makeTestOutage(1, []string{"10", "12"})}
 
 	svc.Handle(outages)
@@ -105,7 +105,7 @@ func TestNotification_BlockedUserRemoved(t *testing.T) {
 	addr, _ := domain.NewUserAddress(1, "Стрийська", "10")
 	repo.users[100] = &domain.User{ID: 100, Address: addr}
 
-	svc := NewNotificationService(sender, repo, log.New(io.Discard, "", 0))
+	svc := NewService(sender, repo, log.New(io.Discard, "", 0))
 	outages := []*domain.Outage{makeTestOutage(1, []string{"10"})}
 
 	svc.Handle(outages)
@@ -118,7 +118,7 @@ func TestNotification_NonMatchingDoesNothing(t *testing.T) {
 	addr, _ := domain.NewUserAddress(2, "Наукова", "10")
 	repo.users[100] = &domain.User{ID: 100, Address: addr}
 
-	svc := NewNotificationService(sender, repo, log.New(io.Discard, "", 0))
+	svc := NewService(sender, repo, log.New(io.Discard, "", 0))
 	outages := []*domain.Outage{makeTestOutage(1, []string{"10"})}
 
 	svc.Handle(outages)
@@ -132,7 +132,7 @@ func TestNotification_DedupSecondRunSkips(t *testing.T) {
 	addr, _ := domain.NewUserAddress(1, "Стрийська", "10")
 	repo.users[100] = &domain.User{ID: 100, Address: addr}
 
-	svc := NewNotificationService(sender, repo, log.New(io.Discard, "", 0))
+	svc := NewService(sender, repo, log.New(io.Discard, "", 0))
 	outages := []*domain.Outage{makeTestOutage(1, []string{"10"})}
 
 	// First run
@@ -153,7 +153,7 @@ func TestNotification_NonBlockingSendError_UserNotRemoved(t *testing.T) {
 	addr, _ := domain.NewUserAddress(1, "Стрийська", "10")
 	repo.users[100] = &domain.User{ID: 100, Address: addr}
 
-	svc := NewNotificationService(sender, repo, log.New(io.Discard, "", 0))
+	svc := NewService(sender, repo, log.New(io.Discard, "", 0))
 	outages := []*domain.Outage{makeTestOutage(1, []string{"10"})}
 
 	svc.Handle(outages)
@@ -170,7 +170,7 @@ func TestNotification_SaveError_LogsAndContinues(t *testing.T) {
 
 	var buf bytes.Buffer
 	logger := log.New(&buf, "", 0)
-	svc := NewNotificationService(sender, repo, logger)
+	svc := NewService(sender, repo, logger)
 	outages := []*domain.Outage{makeTestOutage(1, []string{"10"})}
 
 	svc.Handle(outages)
@@ -189,7 +189,7 @@ func TestNotification_RemoveError_LogsAndContinues(t *testing.T) {
 
 	var buf bytes.Buffer
 	logger := log.New(&buf, "", 0)
-	svc := NewNotificationService(sender, repo, logger)
+	svc := NewService(sender, repo, logger)
 	outages := []*domain.Outage{makeTestOutage(1, []string{"10"})}
 
 	svc.Handle(outages)

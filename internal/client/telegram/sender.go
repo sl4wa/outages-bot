@@ -7,18 +7,18 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-// TelegramNotificationSender sends notifications via the Telegram Bot API.
-type TelegramNotificationSender struct {
+// NotificationSender sends notifications via the Telegram Bot API.
+type NotificationSender struct {
 	bot *tgbotapi.BotAPI
 }
 
-// NewTelegramNotificationSender creates a new TelegramNotificationSender.
-func NewTelegramNotificationSender(bot *tgbotapi.BotAPI) *TelegramNotificationSender {
-	return &TelegramNotificationSender{bot: bot}
+// NewNotificationSender creates a new NotificationSender.
+func NewNotificationSender(bot *tgbotapi.BotAPI) *NotificationSender {
+	return &NotificationSender{bot: bot}
 }
 
 // Send sends a notification to the user via Telegram.
-func (s *TelegramNotificationSender) Send(dto application.NotificationSenderDTO) error {
+func (s *NotificationSender) Send(dto application.NotificationSenderDTO) error {
 	text := notification.FormatNotification(dto)
 	msg := tgbotapi.NewMessage(dto.UserID, text)
 	msg.ParseMode = "HTML"

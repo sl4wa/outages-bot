@@ -7,18 +7,18 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-// TelegramUserInfoProvider retrieves user info from the Telegram API.
-type TelegramUserInfoProvider struct {
+// UserInfoProvider retrieves user info from the Telegram API.
+type UserInfoProvider struct {
 	bot *tgbotapi.BotAPI
 }
 
-// NewTelegramUserInfoProvider creates a new TelegramUserInfoProvider.
-func NewTelegramUserInfoProvider(bot *tgbotapi.BotAPI) *TelegramUserInfoProvider {
-	return &TelegramUserInfoProvider{bot: bot}
+// NewUserInfoProvider creates a new UserInfoProvider.
+func NewUserInfoProvider(bot *tgbotapi.BotAPI) *UserInfoProvider {
+	return &UserInfoProvider{bot: bot}
 }
 
 // GetUserInfo retrieves user info for the given chat ID.
-func (p *TelegramUserInfoProvider) GetUserInfo(chatID int64) (application.UserInfoDTO, error) {
+func (p *UserInfoProvider) GetUserInfo(chatID int64) (application.UserInfoDTO, error) {
 	chatConfig := tgbotapi.ChatInfoConfig{
 		ChatConfig: tgbotapi.ChatConfig{
 			ChatID: chatID,

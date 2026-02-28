@@ -110,10 +110,10 @@ func notifierCmd() *cobra.Command {
 				return fmt.Errorf("failed to create user repository: %w", err)
 			}
 
-			outageProvider := outageapi.NewApiOutageProvider("", nil, nil)
-			sender := tgclient.NewTelegramNotificationSender(api)
+			outageProvider := outageapi.NewProvider("", nil, nil)
+			sender := tgclient.NewNotificationSender(api)
 			fetchService := notification.NewOutageFetchService(outageProvider)
-			notificationService := notification.NewNotificationService(sender, userRepo, log.Default())
+			notificationService := notification.NewService(sender, userRepo, log.Default())
 
 			runFn := func(ctx context.Context) error {
 				return cli.RunNotifierCommand(ctx, fetchService, notificationService, log.Default())
@@ -160,7 +160,7 @@ func outagesCmd() *cobra.Command {
 		Use:   "outages",
 		Short: "Print a table of current outages",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			outageProvider := outageapi.NewApiOutageProvider("", nil, nil)
+			outageProvider := outageapi.NewProvider("", nil, nil)
 			return cli.RunOutagesCommand(context.Background(), outageProvider, os.Stdout)
 		},
 	}
@@ -179,7 +179,7 @@ func usersCmd() *cobra.Command {
 				return fmt.Errorf("failed to create user repository: %w", err)
 			}
 
-			userInfoProvider := tgclient.NewTelegramUserInfoProvider(api)
+			userInfoProvider := tgclient.NewUserInfoProvider(api)
 			cli.RunUsersCommand(userRepo, userInfoProvider, os.Stdout, log.Default())
 			return nil
 		},

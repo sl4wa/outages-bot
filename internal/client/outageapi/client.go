@@ -19,16 +19,16 @@ const defaultAPIURL = "https://power-api.loe.lviv.ua/api/pw_accidents?pagination
 
 var newlineRegex = regexp.MustCompile(`[\r\n]+`)
 
-// ApiOutageProvider fetches outages from the Lviv power outage API.
-type ApiOutageProvider struct {
+// Provider fetches outages from the Lviv power outage API.
+type Provider struct {
 	baseURL string
 	client  *http.Client
 	clock   func() time.Time
 	logger  *log.Logger
 }
 
-// NewApiOutageProvider creates a new ApiOutageProvider.
-func NewApiOutageProvider(baseURL string, clock func() time.Time, logger *log.Logger) *ApiOutageProvider {
+// NewProvider creates a new Provider.
+func NewProvider(baseURL string, clock func() time.Time, logger *log.Logger) *Provider {
 	if baseURL == "" {
 		baseURL = defaultAPIURL
 	}
@@ -38,7 +38,7 @@ func NewApiOutageProvider(baseURL string, clock func() time.Time, logger *log.Lo
 	if logger == nil {
 		logger = log.Default()
 	}
-	return &ApiOutageProvider{
+	return &Provider{
 		baseURL: baseURL,
 		client:  &http.Client{Timeout: 30 * time.Second},
 		clock:   clock,
@@ -70,7 +70,7 @@ type streetObj struct {
 }
 
 // FetchOutages fetches outages from the API.
-func (p *ApiOutageProvider) FetchOutages(ctx context.Context) ([]application.OutageDTO, error) {
+func (p *Provider) FetchOutages(ctx context.Context) ([]application.OutageDTO, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, p.baseURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
@@ -152,7 +152,7 @@ func (p *ApiOutageProvider) FetchOutages(ctx context.Context) ([]application.Out
 	return outages, nil
 }
 
-func (p *ApiOutageProvider) parseDate(dateStr string) time.Time {
+func (p *Provider) parseDate(dateStr string) time.Time {
 	if dateStr == "" {
 		return p.clock()
 	}
@@ -167,7 +167,7 @@ func (p *ApiOutageProvider) parseDate(dateStr string) time.Time {
 	return t
 }
 
-func (p *ApiOutageProvider) parseBuildings(raw json.RawMessage) []string {
+func (p *Provider) parseBuildings(raw json.RawMessage) []string {
 	if raw == nil {
 		return nil
 	}

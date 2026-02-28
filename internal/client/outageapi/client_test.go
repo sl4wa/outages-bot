@@ -33,7 +33,7 @@ func TestApiProvider_Non200_ReturnsEmptyAndLogsWarning(t *testing.T) {
 
 	var buf bytes.Buffer
 	logger := log.New(&buf, "", 0)
-	provider := NewApiOutageProvider(server.URL, fixedClock(), logger)
+	provider := NewProvider(server.URL, fixedClock(), logger)
 
 	result, err := provider.FetchOutages(context.Background())
 	assert.NoError(t, err)
@@ -45,7 +45,7 @@ func TestApiProvider_MalformedJSON_ReturnsError(t *testing.T) {
 	server := makeServer(t, 200, "not json")
 	defer server.Close()
 
-	provider := NewApiOutageProvider(server.URL, fixedClock(), nil)
+	provider := NewProvider(server.URL, fixedClock(), nil)
 	_, err := provider.FetchOutages(context.Background())
 	assert.Error(t, err)
 }
@@ -54,7 +54,7 @@ func TestApiProvider_MissingHydraMember_ReturnsEmpty(t *testing.T) {
 	server := makeServer(t, 200, `{}`)
 	defer server.Close()
 
-	provider := NewApiOutageProvider(server.URL, fixedClock(), nil)
+	provider := NewProvider(server.URL, fixedClock(), nil)
 	result, err := provider.FetchOutages(context.Background())
 	assert.NoError(t, err)
 	assert.Empty(t, result)
@@ -65,7 +65,7 @@ func TestApiProvider_BuildingNamesAsString(t *testing.T) {
 	server := makeServer(t, 200, body)
 	defer server.Close()
 
-	provider := NewApiOutageProvider(server.URL, fixedClock(), nil)
+	provider := NewProvider(server.URL, fixedClock(), nil)
 	result, err := provider.FetchOutages(context.Background())
 	require.NoError(t, err)
 	require.Len(t, result, 1)
@@ -77,7 +77,7 @@ func TestApiProvider_BuildingNamesAsArray(t *testing.T) {
 	server := makeServer(t, 200, body)
 	defer server.Close()
 
-	provider := NewApiOutageProvider(server.URL, fixedClock(), nil)
+	provider := NewProvider(server.URL, fixedClock(), nil)
 	result, err := provider.FetchOutages(context.Background())
 	require.NoError(t, err)
 	require.Len(t, result, 1)
@@ -92,7 +92,7 @@ func TestApiProvider_Dedup(t *testing.T) {
 	server := makeServer(t, 200, body)
 	defer server.Close()
 
-	provider := NewApiOutageProvider(server.URL, fixedClock(), nil)
+	provider := NewProvider(server.URL, fixedClock(), nil)
 	result, err := provider.FetchOutages(context.Background())
 	require.NoError(t, err)
 	assert.Len(t, result, 1)
@@ -104,7 +104,7 @@ func TestApiProvider_MissingDates_UsesInjectedClock(t *testing.T) {
 	defer server.Close()
 
 	clock := fixedClock()
-	provider := NewApiOutageProvider(server.URL, clock, nil)
+	provider := NewProvider(server.URL, clock, nil)
 	result, err := provider.FetchOutages(context.Background())
 	require.NoError(t, err)
 	require.Len(t, result, 1)
@@ -117,7 +117,7 @@ func TestApiProvider_EmptyCityAndStreet(t *testing.T) {
 	server := makeServer(t, 200, body)
 	defer server.Close()
 
-	provider := NewApiOutageProvider(server.URL, fixedClock(), nil)
+	provider := NewProvider(server.URL, fixedClock(), nil)
 	result, err := provider.FetchOutages(context.Background())
 	require.NoError(t, err)
 	require.Len(t, result, 1)
@@ -131,7 +131,7 @@ func TestApiProvider_CommentWithCRLF(t *testing.T) {
 	server := makeServer(t, 200, body)
 	defer server.Close()
 
-	provider := NewApiOutageProvider(server.URL, fixedClock(), nil)
+	provider := NewProvider(server.URL, fixedClock(), nil)
 	result, err := provider.FetchOutages(context.Background())
 	require.NoError(t, err)
 	assert.Equal(t, "line1 line2", result[0].Comment)
@@ -142,7 +142,7 @@ func TestApiProvider_CommentWithMultipleNewlines(t *testing.T) {
 	server := makeServer(t, 200, body)
 	defer server.Close()
 
-	provider := NewApiOutageProvider(server.URL, fixedClock(), nil)
+	provider := NewProvider(server.URL, fixedClock(), nil)
 	result, err := provider.FetchOutages(context.Background())
 	require.NoError(t, err)
 	assert.Equal(t, "line1 line2", result[0].Comment)
@@ -153,7 +153,7 @@ func TestApiProvider_CommentWithLeadingTrailingWhitespace(t *testing.T) {
 	server := makeServer(t, 200, body)
 	defer server.Close()
 
-	provider := NewApiOutageProvider(server.URL, fixedClock(), nil)
+	provider := NewProvider(server.URL, fixedClock(), nil)
 	result, err := provider.FetchOutages(context.Background())
 	require.NoError(t, err)
 	assert.Equal(t, "hello", result[0].Comment)
@@ -164,7 +164,7 @@ func TestApiProvider_NormalComment(t *testing.T) {
 	server := makeServer(t, 200, body)
 	defer server.Close()
 
-	provider := NewApiOutageProvider(server.URL, fixedClock(), nil)
+	provider := NewProvider(server.URL, fixedClock(), nil)
 	result, err := provider.FetchOutages(context.Background())
 	require.NoError(t, err)
 	assert.Equal(t, "Normal comment", result[0].Comment)
@@ -175,7 +175,7 @@ func TestApiProvider_StringIDs(t *testing.T) {
 	server := makeServer(t, 200, body)
 	defer server.Close()
 
-	provider := NewApiOutageProvider(server.URL, fixedClock(), nil)
+	provider := NewProvider(server.URL, fixedClock(), nil)
 	result, err := provider.FetchOutages(context.Background())
 	require.NoError(t, err)
 	require.Len(t, result, 1)
@@ -188,7 +188,7 @@ func TestApiProvider_DecimalStringIDs(t *testing.T) {
 	server := makeServer(t, 200, body)
 	defer server.Close()
 
-	provider := NewApiOutageProvider(server.URL, fixedClock(), nil)
+	provider := NewProvider(server.URL, fixedClock(), nil)
 	result, err := provider.FetchOutages(context.Background())
 	require.NoError(t, err)
 	require.Len(t, result, 1)
@@ -207,7 +207,7 @@ func TestApiProvider_DedupPreservesOrder(t *testing.T) {
 	server := makeServer(t, 200, body)
 	defer server.Close()
 
-	provider := NewApiOutageProvider(server.URL, fixedClock(), nil)
+	provider := NewProvider(server.URL, fixedClock(), nil)
 	result, err := provider.FetchOutages(context.Background())
 	require.NoError(t, err)
 	require.Len(t, result, 2)

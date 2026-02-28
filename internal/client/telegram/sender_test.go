@@ -53,7 +53,7 @@ func TestSender_SuccessfulSend(t *testing.T) {
 		json.NewEncoder(w).Encode(resp)
 	})
 
-	sender := NewTelegramNotificationSender(api)
+	sender := NewNotificationSender(api)
 	err := sender.Send(testDTO())
 	assert.NoError(t, err)
 }
@@ -65,7 +65,7 @@ func TestSender_Forbidden403(t *testing.T) {
 		json.NewEncoder(w).Encode(resp)
 	})
 
-	sender := NewTelegramNotificationSender(api)
+	sender := NewNotificationSender(api)
 	err := sender.Send(testDTO())
 	require.Error(t, err)
 
@@ -82,7 +82,7 @@ func TestSender_BadRequest400(t *testing.T) {
 		json.NewEncoder(w).Encode(resp)
 	})
 
-	sender := NewTelegramNotificationSender(api)
+	sender := NewNotificationSender(api)
 	err := sender.Send(testDTO())
 	require.Error(t, err)
 
@@ -99,7 +99,7 @@ func TestSender_TooManyRequests429(t *testing.T) {
 		json.NewEncoder(w).Encode(resp)
 	})
 
-	sender := NewTelegramNotificationSender(api)
+	sender := NewNotificationSender(api)
 	err := sender.Send(testDTO())
 	require.Error(t, err)
 
@@ -122,7 +122,7 @@ func TestSender_NetworkError_Code0(t *testing.T) {
 	require.NoError(t, err)
 	server.Close() // Close to cause network error
 
-	sender := NewTelegramNotificationSender(api)
+	sender := NewNotificationSender(api)
 	err = sender.Send(testDTO())
 	require.Error(t, err)
 
@@ -137,7 +137,7 @@ func TestSender_MalformedJSON(t *testing.T) {
 		w.Write([]byte("not json at all"))
 	})
 
-	sender := NewTelegramNotificationSender(api)
+	sender := NewNotificationSender(api)
 	err := sender.Send(testDTO())
 	require.Error(t, err)
 
@@ -155,7 +155,7 @@ func TestSender_HTMLParseMode(t *testing.T) {
 		json.NewEncoder(w).Encode(resp)
 	})
 
-	sender := NewTelegramNotificationSender(api)
+	sender := NewNotificationSender(api)
 	err := sender.Send(testDTO())
 	require.NoError(t, err)
 	assert.Equal(t, "HTML", capturedParseMode)
@@ -170,7 +170,7 @@ func TestSender_MessageText(t *testing.T) {
 		json.NewEncoder(w).Encode(resp)
 	})
 
-	sender := NewTelegramNotificationSender(api)
+	sender := NewNotificationSender(api)
 	dto := testDTO()
 	err := sender.Send(dto)
 	require.NoError(t, err)
@@ -186,7 +186,7 @@ func TestSender_ForbiddenInMessage_IsBlocked(t *testing.T) {
 		json.NewEncoder(w).Encode(resp)
 	})
 
-	sender := NewTelegramNotificationSender(api)
+	sender := NewNotificationSender(api)
 	err := sender.Send(testDTO())
 	require.Error(t, err)
 

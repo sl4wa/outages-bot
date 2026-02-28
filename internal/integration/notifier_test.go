@@ -76,9 +76,9 @@ func (s *NotifierSuite) saveUser(chatID int64, streetID int, building string) {
 func (s *NotifierSuite) runPipeline() {
 	s.makeServer()
 	clock := func() time.Time { return time.Date(2024, 1, 1, 12, 0, 0, 0, time.UTC) }
-	apiProvider := outageapi.NewApiOutageProvider(s.server.URL, clock, nil)
+	apiProvider := outageapi.NewProvider(s.server.URL, clock, nil)
 	fetchService := notification.NewOutageFetchService(apiProvider)
-	notifService := notification.NewNotificationService(s.sender, s.userRepo, nil)
+	notifService := notification.NewService(s.sender, s.userRepo, nil)
 
 	outages, err := fetchService.Handle(context.Background())
 	require.NoError(s.T(), err)
