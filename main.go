@@ -37,6 +37,15 @@ func main() {
 	}
 }
 
+func requireEnv(key string) string {
+	v := os.Getenv(key)
+	if v == "" {
+		fmt.Fprintf(os.Stderr, "%s environment variable is required\n", key)
+		os.Exit(1)
+	}
+	return v
+}
+
 func getEnv(key, fallback string) string {
 	if v := os.Getenv(key); v != "" {
 		return v
@@ -45,12 +54,7 @@ func getEnv(key, fallback string) string {
 }
 
 func mustBotAPI() *tgbotapi.BotAPI {
-	token := os.Getenv("TELEGRAM_BOT_TOKEN")
-	if token == "" {
-		fmt.Fprintln(os.Stderr, "TELEGRAM_BOT_TOKEN environment variable is required")
-		os.Exit(1)
-	}
-	api, err := tgbotapi.NewBotAPI(token)
+	api, err := tgbotapi.NewBotAPI(requireEnv("TELEGRAM_BOT_TOKEN"))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to create Telegram bot: %v\n", err)
 		os.Exit(1)
@@ -110,7 +114,7 @@ func notifierCmd() *cobra.Command {
 				return fmt.Errorf("failed to create user repository: %w", err)
 			}
 
-			outageProvider := outageapi.NewProvider("", nil, nil)
+			outageProvider := outageapi.NewProvider(requireEnv("OUTAGE_API_URL"), nil, nil)
 			sender := tgclient.NewNotificationSender(api)
 			fetchService := notification.NewOutageFetchService(outageProvider)
 			notificationService := notification.NewService(sender, userRepo, log.Default())
@@ -160,7 +164,7 @@ func outagesCmd() *cobra.Command {
 		Use:   "outages",
 		Short: "Print a table of current outages",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			outageProvider := outageapi.NewProvider("", nil, nil)
+			outageProvider := outageapi.NewProvider(requireEnv("OUTAGE_API_URL"), nil, nil)
 			return cli.RunOutagesCommand(context.Background(), outageProvider, os.Stdout)
 		},
 	}

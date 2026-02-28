@@ -40,6 +40,7 @@ Hexagonal architecture with strict dependency direction: `domain` ← `applicati
 ## Environment Variables
 
 - `TELEGRAM_BOT_TOKEN` — required for `bot`, `notifier`, and `users` commands
+- `OUTAGE_API_URL` — required for `notifier` and `outages` commands
 - `DATA_DIR` — data directory path (default: `data`)
 
 ## Testing

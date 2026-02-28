@@ -15,8 +15,6 @@ import (
 	"time"
 )
 
-const defaultAPIURL = "https://power-api.loe.lviv.ua/api/pw_accidents?pagination=false&otg.id=28&city.id=693"
-
 var newlineRegex = regexp.MustCompile(`[\r\n]+`)
 
 // Provider fetches outages from the Lviv power outage API.
@@ -29,9 +27,6 @@ type Provider struct {
 
 // NewProvider creates a new Provider.
 func NewProvider(baseURL string, clock func() time.Time, logger *log.Logger) *Provider {
-	if baseURL == "" {
-		baseURL = defaultAPIURL
-	}
 	if clock == nil {
 		clock = time.Now
 	}
