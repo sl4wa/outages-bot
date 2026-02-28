@@ -19,13 +19,8 @@ type OutageDTO struct {
 
 // NotificationSenderDTO is a data transfer object for sending notifications.
 type NotificationSenderDTO struct {
-	UserID     int64
-	City       string
-	StreetName string
-	Buildings  []string
-	Start      time.Time
-	End        time.Time
-	Comment    string
+	UserID int64
+	Text   string
 }
 
 // NotificationSendError is a custom error type for notification send failures.

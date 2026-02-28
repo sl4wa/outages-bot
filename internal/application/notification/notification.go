@@ -37,13 +37,8 @@ func (s *Service) Handle(outages []*domain.Outage) {
 		}
 
 		dto := application.NotificationSenderDTO{
-			UserID:     user.ID,
-			City:       outage.Address.City,
-			StreetName: outage.Address.StreetName,
-			Buildings:  outage.Address.Buildings,
-			Start:      outage.Period.StartDate,
-			End:        outage.Period.EndDate,
-			Comment:    outage.Description.Value,
+			UserID: user.ID,
+			Text:   formatOutageNotification(outage),
 		}
 
 		if err := s.sender.Send(dto); err != nil {

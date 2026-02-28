@@ -2,21 +2,32 @@ package notification
 
 import (
 	"fmt"
-	"outages-bot/internal/application"
+	"outages-bot/internal/domain"
 	"strings"
+	"time"
 )
 
-// FormatNotification formats a notification DTO into an HTML message for Telegram.
-func FormatNotification(dto application.NotificationSenderDTO) string {
-	buildings := strings.Join(dto.Buildings, ", ")
-
+// FormatNotification formats outage data into an HTML message for Telegram.
+func FormatNotification(city, streetName string, buildings []string, start, end time.Time, comment string) string {
 	return fmt.Sprintf(
 		"Поточні відключення:\nМісто: %s\nВулиця: %s\n<b>%s – %s</b>\nКоментар: %s\nБудинки: %s",
-		dto.City,
-		dto.StreetName,
-		dto.Start.Format("2006-01-02 15:04"),
-		dto.End.Format("2006-01-02 15:04"),
-		dto.Comment,
-		buildings,
+		city,
+		streetName,
+		start.Format("2006-01-02 15:04"),
+		end.Format("2006-01-02 15:04"),
+		comment,
+		strings.Join(buildings, ", "),
+	)
+}
+
+// formatOutageNotification formats an Outage into an HTML message.
+func formatOutageNotification(outage *domain.Outage) string {
+	return FormatNotification(
+		outage.Address.City,
+		outage.Address.StreetName,
+		outage.Address.Buildings,
+		outage.Period.StartDate,
+		outage.Period.EndDate,
+		outage.Description.Value,
 	)
 }

@@ -207,7 +207,7 @@ func (s *NotifierSuite) TestMultipleOutages_UserMatchesFirst() {
 
 	assert.Len(s.T(), s.sender.sent, 1)
 	assert.Equal(s.T(), int64(100), s.sender.sent[0].UserID)
-	assert.Equal(s.T(), "first", s.sender.sent[0].Comment)
+	assert.Contains(s.T(), s.sender.sent[0].Text, "first")
 }
 
 func (s *NotifierSuite) TestDedup_DifferentOutage_SecondRunSendsNew() {
@@ -232,7 +232,7 @@ func (s *NotifierSuite) TestDedup_DifferentOutage_SecondRunSendsNew() {
 	})
 	s.runPipeline()
 	assert.Len(s.T(), s.sender.sent, 1)
-	assert.Equal(s.T(), "new outage", s.sender.sent[0].Comment)
+	assert.Contains(s.T(), s.sender.sent[0].Text, "new outage")
 }
 
 func TestNotifierSuite(t *testing.T) {

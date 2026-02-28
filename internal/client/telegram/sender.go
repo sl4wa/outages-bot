@@ -2,7 +2,6 @@ package telegram
 
 import (
 	"outages-bot/internal/application"
-	"outages-bot/internal/application/notification"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -19,8 +18,7 @@ func NewNotificationSender(bot *tgbotapi.BotAPI) *NotificationSender {
 
 // Send sends a notification to the user via Telegram.
 func (s *NotificationSender) Send(dto application.NotificationSenderDTO) error {
-	text := notification.FormatNotification(dto)
-	msg := tgbotapi.NewMessage(dto.UserID, text)
+	msg := tgbotapi.NewMessage(dto.UserID, dto.Text)
 	msg.ParseMode = "HTML"
 
 	_, err := s.bot.Send(msg)

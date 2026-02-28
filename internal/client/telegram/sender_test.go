@@ -5,9 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"outages-bot/internal/application"
-	"outages-bot/internal/application/notification"
 	"testing"
-	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/stretchr/testify/assert"
@@ -37,13 +35,8 @@ func makeTelegramServer(t *testing.T, sendHandler func(w http.ResponseWriter, r 
 
 func testDTO() application.NotificationSenderDTO {
 	return application.NotificationSenderDTO{
-		UserID:     100,
-		City:       "Львів",
-		StreetName: "Стрийська",
-		Buildings:  []string{"10"},
-		Start:      time.Date(2024, 1, 1, 8, 0, 0, 0, time.UTC),
-		End:        time.Date(2024, 1, 1, 16, 0, 0, 0, time.UTC),
-		Comment:    "test",
+		UserID: 100,
+		Text:   "test notification",
 	}
 }
 
@@ -175,8 +168,7 @@ func TestSender_MessageText(t *testing.T) {
 	err := sender.Send(dto)
 	require.NoError(t, err)
 
-	expected := notification.FormatNotification(dto)
-	assert.Equal(t, expected, capturedText)
+	assert.Equal(t, dto.Text, capturedText)
 }
 
 func TestSender_ForbiddenInMessage_IsBlocked(t *testing.T) {
