@@ -21,10 +21,10 @@ Four CLI subcommands (cobra): `bot` (long-running Telegram bot), `notifier` (fet
 
 Hexagonal architecture with strict dependency direction: `domain` ← `application` ← `cmd`/`client`/`repository`.
 
-- **`internal/domain/`** — Core entities (`Outage`, `User`, `Street`, `UserAddress`, `OutageAddress`, `OutagePeriod`, `OutageDescription`, `OutageInfo`) and repository interfaces (`UserRepository`, `StreetRepository`). Pure logic, no external dependencies.
-- **`internal/application/`** — Use cases and port interfaces. `ports.go` defines `OutageProvider`, `NotificationSender`, `TelegramUserInfoProvider`. `types.go` defines DTOs. Sub-packages: `notification/` (fetch + notify services), `subscription/` (search street, show/save subscription), `admin/` (list users/outages).
+- **`internal/domain/`** — Core entities (`Outage`, `User`, `Street`, `UserAddress`, `OutageAddress`, `OutagePeriod`, `OutageDescription`, `OutageInfo`), repository interfaces (`UserRepository`, `StreetRepository`), and `FindOutageForNotification` (matches a user to their next unnotified outage). Pure logic, no external dependencies.
+- **`internal/application/`** — Use cases and port interfaces. `ports.go` defines `OutageProvider`, `NotificationSender`, `UserInfoProvider`. `types.go` defines DTOs. Sub-packages: `notification/` (fetch + notify services), `subscription/` (search street, show/save subscription, unsubscribe), `admin/` (list users).
 - **`internal/client/`** — External adapters. `outageapi/` fetches from Lviv power API. `telegram/` implements notification sender and user info provider.
-- **`internal/repository/`** — File-based persistence. Users stored as individual YAML files (`data/users/<chatID>.yml`). Streets loaded from `data/streets.csv`.
+- **`internal/repository/`** — File-based persistence. Users stored as individual YAML files (`data/users/<chatID>.yml`). Streets loaded from `data/streets.csv`. `NewFileUserRepository` runs a live `.txt` → `.yml` migration on startup.
 - **`internal/cmd/`** — CLI command runners that wire everything together.
 - **`internal/integration/`** — Integration tests using testify suites with real repositories and mocked Telegram API.
 - **`main.go`** — Cobra root command setup and dependency wiring.
@@ -33,7 +33,7 @@ Hexagonal architecture with strict dependency direction: `domain` ← `applicati
 
 - Domain entities use constructor functions with validation (e.g., `NewUserAddress`, `NewOutagePeriod`) — always use these, don't construct structs directly.
 - Repository `Save` uses atomic writes (temp file + rename).
-- The bot uses an in-memory conversation state machine (`StepNone` → `StepSearchStreet` → `StepSaveSubscription`) with TTL-based expiry.
+- The bot uses an in-memory conversation state machine (`StepSearchStreet` → `StepSaveSubscription`) with TTL-based expiry; the zero state is simply an absent map entry.
 - `NotificationService` auto-removes users who have blocked the bot (HTTP 403).
 - Duplicate outages from the API are deduplicated by a composite key (street ID + buildings + time range).
 
