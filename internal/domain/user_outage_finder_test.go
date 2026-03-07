@@ -30,7 +30,7 @@ func TestOutageFinder_FindsMatchingOutage(t *testing.T) {
 	user := &User{ID: 1, Address: addr}
 	outages := []*Outage{makeOutage(t, 1, 1, []string{"10", "12"}, "test")}
 
-	result := FindOutageForNotification(user, outages)
+	result := user.FindOutageForNotification(outages)
 	assert.NotNil(t, result)
 	assert.Equal(t, 1, result.ID)
 }
@@ -40,7 +40,7 @@ func TestOutageFinder_NoMatchReturnsNil(t *testing.T) {
 	user := &User{ID: 1, Address: addr}
 	outages := []*Outage{makeOutage(t, 1, 1, []string{"10", "12"}, "test")}
 
-	result := FindOutageForNotification(user, outages)
+	result := user.FindOutageForNotification(outages)
 	assert.Nil(t, result)
 }
 
@@ -50,7 +50,7 @@ func TestOutageFinder_AlreadyNotifiedReturnsNil(t *testing.T) {
 	info := NewOutageInfo(outage.Period, outage.Description)
 	user := &User{ID: 1, Address: addr, OutageInfo: &info}
 
-	result := FindOutageForNotification(user, []*Outage{outage})
+	result := user.FindOutageForNotification([]*Outage{outage})
 	assert.Nil(t, result)
 }
 
@@ -60,7 +60,7 @@ func TestOutageFinder_MultipleMatching_ReturnsFirst(t *testing.T) {
 	o1 := makeOutage(t, 1, 1, []string{"10"}, "first")
 	o2 := makeOutage(t, 2, 1, []string{"10"}, "second")
 
-	result := FindOutageForNotification(user, []*Outage{o1, o2})
+	result := user.FindOutageForNotification([]*Outage{o1, o2})
 	assert.NotNil(t, result)
 	assert.Equal(t, 1, result.ID)
 }
@@ -71,7 +71,7 @@ func TestOutageFinder_SameOutagesReversed_ReturnsDifferentFirst(t *testing.T) {
 	o1 := makeOutage(t, 1, 1, []string{"10"}, "first")
 	o2 := makeOutage(t, 2, 1, []string{"10"}, "second")
 
-	result := FindOutageForNotification(user, []*Outage{o2, o1})
+	result := user.FindOutageForNotification([]*Outage{o2, o1})
 	assert.NotNil(t, result)
 	assert.Equal(t, 2, result.ID)
 }
@@ -86,7 +86,7 @@ func TestOutageFinder_AlreadyNotifiedFirstMatch_SkipsSecondMatch(t *testing.T) {
 	user := &User{ID: 1, Address: addr, OutageInfo: &info}
 
 	// Even though o2 also matches, finding o1 first (already notified) returns nil
-	result := FindOutageForNotification(user, []*Outage{o1, o2})
+	result := user.FindOutageForNotification([]*Outage{o1, o2})
 	assert.Nil(t, result)
 }
 
@@ -101,7 +101,7 @@ func TestOutageFinder_FirstOutageGone_SecondMatchFires(t *testing.T) {
 
 	// Outage 1 disappeared from the list — only o2 remains.
 	// Since o2 has a different description, it's not "already notified" → fires.
-	result := FindOutageForNotification(user, []*Outage{o2})
+	result := user.FindOutageForNotification([]*Outage{o2})
 	assert.NotNil(t, result)
 	assert.Equal(t, 2, result.ID)
 }
@@ -110,7 +110,7 @@ func TestOutageFinder_EmptyOutageList(t *testing.T) {
 	addr, _ := NewUserAddress(1, "Street", "10")
 	user := &User{ID: 1, Address: addr}
 
-	result := FindOutageForNotification(user, []*Outage{})
+	result := user.FindOutageForNotification([]*Outage{})
 	assert.Nil(t, result)
 }
 
@@ -123,6 +123,6 @@ func TestOutageFinder_DifferentStreet_ThenAlreadyNotified(t *testing.T) {
 	info := NewOutageInfo(matching.Period, matching.Description)
 	user := &User{ID: 1, Address: addr, OutageInfo: &info}
 
-	result := FindOutageForNotification(user, []*Outage{nonMatching, matching})
+	result := user.FindOutageForNotification([]*Outage{nonMatching, matching})
 	assert.Nil(t, result)
 }

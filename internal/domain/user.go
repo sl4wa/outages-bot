@@ -17,12 +17,23 @@ func (u *User) WithNotifiedOutage(outage *Outage) *User {
 	}
 }
 
-// IsAlreadyNotifiedAbout checks if the user has already been notified about the given outage info.
-func (u *User) IsAlreadyNotifiedAbout(info OutageInfo) bool {
-	if u.OutageInfo == nil {
-		return false
+// FindOutageForNotification finds the first matching outage for a user that they haven't been notified about.
+func (u *User) FindOutageForNotification(allOutages []*Outage) *Outage {
+	for _, outage := range allOutages {
+		if !outage.Address.CoversUserAddress(u.Address) {
+			continue
+		}
+
+		outageInfo := NewOutageInfo(outage.Period, outage.Description)
+
+		if u.OutageInfo != nil && u.OutageInfo.Equals(outageInfo) {
+			return nil
+		}
+
+		return outage
 	}
-	return u.OutageInfo.Equals(info)
+
+	return nil
 }
 
 // UserRepository defines the interface for user data access.

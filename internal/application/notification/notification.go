@@ -31,7 +31,7 @@ func (s *Service) Handle(outages []*domain.Outage) {
 	users := s.userRepo.FindAll()
 
 	for _, user := range users {
-		outage := domain.FindOutageForNotification(user, outages)
+		outage := user.FindOutageForNotification(outages)
 		if outage == nil {
 			continue
 		}

@@ -50,40 +50,6 @@ func TestUser_WithNotifiedOutage(t *testing.T) {
 	assert.Nil(t, user.OutageInfo)
 }
 
-func TestUser_IsAlreadyNotifiedAbout_NoOutageInfo(t *testing.T) {
-	user := newTestUser(t)
-	info := NewOutageInfo(
-		OutagePeriod{
-			StartDate: time.Date(2024, 1, 1, 8, 0, 0, 0, time.UTC),
-			EndDate:   time.Date(2024, 1, 1, 16, 0, 0, 0, time.UTC),
-		},
-		NewOutageDescription("test"),
-	)
-	assert.False(t, user.IsAlreadyNotifiedAbout(info))
-}
-
-func TestUser_IsAlreadyNotifiedAbout_SameOutage(t *testing.T) {
-	user := newTestUser(t)
-	outage := newTestOutage(t)
-	updated := user.WithNotifiedOutage(outage)
-	info := NewOutageInfo(outage.Period, outage.Description)
-	assert.True(t, updated.IsAlreadyNotifiedAbout(info))
-}
-
-func TestUser_IsAlreadyNotifiedAbout_DifferentOutage(t *testing.T) {
-	user := newTestUser(t)
-	outage := newTestOutage(t)
-	updated := user.WithNotifiedOutage(outage)
-	differentInfo := NewOutageInfo(
-		OutagePeriod{
-			StartDate: time.Date(2024, 2, 1, 8, 0, 0, 0, time.UTC),
-			EndDate:   time.Date(2024, 2, 1, 16, 0, 0, 0, time.UTC),
-		},
-		NewOutageDescription("different"),
-	)
-	assert.False(t, updated.IsAlreadyNotifiedAbout(differentInfo))
-}
-
 func TestUser_WithNotifiedOutage_PreservesID(t *testing.T) {
 	user := newTestUser(t)
 	outage := newTestOutage(t)
