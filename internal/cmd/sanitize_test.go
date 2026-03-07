@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSanitize(t *testing.T) {
+func TestSanitizeDisplayText(t *testing.T) {
 	tests := []struct {
 		name     string
 		input    string
@@ -26,7 +26,7 @@ func TestSanitize(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.expected, Sanitize(tt.input))
+			assert.Equal(t, tt.expected, sanitizeDisplayText(tt.input))
 		})
 	}
 }

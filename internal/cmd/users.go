@@ -7,6 +7,8 @@ import (
 	"outages-bot/internal/application"
 	"outages-bot/internal/application/admin"
 	"outages-bot/internal/domain"
+	"regexp"
+	"strings"
 	"text/tabwriter"
 )
 
@@ -56,8 +58,8 @@ func RunUsersCommand(
 		fmt.Fprintf(tw, "%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
 			info.ChatID,
 			username,
-			Sanitize(info.FirstName),
-			Sanitize(info.LastName),
+			sanitizeDisplayText(info.FirstName),
+			sanitizeDisplayText(info.LastName),
 			user.Address.StreetName,
 			user.Address.Building,
 			outageStr,
@@ -68,4 +70,24 @@ func RunUsersCommand(
 
 	tw.Flush()
 	fmt.Fprintf(w, "\nTotal Users: %d\n", successCount)
+}
+
+// sanitizeRegex matches Unicode format characters (\p{Cf}) and Hangul filler (U+3164).
+var sanitizeRegex = regexp.MustCompile(`[\p{Cf}\x{3164}]`)
+
+// sanitizeDisplayText removes invisible/control Unicode characters from a string.
+// Returns "-" for empty or whitespace-only results.
+func sanitizeDisplayText(value string) string {
+	if value == "" {
+		return "-"
+	}
+
+	cleaned := sanitizeRegex.ReplaceAllString(value, "")
+	trimmed := strings.TrimSpace(cleaned)
+
+	if trimmed == "" {
+		return "-"
+	}
+
+	return trimmed
 }
