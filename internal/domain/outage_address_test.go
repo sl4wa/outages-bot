@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -64,33 +65,29 @@ func TestOutageAddress_CoversUserAddress_DataProvider(t *testing.T) {
 
 func TestOutageAddress_NonPositiveStreetID(t *testing.T) {
 	_, err := NewOutageAddress(0, "Street", []string{"10"}, "")
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "street ID must be positive")
+	assert.True(t, errors.Is(err, ErrInvalidStreetID))
 
 	_, err = NewOutageAddress(-1, "Street", []string{"10"}, "")
-	assert.Error(t, err)
+	assert.True(t, errors.Is(err, ErrInvalidStreetID))
 }
 
 func TestOutageAddress_EmptyStreetName(t *testing.T) {
 	_, err := NewOutageAddress(1, "", []string{"10"}, "")
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "street name cannot be empty")
+	assert.True(t, errors.Is(err, ErrEmptyStreetName))
 
 	_, err = NewOutageAddress(1, "   ", []string{"10"}, "")
-	assert.Error(t, err)
+	assert.True(t, errors.Is(err, ErrEmptyStreetName))
 }
 
 func TestOutageAddress_EmptyBuildings(t *testing.T) {
 	_, err := NewOutageAddress(1, "Street", []string{}, "")
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "buildings must be non-empty strings")
+	assert.True(t, errors.Is(err, ErrEmptyBuildings))
 }
 
 func TestOutageAddress_EmptyBuildingString(t *testing.T) {
 	_, err := NewOutageAddress(1, "Street", []string{"10", ""}, "")
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "buildings must be non-empty strings")
+	assert.True(t, errors.Is(err, ErrEmptyBuildings))
 
 	_, err = NewOutageAddress(1, "Street", []string{"  "}, "")
-	assert.Error(t, err)
+	assert.True(t, errors.Is(err, ErrEmptyBuildings))
 }

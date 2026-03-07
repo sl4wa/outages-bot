@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"errors"
 	"regexp"
 	"strings"
 )
@@ -18,19 +17,19 @@ type UserAddress struct {
 // NewUserAddress creates a new UserAddress with validation.
 func NewUserAddress(streetID int, streetName, building string) (UserAddress, error) {
 	if streetID <= 0 {
-		return UserAddress{}, errors.New("Невірний ідентифікатор вулиці")
+		return UserAddress{}, ErrInvalidUserStreetID
 	}
 
 	if strings.TrimSpace(streetName) == "" {
-		return UserAddress{}, errors.New("Назва вулиці не може бути порожньою")
+		return UserAddress{}, ErrEmptyUserStreetName
 	}
 
 	if strings.TrimSpace(building) == "" {
-		return UserAddress{}, errors.New("Невірний формат номера будинку")
+		return UserAddress{}, ErrEmptyBuilding
 	}
 
 	if !buildingPattern.MatchString(building) {
-		return UserAddress{}, errors.New("Невірний формат номера будинку. Приклад: 13 або 13-А")
+		return UserAddress{}, ErrInvalidBuildingFormat
 	}
 
 	return UserAddress{

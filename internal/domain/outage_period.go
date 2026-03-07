@@ -1,9 +1,6 @@
 package domain
 
-import (
-	"errors"
-	"time"
-)
+import "time"
 
 // OutagePeriod represents the time period of an outage.
 type OutagePeriod struct {
@@ -14,7 +11,7 @@ type OutagePeriod struct {
 // NewOutagePeriod creates a new OutagePeriod, returning an error if start is after end.
 func NewOutagePeriod(startDate, endDate time.Time) (OutagePeriod, error) {
 	if startDate.After(endDate) {
-		return OutagePeriod{}, errors.New("start date must be before or equal to end date")
+		return OutagePeriod{}, ErrInvalidDateRange
 	}
 	return OutagePeriod{StartDate: startDate, EndDate: endDate}, nil
 }

@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -72,38 +73,32 @@ func TestUserAddress_InvalidBuildings(t *testing.T) {
 
 func TestUserAddress_EmptyBuilding(t *testing.T) {
 	_, err := NewUserAddress(1, "Test Street", "")
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "Невірний формат номера будинку")
+	assert.True(t, errors.Is(err, ErrEmptyBuilding))
 }
 
 func TestUserAddress_WhitespaceBuilding(t *testing.T) {
 	_, err := NewUserAddress(1, "Test Street", "   ")
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "Невірний формат номера будинку")
+	assert.True(t, errors.Is(err, ErrEmptyBuilding))
 }
 
 func TestUserAddress_ZeroStreetID(t *testing.T) {
 	_, err := NewUserAddress(0, "Test Street", "13")
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "Невірний ідентифікатор вулиці")
+	assert.True(t, errors.Is(err, ErrInvalidUserStreetID))
 }
 
 func TestUserAddress_NegativeStreetID(t *testing.T) {
 	_, err := NewUserAddress(-1, "Test Street", "13")
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "Невірний ідентифікатор вулиці")
+	assert.True(t, errors.Is(err, ErrInvalidUserStreetID))
 }
 
 func TestUserAddress_EmptyStreetName(t *testing.T) {
 	_, err := NewUserAddress(1, "", "13")
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "Назва вулиці не може бути порожньою")
+	assert.True(t, errors.Is(err, ErrEmptyUserStreetName))
 }
 
 func TestUserAddress_WhitespaceStreetName(t *testing.T) {
 	_, err := NewUserAddress(1, "   ", "13")
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "Назва вулиці не може бути порожньою")
+	assert.True(t, errors.Is(err, ErrEmptyUserStreetName))
 }
 
 func TestUserAddress_ValidComplete(t *testing.T) {

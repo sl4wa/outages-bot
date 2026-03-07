@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"errors"
 	"testing"
 	"time"
 
@@ -29,8 +30,7 @@ func TestOutagePeriod_StartAfterEndReturnsError(t *testing.T) {
 	start := time.Date(2024, 1, 2, 8, 0, 0, 0, time.UTC)
 	end := time.Date(2024, 1, 1, 8, 0, 0, 0, time.UTC)
 	_, err := NewOutagePeriod(start, end)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "start date must be before or equal to end date")
+	assert.True(t, errors.Is(err, ErrInvalidDateRange))
 }
 
 func TestOutagePeriod_EqualsIdentical(t *testing.T) {
