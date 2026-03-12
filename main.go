@@ -18,10 +18,13 @@ import (
 	"outages-bot/internal/repository"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 )
 
 func main() {
+	_ = godotenv.Load()
+
 	rootCmd := &cobra.Command{
 		Use:   "outages-bot",
 		Short: "Telegram bot for power outage notifications in Lviv, Ukraine",
