@@ -23,6 +23,7 @@ import (
 )
 
 func main() {
+	log.SetOutput(os.Stdout)
 	_ = godotenv.Load()
 
 	rootCmd := &cobra.Command{
