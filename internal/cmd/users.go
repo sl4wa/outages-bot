@@ -9,7 +9,10 @@ import (
 	"outages-bot/internal/domain"
 	"regexp"
 	"strings"
-	"text/tabwriter"
+
+	"github.com/olekukonko/tablewriter"
+	"github.com/olekukonko/tablewriter/renderer"
+	"github.com/olekukonko/tablewriter/tw"
 )
 
 // RunUsersCommand lists all users with their Telegram info and addresses.
@@ -26,8 +29,19 @@ func RunUsersCommand(
 		return
 	}
 
-	tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
-	fmt.Fprintln(tw, "Chat ID\tUsername\tFirst Name\tLast Name\tStreet\tBuilding\tOutage\tComment")
+	cfg := tablewriter.NewConfigBuilder().
+		WithHeaderAutoFormat(tw.Off).
+		WithRowAutoWrap(tw.WrapNormal).
+		ForColumn(3).WithMaxWidth(30).Build().
+		ForColumn(5).WithMaxWidth(30).Build().
+		ForColumn(6).WithMaxWidth(20).Build().
+		Build()
+
+	table := tablewriter.NewTable(w,
+		tablewriter.WithConfig(cfg),
+		tablewriter.WithRenderer(renderer.NewBlueprint(tw.Rendition{})),
+	)
+	table.Header([]string{"Chat ID", "Username", "Name", "Street", "Building", "Outage", "Comment"})
 
 	successCount := 0
 	for _, user := range users {
@@ -55,20 +69,33 @@ func RunUsersCommand(
 			}
 		}
 
-		fmt.Fprintf(tw, "%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
-			info.ChatID,
+		firstName := sanitizeDisplayText(info.FirstName)
+		lastName := sanitizeDisplayText(info.LastName)
+		var nameParts []string
+		if firstName != "-" {
+			nameParts = append(nameParts, firstName)
+		}
+		if lastName != "-" {
+			nameParts = append(nameParts, lastName)
+		}
+		name := "-"
+		if len(nameParts) > 0 {
+			name = strings.Join(nameParts, " ")
+		}
+
+		table.Append([]string{
+			fmt.Sprintf("%d", info.ChatID),
 			username,
-			sanitizeDisplayText(info.FirstName),
-			sanitizeDisplayText(info.LastName),
+			name,
 			user.Address.StreetName,
 			user.Address.Building,
 			outageStr,
 			commentStr,
-		)
+		})
 		successCount++
 	}
 
-	tw.Flush()
+	table.Render()
 	fmt.Fprintf(w, "\nTotal Users: %d\n", successCount)
 }
 
