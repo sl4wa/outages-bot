@@ -22,7 +22,7 @@ type userFile struct {
 	Comment    string `yaml:"comment,omitempty"`
 }
 
-// FileUserRepository persists users as individual text files.
+// FileUserRepository persists users as individual YAML files.
 type FileUserRepository struct {
 	dataDir string
 }
@@ -31,40 +31,6 @@ type FileUserRepository struct {
 func NewFileUserRepository(dataDir string) (*FileUserRepository, error) {
 	if err := os.MkdirAll(dataDir, 0o770); err != nil {
 		return nil, fmt.Errorf("failed to create user data directory: %w", err)
-	}
-
-	// TODO: Remove migration after all environments have been migrated
-	txtFiles, _ := filepath.Glob(filepath.Join(dataDir, "*.txt"))
-	for _, txtPath := range txtFiles {
-		data, err := os.ReadFile(txtPath)
-		if err != nil {
-			log.Printf("WARNING: migration: failed to read %s: %v", filepath.Base(txtPath), err)
-			continue
-		}
-		uf, err := parseLegacy(data)
-		if err != nil {
-			log.Printf("WARNING: migration: failed to parse %s: %v", filepath.Base(txtPath), err)
-			continue
-		}
-		ymlData, err := yaml.Marshal(&uf)
-		if err != nil {
-			log.Printf("WARNING: migration: failed to marshal %s: %v", filepath.Base(txtPath), err)
-			continue
-		}
-		ymlPath := strings.TrimSuffix(txtPath, ".txt") + ".yml"
-		if _, err := os.Stat(ymlPath); err == nil {
-			log.Printf("WARNING: migration: skipping %s because %s already exists", filepath.Base(txtPath), filepath.Base(ymlPath))
-			continue
-		}
-		if err := os.WriteFile(ymlPath, ymlData, 0o644); err != nil {
-			log.Printf("WARNING: migration: failed to write %s: %v", filepath.Base(ymlPath), err)
-			continue
-		}
-		if err := os.Remove(txtPath); err != nil {
-			log.Printf("WARNING: migration: failed to delete %s: %v", filepath.Base(txtPath), err)
-			continue
-		}
-		log.Printf("Migrated %s -> %s", filepath.Base(txtPath), filepath.Base(ymlPath))
 	}
 
 	return &FileUserRepository{dataDir: dataDir}, nil
@@ -189,43 +155,4 @@ func (r *FileUserRepository) loadFromFile(path string) (*domain.User, error) {
 		Address:    addr,
 		OutageInfo: outageInfo,
 	}, nil
-}
-
-// parseLegacy parses the old line-based key: value format used in .txt user files.
-func parseLegacy(data []byte) (userFile, error) {
-	var uf userFile
-	for _, line := range strings.Split(string(data), "\n") {
-		line = strings.TrimSpace(line)
-		if line == "" {
-			continue
-		}
-		idx := strings.Index(line, ": ")
-		if idx < 0 {
-			continue
-		}
-		key := line[:idx]
-		value := line[idx+2:]
-		switch key {
-		case "street_id":
-			id, err := strconv.Atoi(value)
-			if err != nil {
-				return uf, fmt.Errorf("invalid street_id: %w", err)
-			}
-			uf.StreetID = id
-		case "street_name":
-			uf.StreetName = value
-		case "building":
-			uf.Building = value
-		case "start_date":
-			uf.StartDate = value
-		case "end_date":
-			uf.EndDate = value
-		case "comment":
-			uf.Comment = value
-		}
-	}
-	if uf.StreetID <= 0 || uf.StreetName == "" || uf.Building == "" {
-		return uf, fmt.Errorf("missing required fields (street_id, street_name, building)")
-	}
-	return uf, nil
 }
