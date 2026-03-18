@@ -1,23 +1,23 @@
-package subscription
+package bot
 
 import (
 	"fmt"
 	"outages-bot/internal/domain"
 )
 
-// ShowSubscriptionService handles showing the current subscription or prompting for a new one.
-type ShowSubscriptionService struct {
+// ShowSubscription handles showing the current subscription or prompting for a new one.
+type ShowSubscription struct {
 	userRepo domain.UserRepository
 }
 
-// NewShowSubscriptionService creates a new ShowSubscriptionService.
-func NewShowSubscriptionService(userRepo domain.UserRepository) *ShowSubscriptionService {
-	return &ShowSubscriptionService{userRepo: userRepo}
+// NewShowSubscription creates a new ShowSubscription.
+func NewShowSubscription(userRepo domain.UserRepository) *ShowSubscription {
+	return &ShowSubscription{userRepo: userRepo}
 }
 
 // ShowCurrent returns the current subscription status without the update prompt.
 // Unlike Handle, it returns errors to the caller instead of swallowing them.
-func (s *ShowSubscriptionService) ShowCurrent(chatID int64) (string, error) {
+func (s *ShowSubscription) ShowCurrent(chatID int64) (string, error) {
 	user, err := s.userRepo.Find(chatID)
 	if err != nil {
 		return "", err
@@ -36,7 +36,7 @@ func (s *ShowSubscriptionService) ShowCurrent(chatID int64) (string, error) {
 
 // Handle returns a message showing the current subscription or prompting for a new one.
 // If the repository returns an error (e.g., corrupted data), it falls back to the new-user prompt.
-func (s *ShowSubscriptionService) Handle(chatID int64) string {
+func (s *ShowSubscription) Handle(chatID int64) string {
 	user, err := s.userRepo.Find(chatID)
 	if err != nil {
 		// Matches PHP behavior: catch Throwable, treat as null

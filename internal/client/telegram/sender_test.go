@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"outages-bot/internal/application"
+	"outages-bot/internal/application/notifier"
 	"testing"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -33,8 +33,8 @@ func makeTelegramServer(t *testing.T, sendHandler func(w http.ResponseWriter, r 
 	return server, api
 }
 
-func testDTO() application.NotificationSenderDTO {
-	return application.NotificationSenderDTO{
+func testDTO() notifier.NotificationSenderDTO {
+	return notifier.NotificationSenderDTO{
 		UserID: 100,
 		Text:   "test notification",
 	}
@@ -62,7 +62,7 @@ func TestSender_Forbidden403(t *testing.T) {
 	err := sender.Send(testDTO())
 	require.Error(t, err)
 
-	sendErr, ok := err.(*application.NotificationSendError)
+	sendErr, ok := err.(*notifier.NotificationSendError)
 	require.True(t, ok)
 	assert.Equal(t, 403, sendErr.Code)
 	assert.True(t, sendErr.IsBlocked())
@@ -79,7 +79,7 @@ func TestSender_BadRequest400(t *testing.T) {
 	err := sender.Send(testDTO())
 	require.Error(t, err)
 
-	sendErr, ok := err.(*application.NotificationSendError)
+	sendErr, ok := err.(*notifier.NotificationSendError)
 	require.True(t, ok)
 	assert.Equal(t, 400, sendErr.Code)
 	assert.False(t, sendErr.IsBlocked())
@@ -96,7 +96,7 @@ func TestSender_TooManyRequests429(t *testing.T) {
 	err := sender.Send(testDTO())
 	require.Error(t, err)
 
-	sendErr, ok := err.(*application.NotificationSendError)
+	sendErr, ok := err.(*notifier.NotificationSendError)
 	require.True(t, ok)
 	assert.Equal(t, 429, sendErr.Code)
 	assert.False(t, sendErr.IsBlocked())
@@ -119,7 +119,7 @@ func TestSender_NetworkError_Code0(t *testing.T) {
 	err = sender.Send(testDTO())
 	require.Error(t, err)
 
-	sendErr, ok := err.(*application.NotificationSendError)
+	sendErr, ok := err.(*notifier.NotificationSendError)
 	require.True(t, ok)
 	assert.Equal(t, 0, sendErr.Code) // fallback code
 }
@@ -134,7 +134,7 @@ func TestSender_MalformedJSON(t *testing.T) {
 	err := sender.Send(testDTO())
 	require.Error(t, err)
 
-	sendErr, ok := err.(*application.NotificationSendError)
+	sendErr, ok := err.(*notifier.NotificationSendError)
 	require.True(t, ok)
 	assert.Equal(t, 0, sendErr.Code) // non-API error falls back to 0
 }
@@ -182,7 +182,7 @@ func TestSender_ForbiddenInMessage_IsBlocked(t *testing.T) {
 	err := sender.Send(testDTO())
 	require.Error(t, err)
 
-	sendErr, ok := err.(*application.NotificationSendError)
+	sendErr, ok := err.(*notifier.NotificationSendError)
 	require.True(t, ok)
 	assert.True(t, sendErr.IsBlocked())
 }

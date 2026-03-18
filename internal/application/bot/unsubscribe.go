@@ -1,15 +1,15 @@
-package subscription
+package bot
 
 import "outages-bot/internal/domain"
 
-// UnsubscribeService handles user unsubscription.
-type UnsubscribeService struct {
+// Unsubscribe handles user unsubscription.
+type Unsubscribe struct {
 	userRepo domain.UserRepository
 }
 
-// NewUnsubscribeService creates a new UnsubscribeService.
-func NewUnsubscribeService(userRepo domain.UserRepository) *UnsubscribeService {
-	return &UnsubscribeService{userRepo: userRepo}
+// NewUnsubscribe creates a new Unsubscribe.
+func NewUnsubscribe(userRepo domain.UserRepository) *Unsubscribe {
+	return &Unsubscribe{userRepo: userRepo}
 }
 
 // UnsubscribeResult holds the result of an unsubscribe operation.
@@ -19,7 +19,7 @@ type UnsubscribeResult struct {
 }
 
 // Handle removes the user's subscription and returns an appropriate message.
-func (s *UnsubscribeService) Handle(chatID int64) UnsubscribeResult {
+func (s *Unsubscribe) Handle(chatID int64) UnsubscribeResult {
 	removed, err := s.userRepo.Remove(chatID)
 	if err != nil {
 		return UnsubscribeResult{

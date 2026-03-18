@@ -5,8 +5,8 @@ import (
 	"context"
 	"errors"
 	"log"
-	"outages-bot/internal/application"
-	"outages-bot/internal/application/notification"
+	"outages-bot/internal/application/notifier"
+	"outages-bot/internal/application/service"
 	"outages-bot/internal/domain"
 	"testing"
 	"time"
@@ -16,20 +16,20 @@ import (
 )
 
 type mockOutageProvider struct {
-	outages []application.OutageDTO
+	outages []service.OutageDTO
 	err     error
 }
 
-func (m *mockOutageProvider) FetchOutages(_ context.Context) ([]application.OutageDTO, error) {
+func (m *mockOutageProvider) FetchOutages(_ context.Context) ([]service.OutageDTO, error) {
 	return m.outages, m.err
 }
 
 type mockNotifSender struct {
-	sent []application.NotificationSenderDTO
+	sent []notifier.NotificationSenderDTO
 	err  error
 }
 
-func (m *mockNotifSender) Send(dto application.NotificationSenderDTO) error {
+func (m *mockNotifSender) Send(dto notifier.NotificationSenderDTO) error {
 	m.sent = append(m.sent, dto)
 	return m.err
 }
@@ -47,7 +47,7 @@ func (m *mockUserRepo) Remove(_ int64) (bool, error) { return false, nil }
 
 func TestRunNotifierCommand_Success(t *testing.T) {
 	provider := &mockOutageProvider{
-		outages: []application.OutageDTO{
+		outages: []service.OutageDTO{
 			{
 				ID:         1,
 				StreetID:   1,
@@ -61,13 +61,13 @@ func TestRunNotifierCommand_Success(t *testing.T) {
 	sender := &mockNotifSender{}
 	userRepo := &mockUserRepo{}
 
-	fetchService := notification.NewOutageFetchService(provider)
-	notifService := notification.NewService(sender, userRepo, nil)
+	fetchService := service.NewFetchOutages(provider)
+	notifyUsers := notifier.NewNotifyUsers(fetchService, sender, userRepo, nil)
 
 	var buf bytes.Buffer
 	logger := log.New(&buf, "", 0)
 
-	err := RunNotifierCommand(context.Background(), fetchService, notifService, logger)
+	err := RunNotifierCommand(context.Background(), notifyUsers, logger)
 	require.NoError(t, err)
 	assert.Contains(t, buf.String(), "Successfully dispatched notifications.")
 }
@@ -77,14 +77,13 @@ func TestRunNotifierCommand_FetchError(t *testing.T) {
 	sender := &mockNotifSender{}
 	userRepo := &mockUserRepo{}
 
-	fetchService := notification.NewOutageFetchService(provider)
-	notifService := notification.NewService(sender, userRepo, nil)
+	fetchService := service.NewFetchOutages(provider)
+	notifyUsers := notifier.NewNotifyUsers(fetchService, sender, userRepo, nil)
 
 	logger := log.New(&bytes.Buffer{}, "", 0)
 
-	err := RunNotifierCommand(context.Background(), fetchService, notifService, logger)
+	err := RunNotifierCommand(context.Background(), notifyUsers, logger)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to fetch outages")
 	assert.Contains(t, err.Error(), "api down")
 }
-

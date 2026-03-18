@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"outages-bot/internal/application"
+	"outages-bot/internal/application/notifier"
+	"outages-bot/internal/application/service"
 	"strings"
-	"outages-bot/internal/application/notification"
 	"outages-bot/internal/client/outageapi"
 	"outages-bot/internal/domain"
 	"outages-bot/internal/repository"
@@ -22,11 +22,11 @@ import (
 )
 
 type mockNotifSender struct {
-	sent []application.NotificationSenderDTO
+	sent []notifier.NotificationSenderDTO
 	errs map[int64]error
 }
 
-func (m *mockNotifSender) Send(dto application.NotificationSenderDTO) error {
+func (m *mockNotifSender) Send(dto notifier.NotificationSenderDTO) error {
 	m.sent = append(m.sent, dto)
 	if err, ok := m.errs[dto.UserID]; ok {
 		return err
@@ -77,12 +77,11 @@ func (s *NotifierSuite) runPipeline() {
 	s.makeServer()
 	clock := func() time.Time { return time.Date(2024, 1, 1, 12, 0, 0, 0, time.UTC) }
 	apiProvider := outageapi.NewProvider(s.server.URL, clock, nil)
-	fetchService := notification.NewOutageFetchService(apiProvider)
-	notifService := notification.NewService(s.sender, s.userRepo, nil)
+	fetchService := service.NewFetchOutages(apiProvider)
+	notifyUsers := notifier.NewNotifyUsers(fetchService, s.sender, s.userRepo, nil)
 
-	outages, err := fetchService.Handle(context.Background())
+	err := notifyUsers.Handle(context.Background())
 	require.NoError(s.T(), err)
-	notifService.Handle(outages)
 }
 
 func (s *NotifierSuite) TestMatchingUser_NotificationSent() {
@@ -117,7 +116,7 @@ func (s *NotifierSuite) TestNonMatchingUser_NoNotification() {
 func (s *NotifierSuite) TestBlockedUser_FileDeleted() {
 	s.makeAPIBody(1, []string{"10"}, "test")
 	s.saveUser(100, 1, "10")
-	s.sender.errs[100] = &application.NotificationSendError{UserID: 100, Code: 403, Message: "Forbidden"}
+	s.sender.errs[100] = &notifier.NotificationSendError{UserID: 100, Code: 403, Message: "Forbidden"}
 
 	s.runPipeline()
 
@@ -129,7 +128,7 @@ func (s *NotifierSuite) TestBlockedUser_FileDeleted() {
 func (s *NotifierSuite) TestNonBlockedError_UserNotRemoved() {
 	s.makeAPIBody(1, []string{"10"}, "test")
 	s.saveUser(100, 1, "10")
-	s.sender.errs[100] = &application.NotificationSendError{UserID: 100, Code: 500, Message: "Server Error"}
+	s.sender.errs[100] = &notifier.NotificationSendError{UserID: 100, Code: 500, Message: "Server Error"}
 
 	s.runPipeline()
 

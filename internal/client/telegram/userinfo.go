@@ -2,7 +2,7 @@ package telegram
 
 import (
 	"fmt"
-	"outages-bot/internal/application"
+	"outages-bot/internal/application/users"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -18,7 +18,7 @@ func NewUserInfoProvider(bot *tgbotapi.BotAPI) *UserInfoProvider {
 }
 
 // GetUserInfo retrieves user info for the given chat ID.
-func (p *UserInfoProvider) GetUserInfo(chatID int64) (application.UserInfoDTO, error) {
+func (p *UserInfoProvider) GetUserInfo(chatID int64) (users.UserInfoDTO, error) {
 	chatConfig := tgbotapi.ChatInfoConfig{
 		ChatConfig: tgbotapi.ChatConfig{
 			ChatID: chatID,
@@ -27,10 +27,10 @@ func (p *UserInfoProvider) GetUserInfo(chatID int64) (application.UserInfoDTO, e
 
 	chat, err := p.bot.GetChat(chatConfig)
 	if err != nil {
-		return application.UserInfoDTO{}, fmt.Errorf("failed to get user info for chat %d: %w", chatID, err)
+		return users.UserInfoDTO{}, fmt.Errorf("failed to get user info for chat %d: %w", chatID, err)
 	}
 
-	return application.UserInfoDTO{
+	return users.UserInfoDTO{
 		ChatID:    chat.ID,
 		Username:  chat.UserName,
 		FirstName: chat.FirstName,

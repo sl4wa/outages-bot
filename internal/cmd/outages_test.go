@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"outages-bot/internal/application"
+	"outages-bot/internal/application/service"
 	"testing"
 	"time"
 
@@ -13,17 +13,17 @@ import (
 )
 
 type mockOutageProviderForOutages struct {
-	outages []application.OutageDTO
+	outages []service.OutageDTO
 	err     error
 }
 
-func (m *mockOutageProviderForOutages) FetchOutages(_ context.Context) ([]application.OutageDTO, error) {
+func (m *mockOutageProviderForOutages) FetchOutages(_ context.Context) ([]service.OutageDTO, error) {
 	return m.outages, m.err
 }
 
 func TestRunOutagesCommand_PrintsTable(t *testing.T) {
 	provider := &mockOutageProviderForOutages{
-		outages: []application.OutageDTO{
+		outages: []service.OutageDTO{
 			{
 				ID:         1,
 				StreetID:   100,
@@ -54,7 +54,7 @@ func TestRunOutagesCommand_PrintsTable(t *testing.T) {
 }
 
 func TestRunOutagesCommand_Empty(t *testing.T) {
-	provider := &mockOutageProviderForOutages{outages: []application.OutageDTO{}}
+	provider := &mockOutageProviderForOutages{outages: []service.OutageDTO{}}
 
 	var buf bytes.Buffer
 	err := RunOutagesCommand(context.Background(), provider, &buf)

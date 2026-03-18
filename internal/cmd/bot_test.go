@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
-	"outages-bot/internal/application/subscription"
+	"outages-bot/internal/application/bot"
 	"outages-bot/internal/domain"
 	"sync"
 	"testing"
@@ -129,10 +129,10 @@ func setupBot(t *testing.T) (*BotRunner, *testUserRepo, *[]sentMessage) {
 	cleanupCh := make(chan time.Time)
 	br := NewBotRunner(BotRunnerConfig{
 		Bot:                     api,
-		SearchStreetService:     subscription.NewSearchStreetService(streetRepo),
-		ShowSubscriptionService: subscription.NewShowSubscriptionService(userRepo),
-		SaveSubscriptionService: subscription.NewSaveSubscriptionService(userRepo),
-		UnsubscribeService:      subscription.NewUnsubscribeService(userRepo),
+		SearchStreet:     bot.NewSearchStreet(streetRepo),
+		ShowSubscription: bot.NewShowSubscription(userRepo),
+		SaveSubscription: bot.NewSaveSubscription(userRepo),
+		Unsubscribe:      bot.NewUnsubscribe(userRepo),
 		Logger:                  log.Default(),
 		Clock:                   clock,
 		CleanupTicker:           cleanupCh,
@@ -341,10 +341,10 @@ func TestBot_ExpiredSession(t *testing.T) {
 
 	br := NewBotRunner(BotRunnerConfig{
 		Bot:                     api,
-		SearchStreetService:     subscription.NewSearchStreetService(streetRepo),
-		ShowSubscriptionService: subscription.NewShowSubscriptionService(userRepo),
-		SaveSubscriptionService: subscription.NewSaveSubscriptionService(userRepo),
-		UnsubscribeService:      subscription.NewUnsubscribeService(userRepo),
+		SearchStreet:     bot.NewSearchStreet(streetRepo),
+		ShowSubscription: bot.NewShowSubscription(userRepo),
+		SaveSubscription: bot.NewSaveSubscription(userRepo),
+		Unsubscribe:      bot.NewUnsubscribe(userRepo),
 		Clock:                   clock,
 		CleanupTicker:           cleanupCh,
 		TTL:                     30 * time.Minute,

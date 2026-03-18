@@ -1,4 +1,4 @@
-package admin
+package users
 
 import (
 	"outages-bot/internal/domain"

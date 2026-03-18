@@ -1,4 +1,4 @@
-package admin
+package users
 
 import (
 	"outages-bot/internal/domain"
@@ -13,13 +13,10 @@ type mockUserRepo struct {
 	users []*domain.User
 }
 
-func (m *mockUserRepo) FindAll() []*domain.User {
-	return m.users
-}
-
+func (m *mockUserRepo) FindAll() []*domain.User     { return m.users }
 func (m *mockUserRepo) Find(_ int64) (*domain.User, error) { return nil, nil }
-func (m *mockUserRepo) Save(_ *domain.User) error          { return nil }
-func (m *mockUserRepo) Remove(_ int64) (bool, error)       { return false, nil }
+func (m *mockUserRepo) Save(_ *domain.User) error   { return nil }
+func (m *mockUserRepo) Remove(_ int64) (bool, error) { return false, nil }
 
 func makeAddr(t *testing.T) domain.UserAddress {
 	t.Helper()

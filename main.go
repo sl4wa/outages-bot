@@ -10,8 +10,9 @@ import (
 	"syscall"
 	"time"
 
-	"outages-bot/internal/application/notification"
-	"outages-bot/internal/application/subscription"
+	"outages-bot/internal/application/service"
+	"outages-bot/internal/application/bot"
+	"outages-bot/internal/application/notifier"
 	"outages-bot/internal/client/outageapi"
 	tgclient "outages-bot/internal/client/telegram"
 	"outages-bot/internal/cmd"
@@ -90,10 +91,10 @@ func botCmd() *cobra.Command {
 
 			runner := cli.NewBotRunner(cli.BotRunnerConfig{
 				Bot:                     api,
-				SearchStreetService:     subscription.NewSearchStreetService(streetRepo),
-				ShowSubscriptionService: subscription.NewShowSubscriptionService(userRepo),
-				SaveSubscriptionService: subscription.NewSaveSubscriptionService(userRepo),
-				UnsubscribeService:      subscription.NewUnsubscribeService(userRepo),
+				SearchStreet:     bot.NewSearchStreet(streetRepo),
+				ShowSubscription: bot.NewShowSubscription(userRepo),
+				SaveSubscription: bot.NewSaveSubscription(userRepo),
+				Unsubscribe:      bot.NewUnsubscribe(userRepo),
 			})
 			defer runner.Close()
 
@@ -120,11 +121,11 @@ func notifierCmd() *cobra.Command {
 
 			outageProvider := outageapi.NewProvider(requireEnv("OUTAGE_API_URL"), nil, nil)
 			sender := tgclient.NewNotificationSender(api)
-			fetchService := notification.NewOutageFetchService(outageProvider)
-			notificationService := notification.NewService(sender, userRepo, log.Default())
+			fetchService := service.NewFetchOutages(outageProvider)
+			notifyUsers := notifier.NewNotifyUsers(fetchService, sender, userRepo, log.Default())
 
 			runFn := func(ctx context.Context) error {
-				return cli.RunNotifierCommand(ctx, fetchService, notificationService, log.Default())
+				return cli.RunNotifierCommand(ctx, notifyUsers, log.Default())
 			}
 
 			if interval <= 0 {

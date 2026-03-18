@@ -1,4 +1,4 @@
-package subscription
+package bot
 
 import (
 	"testing"
@@ -8,7 +8,7 @@ import (
 
 func TestSaveSubscription_ValidInput(t *testing.T) {
 	repo := newMockUserRepo()
-	svc := NewSaveSubscriptionService(repo)
+	svc := NewSaveSubscription(repo)
 	result := svc.Handle(12345, 1, "Стрийська", "10")
 	assert.True(t, result.Success)
 	assert.Contains(t, result.Message, "Ви підписалися")
@@ -33,7 +33,7 @@ func TestSaveSubscription_InvalidBuilding(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			repo := newMockUserRepo()
-			svc := NewSaveSubscriptionService(repo)
+			svc := NewSaveSubscription(repo)
 			result := svc.Handle(12345, 1, "Стрийська", tt.building)
 			assert.False(t, result.Success)
 			assert.NotEmpty(t, result.Message)
@@ -45,7 +45,7 @@ func TestSaveSubscription_InvalidBuilding(t *testing.T) {
 
 func TestSaveSubscription_InvalidStreetID(t *testing.T) {
 	repo := newMockUserRepo()
-	svc := NewSaveSubscriptionService(repo)
+	svc := NewSaveSubscription(repo)
 	result := svc.Handle(12345, 0, "Стрийська", "10")
 	assert.False(t, result.Success)
 	assert.Len(t, repo.saved, 0)
@@ -53,7 +53,7 @@ func TestSaveSubscription_InvalidStreetID(t *testing.T) {
 
 func TestSaveSubscription_WithCyrillicSuffix(t *testing.T) {
 	repo := newMockUserRepo()
-	svc := NewSaveSubscriptionService(repo)
+	svc := NewSaveSubscription(repo)
 	result := svc.Handle(12345, 1, "Стрийська", "10-А")
 	assert.True(t, result.Success)
 	assert.Contains(t, result.Message, "10-А")
@@ -61,7 +61,7 @@ func TestSaveSubscription_WithCyrillicSuffix(t *testing.T) {
 
 func TestSaveSubscription_MessageFormat(t *testing.T) {
 	repo := newMockUserRepo()
-	svc := NewSaveSubscriptionService(repo)
+	svc := NewSaveSubscription(repo)
 	result := svc.Handle(12345, 1, "Наукова", "25")
 	assert.True(t, result.Success)
 	assert.Equal(t,

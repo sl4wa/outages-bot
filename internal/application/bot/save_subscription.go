@@ -1,4 +1,4 @@
-package subscription
+package bot
 
 import (
 	"fmt"
@@ -11,18 +11,18 @@ type SaveSubscriptionResult struct {
 	Success bool
 }
 
-// SaveSubscriptionService handles saving user subscriptions.
-type SaveSubscriptionService struct {
+// SaveSubscription handles saving user subscriptions.
+type SaveSubscription struct {
 	userRepo domain.UserRepository
 }
 
-// NewSaveSubscriptionService creates a new SaveSubscriptionService.
-func NewSaveSubscriptionService(userRepo domain.UserRepository) *SaveSubscriptionService {
-	return &SaveSubscriptionService{userRepo: userRepo}
+// NewSaveSubscription creates a new SaveSubscription.
+func NewSaveSubscription(userRepo domain.UserRepository) *SaveSubscription {
+	return &SaveSubscription{userRepo: userRepo}
 }
 
 // Handle saves a user subscription. Returns validation errors as unsuccessful results.
-func (s *SaveSubscriptionService) Handle(chatID int64, streetID int, streetName, building string) *SaveSubscriptionResult {
+func (s *SaveSubscription) Handle(chatID int64, streetID int, streetName, building string) *SaveSubscriptionResult {
 	addr, err := domain.NewUserAddress(streetID, streetName, building)
 	if err != nil {
 		return &SaveSubscriptionResult{Message: err.Error(), Success: false}

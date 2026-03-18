@@ -1,12 +1,12 @@
-package subscription
+package bot
 
 import "outages-bot/internal/domain"
 
 type mockUserRepo struct {
-	users   map[int64]*domain.User
-	findErr error
-	saved   []*domain.User
-	removed []int64
+	users     map[int64]*domain.User
+	findErr   error
+	saved     []*domain.User
+	removed   []int64
 	saveErr   error
 	removeErr error
 }

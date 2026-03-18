@@ -1,4 +1,4 @@
-package subscription
+package bot
 
 import (
 	"fmt"
@@ -24,18 +24,18 @@ func (r *SearchStreetResult) HasExactMatch() bool {
 	return r.SelectedStreetID != nil && r.SelectedStreetName != nil
 }
 
-// SearchStreetService handles street search logic.
-type SearchStreetService struct {
+// SearchStreet handles street search logic.
+type SearchStreet struct {
 	streetRepo domain.StreetRepository
 }
 
-// NewSearchStreetService creates a new SearchStreetService.
-func NewSearchStreetService(streetRepo domain.StreetRepository) *SearchStreetService {
-	return &SearchStreetService{streetRepo: streetRepo}
+// NewSearchStreet creates a new SearchStreet.
+func NewSearchStreet(streetRepo domain.StreetRepository) *SearchStreet {
+	return &SearchStreet{streetRepo: streetRepo}
 }
 
 // Handle searches for streets matching the query.
-func (s *SearchStreetService) Handle(query string) *SearchStreetResult {
+func (s *SearchStreet) Handle(query string) *SearchStreetResult {
 	query = strings.TrimSpace(query)
 
 	if query == "" {

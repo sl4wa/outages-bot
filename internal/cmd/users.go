@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"outages-bot/internal/application"
-	"outages-bot/internal/application/admin"
+	"outages-bot/internal/application/users"
 	"outages-bot/internal/domain"
 	"regexp"
 	"strings"
@@ -18,13 +17,13 @@ import (
 // RunUsersCommand lists all users with their Telegram info and addresses.
 func RunUsersCommand(
 	userRepo domain.UserRepository,
-	userInfoProvider application.UserInfoProvider,
+	userInfoProvider users.UserInfoProvider,
 	w io.Writer,
 	logger *log.Logger,
 ) {
-	users := admin.ListUsers(userRepo)
+	allUsers := users.ListUsers(userRepo)
 
-	if len(users) == 0 {
+	if len(allUsers) == 0 {
 		fmt.Fprintln(w, "No users found.")
 		return
 	}
@@ -44,7 +43,7 @@ func RunUsersCommand(
 	table.Header([]string{"Chat ID", "Username", "Name", "Street", "Building", "Outage", "Comment"})
 
 	successCount := 0
-	for _, user := range users {
+	for _, user := range allUsers {
 		info, err := userInfoProvider.GetUserInfo(user.ID)
 		if err != nil {
 			logger.Printf("Failed to get info for chat %d: %v", user.ID, err)
@@ -59,7 +58,7 @@ func RunUsersCommand(
 		outageStr := "-"
 		commentStr := "-"
 		if user.OutageInfo != nil {
-			outageStr = admin.PeriodFormatter(
+			outageStr = PeriodFormatter(
 				user.OutageInfo.Period.StartDate,
 				user.OutageInfo.Period.EndDate,
 			)

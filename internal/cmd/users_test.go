@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"log"
-	"outages-bot/internal/application"
+	"outages-bot/internal/application/users"
 	"outages-bot/internal/domain"
 	"testing"
 	"time"
@@ -25,17 +25,17 @@ func (m *mockUserRepoForUsers) Save(_ *domain.User) error    { return nil }
 func (m *mockUserRepoForUsers) Remove(_ int64) (bool, error) { return false, nil }
 
 type mockUserInfoProvider struct {
-	infos map[int64]application.UserInfoDTO
+	infos map[int64]users.UserInfoDTO
 	err   error
 }
 
-func (m *mockUserInfoProvider) GetUserInfo(chatID int64) (application.UserInfoDTO, error) {
+func (m *mockUserInfoProvider) GetUserInfo(chatID int64) (users.UserInfoDTO, error) {
 	if m.err != nil {
-		return application.UserInfoDTO{}, m.err
+		return users.UserInfoDTO{}, m.err
 	}
 	info, ok := m.infos[chatID]
 	if !ok {
-		return application.UserInfoDTO{}, errors.New("user not found")
+		return users.UserInfoDTO{}, errors.New("user not found")
 	}
 	return info, nil
 }
@@ -48,12 +48,12 @@ func makeUserWithAddr(t *testing.T, id int64, streetName, building string) *doma
 }
 
 func TestRunUsersCommand_PrintsUsers(t *testing.T) {
-	users := []*domain.User{
+	testUsers := []*domain.User{
 		makeUserWithAddr(t, 100, "Стрийська", "10"),
 	}
-	repo := &mockUserRepoForUsers{users: users}
+	repo := &mockUserRepoForUsers{users: testUsers}
 	infoProvider := &mockUserInfoProvider{
-		infos: map[int64]application.UserInfoDTO{
+		infos: map[int64]users.UserInfoDTO{
 			100: {ChatID: 100, Username: "testuser", FirstName: "John", LastName: "Doe"},
 		},
 	}
@@ -85,13 +85,13 @@ func TestRunUsersCommand_Empty(t *testing.T) {
 }
 
 func TestRunUsersCommand_GetUserInfoError_SkipsUser(t *testing.T) {
-	users := []*domain.User{
+	testUsers := []*domain.User{
 		makeUserWithAddr(t, 100, "Стрийська", "10"),
 		makeUserWithAddr(t, 200, "Молдавська", "5"),
 	}
-	repo := &mockUserRepoForUsers{users: users}
+	repo := &mockUserRepoForUsers{users: testUsers}
 	infoProvider := &mockUserInfoProvider{
-		infos: map[int64]application.UserInfoDTO{
+		infos: map[int64]users.UserInfoDTO{
 			200: {ChatID: 200, Username: "user2", FirstName: "Jane", LastName: "Smith"},
 		},
 	}
@@ -110,13 +110,13 @@ func TestRunUsersCommand_GetUserInfoError_SkipsUser(t *testing.T) {
 }
 
 func TestRunUsersCommand_UsernameFormatting(t *testing.T) {
-	users := []*domain.User{
+	testUsers := []*domain.User{
 		makeUserWithAddr(t, 100, "Стрийська", "10"),
 		makeUserWithAddr(t, 200, "Молдавська", "5"),
 	}
-	repo := &mockUserRepoForUsers{users: users}
+	repo := &mockUserRepoForUsers{users: testUsers}
 	infoProvider := &mockUserInfoProvider{
-		infos: map[int64]application.UserInfoDTO{
+		infos: map[int64]users.UserInfoDTO{
 			100: {ChatID: 100, Username: "hasuser", FirstName: "A", LastName: "B"},
 			200: {ChatID: 200, Username: "", FirstName: "C", LastName: "D"},
 		},
@@ -141,12 +141,12 @@ func TestRunUsersCommand_OutageInfoFormatting(t *testing.T) {
 	desc := domain.NewOutageDescription("Ремонт")
 	info := domain.NewOutageInfo(period, desc)
 
-	users := []*domain.User{
+	testUsers := []*domain.User{
 		{ID: 100, Address: addr, OutageInfo: &info},
 	}
-	repo := &mockUserRepoForUsers{users: users}
+	repo := &mockUserRepoForUsers{users: testUsers}
 	infoProvider := &mockUserInfoProvider{
-		infos: map[int64]application.UserInfoDTO{
+		infos: map[int64]users.UserInfoDTO{
 			100: {ChatID: 100, Username: "user1", FirstName: "A", LastName: "B"},
 		},
 	}
@@ -162,12 +162,12 @@ func TestRunUsersCommand_OutageInfoFormatting(t *testing.T) {
 }
 
 func TestRunUsersCommand_SanitizationApplied(t *testing.T) {
-	users := []*domain.User{
+	testUsers := []*domain.User{
 		makeUserWithAddr(t, 100, "Стрийська", "10"),
 	}
-	repo := &mockUserRepoForUsers{users: users}
+	repo := &mockUserRepoForUsers{users: testUsers}
 	infoProvider := &mockUserInfoProvider{
-		infos: map[int64]application.UserInfoDTO{
+		infos: map[int64]users.UserInfoDTO{
 			100: {ChatID: 100, Username: "user1", FirstName: "John\u200b", LastName: "Doe\u200c"},
 		},
 	}

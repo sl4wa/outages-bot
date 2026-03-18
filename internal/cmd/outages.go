@@ -4,8 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"outages-bot/internal/application"
-	"outages-bot/internal/application/admin"
+	"outages-bot/internal/application/service"
 	"strings"
 
 	"github.com/olekukonko/tablewriter"
@@ -14,7 +13,7 @@ import (
 )
 
 // RunOutagesCommand fetches and prints outages in a table.
-func RunOutagesCommand(ctx context.Context, provider application.OutageProvider, w io.Writer) error {
+func RunOutagesCommand(ctx context.Context, provider service.OutageProvider, w io.Writer) error {
 	outages, err := provider.FetchOutages(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to fetch outages: %w", err)
@@ -41,7 +40,7 @@ func RunOutagesCommand(ctx context.Context, provider application.OutageProvider,
 
 	for _, o := range outages {
 		buildings := strings.Join(o.Buildings, ", ")
-		period := admin.PeriodFormatter(o.Start, o.End)
+		period := PeriodFormatter(o.Start, o.End)
 		table.Append([]string{fmt.Sprintf("%d", o.StreetID), o.StreetName, buildings, period, o.Comment})
 	}
 

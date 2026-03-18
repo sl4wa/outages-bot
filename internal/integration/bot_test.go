@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"outages-bot/internal/application/subscription"
+	"outages-bot/internal/application/bot"
 	"outages-bot/internal/cmd"
 	"outages-bot/internal/domain"
 	"outages-bot/internal/repository"
@@ -53,10 +53,10 @@ func (s *BotSuite) SetupTest() {
 	cleanupCh := make(chan time.Time)
 	s.runner = cli.NewBotRunner(cli.BotRunnerConfig{
 		Bot:                     api,
-		SearchStreetService:     subscription.NewSearchStreetService(s.streetRepo),
-		ShowSubscriptionService: subscription.NewShowSubscriptionService(s.userRepo),
-		SaveSubscriptionService: subscription.NewSaveSubscriptionService(s.userRepo),
-		UnsubscribeService:      subscription.NewUnsubscribeService(s.userRepo),
+		SearchStreet:     bot.NewSearchStreet(s.streetRepo),
+		ShowSubscription: bot.NewShowSubscription(s.userRepo),
+		SaveSubscription: bot.NewSaveSubscription(s.userRepo),
+		Unsubscribe:      bot.NewUnsubscribe(s.userRepo),
 		CleanupTicker:           cleanupCh,
 		TTL:                     30 * time.Minute,
 	})

@@ -1,4 +1,4 @@
-package subscription
+package bot
 
 import (
 	"errors"
@@ -13,7 +13,7 @@ func TestUnsubscribe_ExistingUser(t *testing.T) {
 	addr, _ := domain.NewUserAddress(1, "Стрийська", "10")
 	repo.users[12345] = &domain.User{ID: 12345, Address: addr}
 
-	svc := NewUnsubscribeService(repo)
+	svc := NewUnsubscribe(repo)
 	result := svc.Handle(12345)
 
 	assert.NoError(t, result.Err)
@@ -24,7 +24,7 @@ func TestUnsubscribe_ExistingUser(t *testing.T) {
 func TestUnsubscribe_NoSubscription(t *testing.T) {
 	repo := newMockUserRepo()
 
-	svc := NewUnsubscribeService(repo)
+	svc := NewUnsubscribe(repo)
 	result := svc.Handle(12345)
 
 	assert.NoError(t, result.Err)
@@ -35,7 +35,7 @@ func TestUnsubscribe_RepoError(t *testing.T) {
 	repo := newMockUserRepo()
 	repo.removeErr = errors.New("disk error")
 
-	svc := NewUnsubscribeService(repo)
+	svc := NewUnsubscribe(repo)
 	result := svc.Handle(12345)
 
 	assert.EqualError(t, result.Err, "disk error")

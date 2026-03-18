@@ -8,7 +8,7 @@ import (
 	"log"
 	"math"
 	"net/http"
-	"outages-bot/internal/application"
+	"outages-bot/internal/application/service"
 	"regexp"
 	"strconv"
 	"strings"
@@ -65,7 +65,7 @@ type streetObj struct {
 }
 
 // FetchOutages fetches outages from the API.
-func (p *Provider) FetchOutages(ctx context.Context) ([]application.OutageDTO, error) {
+func (p *Provider) FetchOutages(ctx context.Context) ([]service.OutageDTO, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, p.baseURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
@@ -92,7 +92,7 @@ func (p *Provider) FetchOutages(ctx context.Context) ([]application.OutageDTO, e
 		return nil, fmt.Errorf("failed to parse API response: %w", err)
 	}
 
-	var outages []application.OutageDTO
+	var outages []service.OutageDTO
 	seen := make(map[string]int) // key → index in outages
 
 	for _, raw := range apiResp.HydraMember {
@@ -125,7 +125,7 @@ func (p *Provider) FetchOutages(ctx context.Context) ([]application.OutageDTO, e
 
 		key := fmt.Sprintf("%d|%s|%d|%d", streetID, strings.Join(buildings, ","), start.Unix(), end.Unix())
 
-		dto := application.OutageDTO{
+		dto := service.OutageDTO{
 			ID:         id,
 			Start:      start,
 			End:        end,

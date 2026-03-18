@@ -3,7 +3,7 @@ package cli
 import (
 	"context"
 	"log"
-	"outages-bot/internal/application/subscription"
+	"outages-bot/internal/application/bot"
 	"sync"
 	"time"
 
@@ -27,10 +27,10 @@ type ConversationState struct {
 // BotRunner manages the Telegram bot with conversation state machine.
 type BotRunner struct {
 	bot                     *tgbotapi.BotAPI
-	searchStreetService     *subscription.SearchStreetService
-	showSubscriptionService *subscription.ShowSubscriptionService
-	saveSubscriptionService *subscription.SaveSubscriptionService
-	unsubscribeService      *subscription.UnsubscribeService
+	searchStreet     *bot.SearchStreet
+	showSubscription *bot.ShowSubscription
+	saveSubscription *bot.SaveSubscription
+	unsubscribe      *bot.Unsubscribe
 	logger                  *log.Logger
 	clock                   func() time.Time
 	ttl                     time.Duration
@@ -45,10 +45,10 @@ type BotRunner struct {
 // BotRunnerConfig holds configuration for BotRunner.
 type BotRunnerConfig struct {
 	Bot                     *tgbotapi.BotAPI
-	SearchStreetService     *subscription.SearchStreetService
-	ShowSubscriptionService *subscription.ShowSubscriptionService
-	SaveSubscriptionService *subscription.SaveSubscriptionService
-	UnsubscribeService      *subscription.UnsubscribeService
+	SearchStreet     *bot.SearchStreet
+	ShowSubscription *bot.ShowSubscription
+	SaveSubscription *bot.SaveSubscription
+	Unsubscribe      *bot.Unsubscribe
 	Logger                  *log.Logger
 	Clock                   func() time.Time
 	CleanupTicker           <-chan time.Time
@@ -70,10 +70,10 @@ func NewBotRunner(cfg BotRunnerConfig) *BotRunner {
 	ctx, cancel := context.WithCancel(context.Background())
 	br := &BotRunner{
 		bot:                     cfg.Bot,
-		searchStreetService:     cfg.SearchStreetService,
-		showSubscriptionService: cfg.ShowSubscriptionService,
-		saveSubscriptionService: cfg.SaveSubscriptionService,
-		unsubscribeService:      cfg.UnsubscribeService,
+		searchStreet:     cfg.SearchStreet,
+		showSubscription: cfg.ShowSubscription,
+		saveSubscription: cfg.SaveSubscription,
+		unsubscribe:      cfg.Unsubscribe,
 		logger:                  cfg.Logger,
 		clock:                   cfg.Clock,
 		ttl:                     cfg.TTL,
@@ -155,7 +155,7 @@ func (br *BotRunner) handleMessage(msg *tgbotapi.Message) {
 }
 
 func (br *BotRunner) handleStart(chatID int64) {
-	msg := br.showSubscriptionService.Handle(chatID)
+	msg := br.showSubscription.Handle(chatID)
 	br.sendMessage(chatID, msg)
 
 	br.mu.Lock()
@@ -171,7 +171,7 @@ func (br *BotRunner) handleStop(chatID int64) {
 	delete(br.conversations, chatID)
 	br.mu.Unlock()
 
-	result := br.unsubscribeService.Handle(chatID)
+	result := br.unsubscribe.Handle(chatID)
 	if result.Err != nil {
 		br.logger.Printf("error removing user %d: %v", chatID, result.Err)
 	}
@@ -179,7 +179,7 @@ func (br *BotRunner) handleStop(chatID int64) {
 }
 
 func (br *BotRunner) handleSubscription(chatID int64) {
-	msg, err := br.showSubscriptionService.ShowCurrent(chatID)
+	msg, err := br.showSubscription.ShowCurrent(chatID)
 	if err != nil {
 		br.logger.Printf("error finding user %d: %v", chatID, err)
 		br.sendMessage(chatID, "Сталася помилка. Спробуйте пізніше.")
@@ -202,7 +202,7 @@ func (br *BotRunner) handleSearchStreet(chatID int64, text string) {
 		return
 	}
 
-	result := br.searchStreetService.Handle(text)
+	result := br.searchStreet.Handle(text)
 
 	if result.HasMultipleOptions() {
 		rows := make([][]tgbotapi.KeyboardButton, len(result.StreetOptions))
@@ -254,7 +254,7 @@ func (br *BotRunner) handleSaveSubscription(chatID int64, text string) {
 		return
 	}
 
-	result := br.saveSubscriptionService.Handle(chatID, state.SelectedStreetID, state.SelectedStreetName, text)
+	result := br.saveSubscription.Handle(chatID, state.SelectedStreetID, state.SelectedStreetName, text)
 	br.sendMessage(chatID, result.Message)
 
 	if result.Success {
