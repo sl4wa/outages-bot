@@ -25,12 +25,12 @@ func (m *mockOutageProvider) FetchOutages(_ context.Context) ([]service.OutageDT
 }
 
 type mockNotifSender struct {
-	sent []notifier.NotificationSenderDTO
+	sent []notifier.NotificationContent
 	err  error
 }
 
-func (m *mockNotifSender) Send(dto notifier.NotificationSenderDTO) error {
-	m.sent = append(m.sent, dto)
+func (m *mockNotifSender) Send(userID int64, content notifier.NotificationContent) error {
+	m.sent = append(m.sent, content)
 	return m.err
 }
 

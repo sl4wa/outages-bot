@@ -21,14 +21,19 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+type sentNotification struct {
+	UserID  int64
+	Content notifier.NotificationContent
+}
+
 type mockNotifSender struct {
-	sent []notifier.NotificationSenderDTO
+	sent []sentNotification
 	errs map[int64]error
 }
 
-func (m *mockNotifSender) Send(dto notifier.NotificationSenderDTO) error {
-	m.sent = append(m.sent, dto)
-	if err, ok := m.errs[dto.UserID]; ok {
+func (m *mockNotifSender) Send(userID int64, content notifier.NotificationContent) error {
+	m.sent = append(m.sent, sentNotification{UserID: userID, Content: content})
+	if err, ok := m.errs[userID]; ok {
 		return err
 	}
 	return nil
@@ -206,7 +211,7 @@ func (s *NotifierSuite) TestMultipleOutages_UserMatchesFirst() {
 
 	assert.Len(s.T(), s.sender.sent, 1)
 	assert.Equal(s.T(), int64(100), s.sender.sent[0].UserID)
-	assert.Contains(s.T(), s.sender.sent[0].Text, "first")
+	assert.Contains(s.T(), s.sender.sent[0].Content.Comment, "first")
 }
 
 func (s *NotifierSuite) TestDedup_DifferentOutage_SecondRunSendsNew() {
@@ -231,7 +236,7 @@ func (s *NotifierSuite) TestDedup_DifferentOutage_SecondRunSendsNew() {
 	})
 	s.runPipeline()
 	assert.Len(s.T(), s.sender.sent, 1)
-	assert.Contains(s.T(), s.sender.sent[0].Text, "new outage")
+	assert.Contains(s.T(), s.sender.sent[0].Content.Comment, "new outage")
 }
 
 func TestNotifierSuite(t *testing.T) {

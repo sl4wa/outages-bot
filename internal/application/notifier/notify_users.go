@@ -8,17 +8,22 @@ import (
 	"outages-bot/internal/application/service"
 	"outages-bot/internal/domain"
 	"strings"
+	"time"
 )
 
 // NotificationSender sends notifications to users.
 type NotificationSender interface {
-	Send(dto NotificationSenderDTO) error
+	Send(userID int64, content NotificationContent) error
 }
 
-// NotificationSenderDTO is a data transfer object for sending notifications.
-type NotificationSenderDTO struct {
-	UserID int64
-	Text   string
+// NotificationContent carries the structured data needed to render a notification.
+type NotificationContent struct {
+	City       string
+	StreetName string
+	Buildings  []string
+	Start      time.Time
+	End        time.Time
+	Comment    string
 }
 
 // NotificationSendError is a custom error type for notification send failures.
@@ -73,12 +78,16 @@ func (n *NotifyUsers) Handle(ctx context.Context) error {
 			continue
 		}
 
-		dto := NotificationSenderDTO{
-			UserID: user.ID,
-			Text:   formatOutageNotification(outage),
+		content := NotificationContent{
+			City:       outage.Address.City,
+			StreetName: outage.Address.StreetName,
+			Buildings:  outage.Address.Buildings,
+			Start:      outage.Period.StartDate,
+			End:        outage.Period.EndDate,
+			Comment:    outage.Description.Value,
 		}
 
-		if err := n.sender.Send(dto); err != nil {
+		if err := n.sender.Send(user.ID, content); err != nil {
 			var sendErr *NotificationSendError
 			if errors.As(err, &sendErr) && sendErr.IsBlocked() {
 				if _, rmErr := n.userRepo.Remove(sendErr.UserID); rmErr != nil {

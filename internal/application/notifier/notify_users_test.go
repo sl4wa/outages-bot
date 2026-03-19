@@ -15,13 +15,18 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+type sentNotification struct {
+	UserID  int64
+	Content NotificationContent
+}
+
 type mockSender struct {
-	sent []NotificationSenderDTO
+	sent []sentNotification
 	err  error
 }
 
-func (m *mockSender) Send(dto NotificationSenderDTO) error {
-	m.sent = append(m.sent, dto)
+func (m *mockSender) Send(userID int64, content NotificationContent) error {
+	m.sent = append(m.sent, sentNotification{UserID: userID, Content: content})
 	if m.err != nil {
 		return m.err
 	}

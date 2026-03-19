@@ -16,9 +16,10 @@ func NewNotificationSender(bot *tgbotapi.BotAPI) *NotificationSender {
 	return &NotificationSender{bot: bot}
 }
 
-// Send sends a notification to the user via Telegram.
-func (s *NotificationSender) Send(dto notifier.NotificationSenderDTO) error {
-	msg := tgbotapi.NewMessage(dto.UserID, dto.Text)
+// Send formats the notification content and sends it to the user via Telegram.
+func (s *NotificationSender) Send(userID int64, content notifier.NotificationContent) error {
+	text := formatNotification(content)
+	msg := tgbotapi.NewMessage(userID, text)
 	msg.ParseMode = "HTML"
 
 	_, err := s.bot.Send(msg)
@@ -33,7 +34,7 @@ func (s *NotificationSender) Send(dto notifier.NotificationSenderDTO) error {
 		}
 
 		return &notifier.NotificationSendError{
-			UserID:  dto.UserID,
+			UserID:  userID,
 			Code:    code,
 			Message: message,
 		}

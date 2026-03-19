@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"outages-bot/internal/application/notifier"
 	"testing"
+	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/stretchr/testify/assert"
@@ -33,10 +34,14 @@ func makeTelegramServer(t *testing.T, sendHandler func(w http.ResponseWriter, r 
 	return server, api
 }
 
-func testDTO() notifier.NotificationSenderDTO {
-	return notifier.NotificationSenderDTO{
-		UserID: 100,
-		Text:   "test notification",
+func testContent() notifier.NotificationContent {
+	return notifier.NotificationContent{
+		City:       "Львів",
+		StreetName: "Стрийська",
+		Buildings:  []string{"10"},
+		Start:      time.Date(2024, 1, 1, 8, 0, 0, 0, time.UTC),
+		End:        time.Date(2024, 1, 1, 16, 0, 0, 0, time.UTC),
+		Comment:    "test",
 	}
 }
 
@@ -47,7 +52,7 @@ func TestSender_SuccessfulSend(t *testing.T) {
 	})
 
 	sender := NewNotificationSender(api)
-	err := sender.Send(testDTO())
+	err := sender.Send(100, testContent())
 	assert.NoError(t, err)
 }
 
@@ -59,7 +64,7 @@ func TestSender_Forbidden403(t *testing.T) {
 	})
 
 	sender := NewNotificationSender(api)
-	err := sender.Send(testDTO())
+	err := sender.Send(100, testContent())
 	require.Error(t, err)
 
 	sendErr, ok := err.(*notifier.NotificationSendError)
@@ -76,7 +81,7 @@ func TestSender_BadRequest400(t *testing.T) {
 	})
 
 	sender := NewNotificationSender(api)
-	err := sender.Send(testDTO())
+	err := sender.Send(100, testContent())
 	require.Error(t, err)
 
 	sendErr, ok := err.(*notifier.NotificationSendError)
@@ -93,7 +98,7 @@ func TestSender_TooManyRequests429(t *testing.T) {
 	})
 
 	sender := NewNotificationSender(api)
-	err := sender.Send(testDTO())
+	err := sender.Send(100, testContent())
 	require.Error(t, err)
 
 	sendErr, ok := err.(*notifier.NotificationSendError)
@@ -116,7 +121,7 @@ func TestSender_NetworkError_Code0(t *testing.T) {
 	server.Close() // Close to cause network error
 
 	sender := NewNotificationSender(api)
-	err = sender.Send(testDTO())
+	err = sender.Send(100, testContent())
 	require.Error(t, err)
 
 	sendErr, ok := err.(*notifier.NotificationSendError)
@@ -131,7 +136,7 @@ func TestSender_MalformedJSON(t *testing.T) {
 	})
 
 	sender := NewNotificationSender(api)
-	err := sender.Send(testDTO())
+	err := sender.Send(100, testContent())
 	require.Error(t, err)
 
 	sendErr, ok := err.(*notifier.NotificationSendError)
@@ -149,7 +154,7 @@ func TestSender_HTMLParseMode(t *testing.T) {
 	})
 
 	sender := NewNotificationSender(api)
-	err := sender.Send(testDTO())
+	err := sender.Send(100, testContent())
 	require.NoError(t, err)
 	assert.Equal(t, "HTML", capturedParseMode)
 }
@@ -164,11 +169,12 @@ func TestSender_MessageText(t *testing.T) {
 	})
 
 	sender := NewNotificationSender(api)
-	dto := testDTO()
-	err := sender.Send(dto)
+	content := testContent()
+	err := sender.Send(100, content)
 	require.NoError(t, err)
 
-	assert.Equal(t, dto.Text, capturedText)
+	expected := formatNotification(content)
+	assert.Equal(t, expected, capturedText)
 }
 
 func TestSender_ForbiddenInMessage_IsBlocked(t *testing.T) {
@@ -179,7 +185,7 @@ func TestSender_ForbiddenInMessage_IsBlocked(t *testing.T) {
 	})
 
 	sender := NewNotificationSender(api)
-	err := sender.Send(testDTO())
+	err := sender.Send(100, testContent())
 	require.Error(t, err)
 
 	sendErr, ok := err.(*notifier.NotificationSendError)
