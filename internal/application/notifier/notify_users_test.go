@@ -78,7 +78,7 @@ func TestNotifyUsers_MatchingSendsAndSaves(t *testing.T) {
 
 func TestNotifyUsers_BlockedUserRemoved(t *testing.T) {
 	sender := &mockSender{
-		err: &NotificationSendError{UserID: 100, Code: 403, Message: "Forbidden"},
+		err: ErrRecipientUnavailable,
 	}
 	repo := newMockUserRepo()
 	addr, _ := domain.NewUserAddress(1, "Стрийська", "10")
@@ -130,7 +130,7 @@ func TestNotifyUsers_DedupSecondRunSkips(t *testing.T) {
 
 func TestNotifyUsers_NonBlockingSendError_UserNotRemoved(t *testing.T) {
 	sender := &mockSender{
-		err: &NotificationSendError{UserID: 100, Code: 500, Message: "Internal Server Error"},
+		err: errors.New("send failed"),
 	}
 	repo := newMockUserRepo()
 	addr, _ := domain.NewUserAddress(1, "Стрийська", "10")
@@ -165,7 +165,7 @@ func TestNotifyUsers_SaveError_LogsAndContinues(t *testing.T) {
 
 func TestNotifyUsers_RemoveError_LogsAndContinues(t *testing.T) {
 	sender := &mockSender{
-		err: &NotificationSendError{UserID: 100, Code: 403, Message: "Forbidden"},
+		err: ErrRecipientUnavailable,
 	}
 	repo := newMockUserRepo()
 	repo.removeErr = errors.New("disk full")

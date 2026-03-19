@@ -1,7 +1,10 @@
 package telegram
 
 import (
+	"errors"
+	"fmt"
 	"outages-bot/internal/application/notifier"
+	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -24,20 +27,14 @@ func (s *NotificationSender) Send(userID int64, content notifier.NotificationCon
 
 	_, err := s.bot.Send(msg)
 	if err != nil {
-		code := 0
-		message := err.Error()
-
-		// Extract HTTP status code from tgbotapi.Error
-		if apiErr, ok := err.(*tgbotapi.Error); ok {
-			code = apiErr.Code
-			message = apiErr.Message
+		var apiErr *tgbotapi.Error
+		if errors.As(err, &apiErr) {
+			if apiErr.Code == 403 || strings.Contains(strings.ToLower(apiErr.Message), "forbidden") {
+				return notifier.ErrRecipientUnavailable
+			}
+			return fmt.Errorf("telegram API error: %w", apiErr)
 		}
-
-		return &notifier.NotificationSendError{
-			UserID:  userID,
-			Code:    code,
-			Message: message,
-		}
+		return fmt.Errorf("telegram send: %w", err)
 	}
 	return nil
 }

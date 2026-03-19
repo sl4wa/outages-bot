@@ -3,6 +3,7 @@ package integration
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -121,7 +122,7 @@ func (s *NotifierSuite) TestNonMatchingUser_NoNotification() {
 func (s *NotifierSuite) TestBlockedUser_FileDeleted() {
 	s.makeAPIBody(1, []string{"10"}, "test")
 	s.saveUser(100, 1, "10")
-	s.sender.errs[100] = &notifier.NotificationSendError{UserID: 100, Code: 403, Message: "Forbidden"}
+	s.sender.errs[100] = notifier.ErrRecipientUnavailable
 
 	s.runPipeline()
 
@@ -133,7 +134,7 @@ func (s *NotifierSuite) TestBlockedUser_FileDeleted() {
 func (s *NotifierSuite) TestNonBlockedError_UserNotRemoved() {
 	s.makeAPIBody(1, []string{"10"}, "test")
 	s.saveUser(100, 1, "10")
-	s.sender.errs[100] = &notifier.NotificationSendError{UserID: 100, Code: 500, Message: "Server Error"}
+	s.sender.errs[100] = errors.New("server error")
 
 	s.runPipeline()
 

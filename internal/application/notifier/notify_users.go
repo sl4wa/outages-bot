@@ -7,9 +7,12 @@ import (
 	"log"
 	"outages-bot/internal/application/service"
 	"outages-bot/internal/domain"
-	"strings"
 	"time"
 )
+
+// ErrRecipientUnavailable indicates the recipient can no longer receive messages
+// (e.g. blocked the bot, deactivated account).
+var ErrRecipientUnavailable = errors.New("recipient unavailable")
 
 // NotificationSender sends notifications to users.
 type NotificationSender interface {
@@ -24,22 +27,6 @@ type NotificationContent struct {
 	Start      time.Time
 	End        time.Time
 	Comment    string
-}
-
-// NotificationSendError is a custom error type for notification send failures.
-type NotificationSendError struct {
-	UserID  int64
-	Code    int
-	Message string
-}
-
-func (e *NotificationSendError) Error() string {
-	return e.Message
-}
-
-// IsBlocked returns true if the error indicates the user has blocked the bot.
-func (e *NotificationSendError) IsBlocked() bool {
-	return e.Code == 403 || strings.Contains(strings.ToLower(e.Message), "forbidden")
 }
 
 // NotifyUsers fetches outages and sends notifications to all affected users.
@@ -88,10 +75,9 @@ func (n *NotifyUsers) Handle(ctx context.Context) error {
 		}
 
 		if err := n.sender.Send(user.ID, content); err != nil {
-			var sendErr *NotificationSendError
-			if errors.As(err, &sendErr) && sendErr.IsBlocked() {
-				if _, rmErr := n.userRepo.Remove(sendErr.UserID); rmErr != nil {
-					n.logger.Printf("failed to remove blocked user %d: %v", sendErr.UserID, rmErr)
+			if errors.Is(err, ErrRecipientUnavailable) {
+				if _, rmErr := n.userRepo.Remove(user.ID); rmErr != nil {
+					n.logger.Printf("failed to remove blocked user %d: %v", user.ID, rmErr)
 				}
 			}
 			// Non-blocking errors: user NOT removed, NOT saved, continue

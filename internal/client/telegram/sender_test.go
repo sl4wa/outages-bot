@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"outages-bot/internal/application/notifier"
@@ -66,11 +67,33 @@ func TestSender_Forbidden403(t *testing.T) {
 	sender := NewNotificationSender(api)
 	err := sender.Send(100, testContent())
 	require.Error(t, err)
+	assert.True(t, errors.Is(err, notifier.ErrRecipientUnavailable))
+}
 
-	sendErr, ok := err.(*notifier.NotificationSendError)
-	require.True(t, ok)
-	assert.Equal(t, 403, sendErr.Code)
-	assert.True(t, sendErr.IsBlocked())
+func TestSender_ForbiddenInMessage_IsBlocked(t *testing.T) {
+	_, api := makeTelegramServer(t, func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(403)
+		resp := tgbotapi.APIResponse{Ok: false, ErrorCode: 403, Description: "Forbidden: user is deactivated"}
+		json.NewEncoder(w).Encode(resp)
+	})
+
+	sender := NewNotificationSender(api)
+	err := sender.Send(100, testContent())
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, notifier.ErrRecipientUnavailable))
+}
+
+func TestSender_ForbiddenInMessage_NonHTTP403(t *testing.T) {
+	_, api := makeTelegramServer(t, func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		resp := tgbotapi.APIResponse{Ok: false, ErrorCode: 200, Description: "FORBIDDEN by user"}
+		json.NewEncoder(w).Encode(resp)
+	})
+
+	sender := NewNotificationSender(api)
+	err := sender.Send(100, testContent())
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, notifier.ErrRecipientUnavailable))
 }
 
 func TestSender_BadRequest400(t *testing.T) {
@@ -83,11 +106,10 @@ func TestSender_BadRequest400(t *testing.T) {
 	sender := NewNotificationSender(api)
 	err := sender.Send(100, testContent())
 	require.Error(t, err)
+	assert.False(t, errors.Is(err, notifier.ErrRecipientUnavailable))
 
-	sendErr, ok := err.(*notifier.NotificationSendError)
-	require.True(t, ok)
-	assert.Equal(t, 400, sendErr.Code)
-	assert.False(t, sendErr.IsBlocked())
+	var apiErr *tgbotapi.Error
+	assert.True(t, errors.As(err, &apiErr))
 }
 
 func TestSender_TooManyRequests429(t *testing.T) {
@@ -100,11 +122,7 @@ func TestSender_TooManyRequests429(t *testing.T) {
 	sender := NewNotificationSender(api)
 	err := sender.Send(100, testContent())
 	require.Error(t, err)
-
-	sendErr, ok := err.(*notifier.NotificationSendError)
-	require.True(t, ok)
-	assert.Equal(t, 429, sendErr.Code)
-	assert.False(t, sendErr.IsBlocked())
+	assert.False(t, errors.Is(err, notifier.ErrRecipientUnavailable))
 }
 
 func TestSender_NetworkError_Code0(t *testing.T) {
@@ -123,10 +141,7 @@ func TestSender_NetworkError_Code0(t *testing.T) {
 	sender := NewNotificationSender(api)
 	err = sender.Send(100, testContent())
 	require.Error(t, err)
-
-	sendErr, ok := err.(*notifier.NotificationSendError)
-	require.True(t, ok)
-	assert.Equal(t, 0, sendErr.Code) // fallback code
+	assert.False(t, errors.Is(err, notifier.ErrRecipientUnavailable))
 }
 
 func TestSender_MalformedJSON(t *testing.T) {
@@ -138,10 +153,7 @@ func TestSender_MalformedJSON(t *testing.T) {
 	sender := NewNotificationSender(api)
 	err := sender.Send(100, testContent())
 	require.Error(t, err)
-
-	sendErr, ok := err.(*notifier.NotificationSendError)
-	require.True(t, ok)
-	assert.Equal(t, 0, sendErr.Code) // non-API error falls back to 0
+	assert.False(t, errors.Is(err, notifier.ErrRecipientUnavailable))
 }
 
 func TestSender_HTMLParseMode(t *testing.T) {
@@ -175,20 +187,4 @@ func TestSender_MessageText(t *testing.T) {
 
 	expected := formatNotification(content)
 	assert.Equal(t, expected, capturedText)
-}
-
-func TestSender_ForbiddenInMessage_IsBlocked(t *testing.T) {
-	_, api := makeTelegramServer(t, func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(403)
-		resp := tgbotapi.APIResponse{Ok: false, ErrorCode: 403, Description: "Forbidden: user is deactivated"}
-		json.NewEncoder(w).Encode(resp)
-	})
-
-	sender := NewNotificationSender(api)
-	err := sender.Send(100, testContent())
-	require.Error(t, err)
-
-	sendErr, ok := err.(*notifier.NotificationSendError)
-	require.True(t, ok)
-	assert.True(t, sendErr.IsBlocked())
 }
