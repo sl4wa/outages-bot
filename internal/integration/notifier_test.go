@@ -4,12 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"outages-bot/internal/application/notifier"
 	"outages-bot/internal/application/service"
-	"strings"
 	"outages-bot/internal/client/outageapi"
 	"outages-bot/internal/domain"
 	"outages-bot/internal/repository"
@@ -55,9 +54,6 @@ func (s *NotifierSuite) SetupTest() {
 	s.userRepo, err = repository.NewFileUserRepository(filepath.Join(s.dataDir, "users"))
 	require.NoError(s.T(), err)
 	s.sender = &mockNotifSender{errs: make(map[int64]error)}
-}
-
-func (s *NotifierSuite) makeServer() {
 	s.server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(s.apiBody))
@@ -65,23 +61,59 @@ func (s *NotifierSuite) makeServer() {
 	s.T().Cleanup(s.server.Close)
 }
 
-func (s *NotifierSuite) makeAPIBody(streetID int, buildings []string, comment string) {
-	start := "2024-01-01T08:00:00+00:00"
-	end := "2024-01-01T16:00:00+00:00"
-	buildingsJSON, _ := json.Marshal(buildings)
-	s.apiBody = `{"hydra:member":[{"id":1,"dateEvent":"` + start + `","datePlanIn":"` + end + `","koment":"` + comment + `","buildingNames":` + string(buildingsJSON) + `,"city":{"name":"Львів"},"street":{"id":` + json.Number(string(rune('0'+streetID))).String() + `,"name":"Стрийська"}}]}`
+func (s *NotifierSuite) loadFixture() {
+	data, err := os.ReadFile("testdata/loe_data.json")
+	require.NoError(s.T(), err)
+	s.apiBody = string(data)
 }
 
-func (s *NotifierSuite) saveUser(chatID int64, streetID int, building string) {
-	addr, err := domain.NewUserAddress(streetID, "Стрийська", building)
+func (s *NotifierSuite) filterFixtureByComment(comment string) string {
+	var resp struct {
+		Context string            `json:"@context"`
+		ID      string            `json:"@id"`
+		Type    string            `json:"@type"`
+		Members []json.RawMessage `json:"hydra:member"`
+	}
+	err := json.Unmarshal([]byte(s.apiBody), &resp)
+	require.NoError(s.T(), err)
+
+	var filtered []json.RawMessage
+	for _, raw := range resp.Members {
+		var row struct {
+			Koment string `json:"koment"`
+		}
+		if err := json.Unmarshal(raw, &row); err != nil {
+			continue
+		}
+		if row.Koment == comment {
+			filtered = append(filtered, raw)
+		}
+	}
+
+	result, err := json.Marshal(struct {
+		Context string            `json:"@context"`
+		ID      string            `json:"@id"`
+		Type    string            `json:"@type"`
+		Members []json.RawMessage `json:"hydra:member"`
+	}{
+		Context: resp.Context,
+		ID:      resp.ID,
+		Type:    resp.Type,
+		Members: filtered,
+	})
+	require.NoError(s.T(), err)
+	return string(result)
+}
+
+func (s *NotifierSuite) saveUser(chatID int64, streetID int, streetName, building string) {
+	addr, err := domain.NewUserAddress(streetID, streetName, building)
 	require.NoError(s.T(), err)
 	user := &domain.User{ID: chatID, Address: addr}
 	require.NoError(s.T(), s.userRepo.Save(user))
 }
 
 func (s *NotifierSuite) runPipeline() {
-	s.makeServer()
-	clock := func() time.Time { return time.Date(2024, 1, 1, 12, 0, 0, 0, time.UTC) }
+	clock := func() time.Time { return time.Date(2024, 11, 28, 9, 0, 0, 0, time.UTC) }
 	apiProvider := outageapi.NewProvider(s.server.URL, clock, nil)
 	fetchService := service.NewFetchOutages(apiProvider)
 	notifyUsers := notifier.NewNotifyUsers(fetchService, s.sender, s.userRepo, nil)
@@ -91,49 +123,47 @@ func (s *NotifierSuite) runPipeline() {
 }
 
 func (s *NotifierSuite) TestMatchingUser_NotificationSent() {
-	s.makeAPIBody(1, []string{"10", "12"}, "test")
-	s.saveUser(100, 1, "10")
+	s.loadFixture()
+	s.saveUser(100, 12445, "Стрийська", "45")
 
 	s.runPipeline()
 
 	assert.Len(s.T(), s.sender.sent, 1)
 	assert.Equal(s.T(), int64(100), s.sender.sent[0].UserID)
 
-	// User file should be updated with outage info
 	user, err := s.userRepo.Find(100)
 	require.NoError(s.T(), err)
 	require.NotNil(s.T(), user.OutageInfo)
 }
 
 func (s *NotifierSuite) TestNonMatchingUser_NoNotification() {
-	s.makeAPIBody(1, []string{"10"}, "test")
-	s.saveUser(100, 2, "10") // different street
+	s.loadFixture()
+	s.saveUser(100, 12445, "Стрийська", "999")
 
 	s.runPipeline()
 
 	assert.Empty(s.T(), s.sender.sent)
 
-	// User file unchanged (no outage info)
 	user, err := s.userRepo.Find(100)
 	require.NoError(s.T(), err)
 	assert.Nil(s.T(), user.OutageInfo)
 }
 
 func (s *NotifierSuite) TestBlockedUser_FileDeleted() {
-	s.makeAPIBody(1, []string{"10"}, "test")
-	s.saveUser(100, 1, "10")
+	s.loadFixture()
+	s.saveUser(100, 12445, "Стрийська", "45")
 	s.sender.errs[100] = notifier.ErrRecipientUnavailable
 
 	s.runPipeline()
 
 	user, err := s.userRepo.Find(100)
 	require.NoError(s.T(), err)
-	assert.Nil(s.T(), user) // deleted
+	assert.Nil(s.T(), user)
 }
 
 func (s *NotifierSuite) TestNonBlockedError_UserNotRemoved() {
-	s.makeAPIBody(1, []string{"10"}, "test")
-	s.saveUser(100, 1, "10")
+	s.loadFixture()
+	s.saveUser(100, 12445, "Стрийська", "45")
 	s.sender.errs[100] = errors.New("server error")
 
 	s.runPipeline()
@@ -141,27 +171,26 @@ func (s *NotifierSuite) TestNonBlockedError_UserNotRemoved() {
 	user, err := s.userRepo.Find(100)
 	require.NoError(s.T(), err)
 	assert.NotNil(s.T(), user)
-	assert.Nil(s.T(), user.OutageInfo) // not saved
+	assert.Nil(s.T(), user.OutageInfo)
 }
 
 func (s *NotifierSuite) TestDedup_SecondRunSendsNothing() {
-	s.makeAPIBody(1, []string{"10"}, "test")
-	s.saveUser(100, 1, "10")
+	s.loadFixture()
+	s.saveUser(100, 12445, "Стрийська", "45")
 
 	s.runPipeline()
 	assert.Len(s.T(), s.sender.sent, 1)
 
-	// Second run
 	s.sender.sent = nil
 	s.runPipeline()
 	assert.Empty(s.T(), s.sender.sent)
 }
 
 func (s *NotifierSuite) TestMultipleUsers_CorrectSubsetNotified() {
-	s.makeAPIBody(1, []string{"10", "12"}, "test")
-	s.saveUser(100, 1, "10") // matches
-	s.saveUser(200, 1, "14") // no match
-	s.saveUser(300, 1, "12") // matches
+	s.loadFixture()
+	s.saveUser(100, 12445, "Стрийська", "45")  // matches
+	s.saveUser(200, 12445, "Стрийська", "14")  // no match
+	s.saveUser(300, 12445, "Стрийська", "108") // matches
 
 	s.runPipeline()
 
@@ -174,70 +203,45 @@ func (s *NotifierSuite) TestMultipleUsers_CorrectSubsetNotified() {
 	assert.Contains(s.T(), sentIDs, int64(300))
 }
 
-func (s *NotifierSuite) makeAPIBodyMultiple(outages []struct {
-	ID        int
-	StreetID  int
-	Buildings []string
-	Comment   string
-	Start     string
-	End       string
-}) {
-	members := make([]string, 0, len(outages))
-	for _, o := range outages {
-		buildingsJSON, _ := json.Marshal(o.Buildings)
-		member := fmt.Sprintf(
-			`{"id":%d,"dateEvent":"%s","datePlanIn":"%s","koment":"%s","buildingNames":%s,"city":{"name":"Львів"},"street":{"id":%d,"name":"Стрийська"}}`,
-			o.ID, o.Start, o.End, o.Comment, string(buildingsJSON), o.StreetID,
-		)
-		members = append(members, member)
-	}
-	s.apiBody = `{"hydra:member":[` + strings.Join(members, ",") + `]}`
-}
-
-func (s *NotifierSuite) TestMultipleOutages_UserMatchesFirst() {
-	s.makeAPIBodyMultiple([]struct {
-		ID        int
-		StreetID  int
-		Buildings []string
-		Comment   string
-		Start     string
-		End       string
-	}{
-		{ID: 1, StreetID: 1, Buildings: []string{"10"}, Comment: "first", Start: "2024-01-01T08:00:00+00:00", End: "2024-01-01T16:00:00+00:00"},
-		{ID: 2, StreetID: 2, Buildings: []string{"20"}, Comment: "second", Start: "2024-01-01T08:00:00+00:00", End: "2024-01-01T16:00:00+00:00"},
-	})
-	s.saveUser(100, 1, "10") // matches outage 1 only
+func (s *NotifierSuite) TestFirstMatchingOutageSelected() {
+	s.loadFixture()
+	s.saveUser(100, 12445, "Стрийська", "45")
 
 	s.runPipeline()
 
-	assert.Len(s.T(), s.sender.sent, 1)
-	assert.Equal(s.T(), int64(100), s.sender.sent[0].UserID)
-	assert.Contains(s.T(), s.sender.sent[0].Content.Comment, "first")
+	require.Len(s.T(), s.sender.sent, 1)
+	content := s.sender.sent[0].Content
+	// The first entry covering building 45 in fixture iteration order is the
+	// standalone "45" row: 2024-11-28T06:33:00+00:00 → 2024-11-28T10:57:00+00:00
+	assert.Equal(s.T(), time.Date(2024, 11, 28, 6, 33, 0, 0, time.UTC).Unix(), content.Start.Unix())
+	assert.Equal(s.T(), time.Date(2024, 11, 28, 10, 57, 0, 0, time.UTC).Unix(), content.End.Unix())
+	assert.Equal(s.T(), "Застосування ГАВ", content.Comment)
 }
 
-func (s *NotifierSuite) TestDedup_DifferentOutage_SecondRunSendsNew() {
-	s.makeAPIBody(1, []string{"10"}, "first outage")
-	s.saveUser(100, 1, "10")
+func (s *NotifierSuite) TestNewOutageAfterPriorNotification() {
+	s.loadFixture()
+	s.apiBody = s.filterFixtureByComment("Застосування ГАВ")
+	s.saveUser(100, 12445, "Стрийська", "108")
 
-	// First run: sends notification for "first outage"
 	s.runPipeline()
-	assert.Len(s.T(), s.sender.sent, 1)
 
-	// Second run with a different outage (different comment = different description)
+	require.Len(s.T(), s.sender.sent, 1)
+	content := s.sender.sent[0].Content
+	assert.Equal(s.T(), time.Date(2024, 11, 28, 6, 47, 0, 0, time.UTC).Unix(), content.Start.Unix())
+	assert.Equal(s.T(), time.Date(2024, 11, 28, 10, 0, 0, 0, time.UTC).Unix(), content.End.Unix())
+	assert.Equal(s.T(), "Застосування ГАВ", content.Comment)
+
+	// Second run with ГПВ entries only
 	s.sender.sent = nil
-	s.makeAPIBodyMultiple([]struct {
-		ID        int
-		StreetID  int
-		Buildings []string
-		Comment   string
-		Start     string
-		End       string
-	}{
-		{ID: 2, StreetID: 1, Buildings: []string{"10"}, Comment: "new outage", Start: "2024-02-01T08:00:00+00:00", End: "2024-02-01T16:00:00+00:00"},
-	})
+	s.loadFixture()
+	s.apiBody = s.filterFixtureByComment("Застосування ГПВ")
 	s.runPipeline()
-	assert.Len(s.T(), s.sender.sent, 1)
-	assert.Contains(s.T(), s.sender.sent[0].Content.Comment, "new outage")
+
+	require.Len(s.T(), s.sender.sent, 1)
+	content = s.sender.sent[0].Content
+	assert.Equal(s.T(), time.Date(2024, 11, 28, 8, 0, 0, 0, time.UTC).Unix(), content.Start.Unix())
+	assert.Equal(s.T(), time.Date(2024, 11, 28, 10, 0, 0, 0, time.UTC).Unix(), content.End.Unix())
+	assert.Equal(s.T(), "Застосування ГПВ", content.Comment)
 }
 
 func TestNotifierSuite(t *testing.T) {
