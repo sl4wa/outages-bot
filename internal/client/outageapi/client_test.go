@@ -1,10 +1,8 @@
 package outageapi
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -27,18 +25,16 @@ func makeServer(t *testing.T, statusCode int, body string) *httptest.Server {
 	}))
 }
 
-func TestApiProvider_Non200_ReturnsEmptyAndLogsWarning(t *testing.T) {
+func TestApiProvider_Non200_ReturnsError(t *testing.T) {
 	server := makeServer(t, 500, "error")
 	defer server.Close()
 
-	var buf bytes.Buffer
-	logger := log.New(&buf, "", 0)
-	provider := NewProvider(server.URL, fixedClock(), logger)
+	provider := NewProvider(server.URL, fixedClock(), nil)
 
 	result, err := provider.FetchOutages(context.Background())
-	assert.NoError(t, err)
-	assert.Empty(t, result)
-	assert.Contains(t, buf.String(), "500")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "500")
+	assert.Nil(t, result)
 }
 
 func TestApiProvider_MalformedJSON_ReturnsError(t *testing.T) {

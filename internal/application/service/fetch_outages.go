@@ -40,6 +40,10 @@ func (s *FetchOutages) Handle(ctx context.Context) ([]*domain.Outage, error) {
 		return nil, err
 	}
 
+	return dtosToOutages(dtos), nil
+}
+
+func dtosToOutages(dtos []OutageDTO) []*domain.Outage {
 	outages := make([]*domain.Outage, 0, len(dtos))
 	for _, dto := range dtos {
 		period, err := domain.NewOutagePeriod(dto.Start, dto.End)
@@ -57,6 +61,5 @@ func (s *FetchOutages) Handle(ctx context.Context) ([]*domain.Outage, error) {
 			Description: domain.NewOutageDescription(dto.Comment),
 		})
 	}
-
-	return outages, nil
+	return outages
 }

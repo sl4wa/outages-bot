@@ -41,11 +41,12 @@ func (m *mockNotifSender) Send(userID int64, content notifier.NotificationConten
 
 type NotifierSuite struct {
 	suite.Suite
-	server   *httptest.Server
-	userRepo *repository.FileUserRepository
-	dataDir  string
-	apiBody  string
-	sender   *mockNotifSender
+	server     *httptest.Server
+	userRepo   *repository.FileUserRepository
+	outageRepo *repository.FileOutageRepository // implements notifier.OutageRepository
+	dataDir    string
+	apiBody    string
+	sender     *mockNotifSender
 }
 
 func (s *NotifierSuite) SetupTest() {
@@ -53,6 +54,7 @@ func (s *NotifierSuite) SetupTest() {
 	var err error
 	s.userRepo, err = repository.NewFileUserRepository(filepath.Join(s.dataDir, "users"))
 	require.NoError(s.T(), err)
+	s.outageRepo = repository.NewFileOutageRepository(filepath.Join(s.dataDir, "outages-notifier.csv"))
 	s.sender = &mockNotifSender{errs: make(map[int64]error)}
 	s.server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -116,7 +118,7 @@ func (s *NotifierSuite) runPipeline() {
 	clock := func() time.Time { return time.Date(2024, 11, 28, 9, 0, 0, 0, time.UTC) }
 	apiProvider := outageapi.NewProvider(s.server.URL, clock, nil)
 	fetchService := service.NewFetchOutages(apiProvider)
-	notifyUsers := notifier.NewNotifyUsers(fetchService, s.sender, s.userRepo, nil)
+	notifyUsers := notifier.NewNotifyUsers(fetchService, s.sender, s.userRepo, s.outageRepo, nil)
 
 	err := notifyUsers.Handle(context.Background())
 	require.NoError(s.T(), err)
@@ -242,6 +244,29 @@ func (s *NotifierSuite) TestNewOutageAfterPriorNotification() {
 	assert.Equal(s.T(), time.Date(2024, 11, 28, 8, 0, 0, 0, time.UTC).Unix(), content.Start.Unix())
 	assert.Equal(s.T(), time.Date(2024, 11, 28, 10, 0, 0, 0, time.UTC).Unix(), content.End.Unix())
 	assert.Equal(s.T(), "Застосування ГПВ", content.Comment)
+}
+
+func (s *NotifierSuite) TestOutageData_WrittenAfterFirstRun() {
+	s.loadFixture()
+	s.saveUser(100, 12445, "Стрийська", "45")
+
+	s.runPipeline()
+
+	rows, err := s.outageRepo.Load()
+	require.NoError(s.T(), err)
+	assert.NotEmpty(s.T(), rows, "outage data file should be written after the first run")
+}
+
+func (s *NotifierSuite) TestOutageData_IdenticalSecondRun_SendsNothing() {
+	s.loadFixture()
+	s.saveUser(100, 12445, "Стрийська", "45")
+
+	s.runPipeline()
+	require.Len(s.T(), s.sender.sent, 1)
+
+	s.sender.sent = nil
+	s.runPipeline()
+	assert.Empty(s.T(), s.sender.sent, "dedup short-circuit should prevent any notifications on identical fetch")
 }
 
 func TestNotifierSuite(t *testing.T) {

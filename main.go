@@ -122,7 +122,8 @@ func notifierCmd() *cobra.Command {
 			outageProvider := outageapi.NewProvider(requireEnv("OUTAGE_API_URL"), nil, nil)
 			sender := tgclient.NewNotificationSender(api)
 			fetchService := service.NewFetchOutages(outageProvider)
-			notifyUsers := notifier.NewNotifyUsers(fetchService, sender, userRepo, log.Default())
+			snapshotRepo := repository.NewFileOutageRepository(filepath.Join(dir, "outages-notifier.csv"))
+			notifyUsers := notifier.NewNotifyUsers(fetchService, sender, userRepo, snapshotRepo, log.Default())
 
 			runFn := func(ctx context.Context) error {
 				return cli.RunNotifierCommand(ctx, notifyUsers, log.Default())

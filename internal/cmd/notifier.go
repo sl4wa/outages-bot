@@ -12,10 +12,5 @@ func RunNotifierCommand(
 	notifyUsers *notifier.NotifyUsers,
 	logger *log.Logger,
 ) error {
-	if err := notifyUsers.Handle(ctx); err != nil {
-		return err
-	}
-
-	logger.Printf("Successfully dispatched notifications.")
-	return nil
+	return notifyUsers.Handle(ctx)
 }

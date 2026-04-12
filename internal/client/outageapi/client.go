@@ -22,22 +22,17 @@ type Provider struct {
 	baseURL string
 	client  *http.Client
 	clock   func() time.Time
-	logger  *log.Logger
 }
 
 // NewProvider creates a new Provider.
-func NewProvider(baseURL string, clock func() time.Time, logger *log.Logger) *Provider {
+func NewProvider(baseURL string, clock func() time.Time, _ *log.Logger) *Provider {
 	if clock == nil {
 		clock = time.Now
-	}
-	if logger == nil {
-		logger = log.Default()
 	}
 	return &Provider{
 		baseURL: baseURL,
 		client:  &http.Client{Timeout: 30 * time.Second},
 		clock:   clock,
-		logger:  logger,
 	}
 }
 
@@ -49,7 +44,7 @@ type apiRow struct {
 	ID            interface{}     `json:"id"`
 	DateEvent     string          `json:"dateEvent"`
 	DatePlanIn    string          `json:"datePlanIn"`
-	Koment        string          `json:"koment"`
+	Comment       string          `json:"koment"`
 	BuildingNames json.RawMessage `json:"buildingNames"`
 	City          json.RawMessage `json:"city"`
 	Street        json.RawMessage `json:"street"`
@@ -78,8 +73,7 @@ func (p *Provider) FetchOutages(ctx context.Context) ([]service.OutageDTO, error
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		p.logger.Printf("WARNING: outage API returned status %d", resp.StatusCode)
-		return nil, nil
+		return nil, fmt.Errorf("outage API returned status %d", resp.StatusCode)
 	}
 
 	body, err := io.ReadAll(resp.Body)
@@ -103,7 +97,7 @@ func (p *Provider) FetchOutages(ctx context.Context) ([]service.OutageDTO, error
 
 		id := toInt(row.ID)
 
-		comment := newlineRegex.ReplaceAllString(row.Koment, " ")
+		comment := newlineRegex.ReplaceAllString(row.Comment, " ")
 		comment = strings.TrimSpace(comment)
 
 		buildings := p.parseBuildings(row.BuildingNames)

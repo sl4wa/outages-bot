@@ -57,7 +57,7 @@ func makeTestOutage(streetID int, buildings []string) service.OutageDTO {
 
 func newNotifyUsers(provider *mockProvider, sender *mockSender, repo *mockUserRepo, logger *log.Logger) *NotifyUsers {
 	fetchService := service.NewFetchOutages(provider)
-	return NewNotifyUsers(fetchService, sender, repo, logger)
+	return NewNotifyUsers(fetchService, sender, repo, &mockOutageRepo{}, logger)
 }
 
 func TestNotifyUsers_MatchingSendsAndSaves(t *testing.T) {
@@ -193,4 +193,191 @@ func TestNotifyUsers_FetchError(t *testing.T) {
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to fetch outages")
 	assert.Contains(t, err.Error(), "api down")
+}
+
+func newNotifyUsersWithSnapshot(provider *mockProvider, sender *mockSender, repo *mockUserRepo, snap OutageRepository, logger *log.Logger) *NotifyUsers {
+	fetchService := service.NewFetchOutages(provider)
+	return NewNotifyUsers(fetchService, sender, repo, snap, logger)
+}
+
+func TestNotifyUsers_Snapshot_FirstRun_SavesAndNotifies(t *testing.T) {
+	sender := &mockSender{}
+	repo := newMockUserRepo()
+	addr, _ := domain.NewUserAddress(1, "Стрийська", "10")
+	repo.users[100] = &domain.User{ID: 100, Address: addr}
+
+	snap := &mockOutageRepo{} // no prior snapshot
+	provider := &mockProvider{outages: []service.OutageDTO{makeTestOutage(1, []string{"10"})}}
+	svc := newNotifyUsersWithSnapshot(provider, sender, repo, snap, log.New(io.Discard, "", 0))
+
+	err := svc.Handle(context.Background())
+	require.NoError(t, err)
+	assert.NotNil(t, snap.saved, "snapshot should have been saved on first run")
+	assert.Len(t, sender.sent, 1)
+}
+
+func TestNotifyUsers_Snapshot_IdenticalSecondRun_SkipsNotification(t *testing.T) {
+	sender := &mockSender{}
+	repo := newMockUserRepo()
+	addr, _ := domain.NewUserAddress(1, "Стрийська", "10")
+	repo.users[100] = &domain.User{ID: 100, Address: addr}
+
+	outages := []service.OutageDTO{makeTestOutage(1, []string{"10"})}
+	provider := &mockProvider{outages: outages}
+	snap := &mockOutageRepo{}
+
+	svc := newNotifyUsersWithSnapshot(provider, sender, repo, snap, log.New(io.Discard, "", 0))
+
+	// First run — saves snapshot and notifies
+	err := svc.Handle(context.Background())
+	require.NoError(t, err)
+	assert.Len(t, sender.sent, 1)
+
+	// Second run — same data, snapshot unchanged
+	sender.sent = nil
+	err = svc.Handle(context.Background())
+	require.NoError(t, err)
+	assert.Empty(t, sender.sent, "no notifications on unchanged snapshot")
+}
+
+func TestNotifyUsers_Snapshot_ChangedSnapshot_SavesAndNotifies(t *testing.T) {
+	sender := &mockSender{}
+	repo := newMockUserRepo()
+	addr, _ := domain.NewUserAddress(1, "Стрийська", "10")
+	repo.users[100] = &domain.User{ID: 100, Address: addr}
+
+	firstOutages := []service.OutageDTO{makeTestOutage(1, []string{"10"})}
+	provider := &mockProvider{outages: firstOutages}
+	snap := &mockOutageRepo{}
+
+	svc := newNotifyUsersWithSnapshot(provider, sender, repo, snap, log.New(io.Discard, "", 0))
+
+	// First run
+	err := svc.Handle(context.Background())
+	require.NoError(t, err)
+	assert.Len(t, sender.sent, 1)
+
+	// Change outage data — new building added
+	secondOutages := []service.OutageDTO{makeTestOutage(1, []string{"10", "12"})}
+	provider.outages = secondOutages
+
+	// Reset user so it can be notified again
+	repo.users[100] = &domain.User{ID: 100, Address: addr}
+	sender.sent = nil
+
+	err = svc.Handle(context.Background())
+	require.NoError(t, err)
+	assert.Len(t, sender.sent, 1, "notification sent for changed snapshot")
+}
+
+func TestNotifyUsers_Snapshot_SaveFailure_AbortsBeforeNotifications(t *testing.T) {
+	sender := &mockSender{}
+	repo := newMockUserRepo()
+	addr, _ := domain.NewUserAddress(1, "Стрийська", "10")
+	repo.users[100] = &domain.User{ID: 100, Address: addr}
+
+	snap := &mockOutageRepo{saveErr: errSaveFailed}
+	provider := &mockProvider{outages: []service.OutageDTO{makeTestOutage(1, []string{"10"})}}
+	svc := newNotifyUsersWithSnapshot(provider, sender, repo, snap, log.New(io.Discard, "", 0))
+
+	err := svc.Handle(context.Background())
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "failed to save outage data")
+	assert.Empty(t, sender.sent, "no notifications sent after snapshot save failure")
+}
+
+func TestNotifyUsers_Snapshot_Hit_LogsSkipAndReturnsSkipped(t *testing.T) {
+	sender := &mockSender{}
+	repo := newMockUserRepo()
+	snap := &mockOutageRepo{}
+	provider := &mockProvider{outages: []service.OutageDTO{makeTestOutage(1, []string{"10"})}}
+
+	var buf bytes.Buffer
+	logger := log.New(&buf, "", 0)
+	svc := newNotifyUsersWithSnapshot(provider, sender, repo, snap, logger)
+
+	// First run — populates snapshot
+	err := svc.Handle(context.Background())
+	require.NoError(t, err)
+
+	// Second run — snapshot hit
+	buf.Reset()
+	err = svc.Handle(context.Background())
+	require.NoError(t, err)
+	assert.Contains(t, buf.String(), "Outage data unchanged")
+}
+
+func TestNotifyUsers_Snapshot_FirstSave_LogsNoPrior(t *testing.T) {
+	sender := &mockSender{}
+	repo := newMockUserRepo()
+	snap := &mockOutageRepo{} // no prior snapshot
+	provider := &mockProvider{outages: []service.OutageDTO{makeTestOutage(1, []string{"10"})}}
+
+	var buf bytes.Buffer
+	logger := log.New(&buf, "", 0)
+	svc := newNotifyUsersWithSnapshot(provider, sender, repo, snap, logger)
+
+	err := svc.Handle(context.Background())
+	require.NoError(t, err)
+	assert.Contains(t, buf.String(), "No prior outage data")
+}
+
+func TestNotifyUsers_Snapshot_Miss_LogsChanged(t *testing.T) {
+	sender := &mockSender{}
+	repo := newMockUserRepo()
+	snap := &mockOutageRepo{}
+	provider := &mockProvider{outages: []service.OutageDTO{makeTestOutage(1, []string{"10"})}}
+
+	var buf bytes.Buffer
+	logger := log.New(&buf, "", 0)
+	svc := newNotifyUsersWithSnapshot(provider, sender, repo, snap, logger)
+
+	// First run — saves initial snapshot
+	err := svc.Handle(context.Background())
+	require.NoError(t, err)
+
+	// Change outage data so snapshot misses
+	provider.outages = []service.OutageDTO{makeTestOutage(1, []string{"10", "12"})}
+	buf.Reset()
+
+	err = svc.Handle(context.Background())
+	require.NoError(t, err)
+	assert.Contains(t, buf.String(), "Outage data changed")
+}
+
+func TestNotifyUsers_Snapshot_EmptyFetchFirstRun_SavesAndContinues(t *testing.T) {
+	sender := &mockSender{}
+	repo := newMockUserRepo()
+
+	snap := &mockOutageRepo{} // no prior snapshot (Load returns nil)
+	provider := &mockProvider{outages: nil}
+	svc := newNotifyUsersWithSnapshot(provider, sender, repo, snap, log.New(io.Discard, "", 0))
+
+	err := svc.Handle(context.Background())
+	require.NoError(t, err)
+	assert.NotNil(t, snap.saved, "snapshot should be saved even when API returns empty")
+}
+
+func TestNotifyUsers_Snapshot_EmptyAfterNonEmpty_TreatedAsChange(t *testing.T) {
+	sender := &mockSender{}
+	repo := newMockUserRepo()
+
+	// Pre-populate snapshot with one outage
+	firstOutages := []service.OutageDTO{makeTestOutage(1, []string{"10"})}
+	provider := &mockProvider{outages: firstOutages}
+	snap := &mockOutageRepo{}
+
+	svc := newNotifyUsersWithSnapshot(provider, sender, repo, snap, log.New(io.Discard, "", 0))
+	err := svc.Handle(context.Background())
+	require.NoError(t, err)
+	assert.NotNil(t, snap.saved)
+
+	// Now fetch returns empty
+	provider.outages = nil
+	sender.sent = nil
+
+	err = svc.Handle(context.Background())
+	require.NoError(t, err)
+	// Snapshot should be updated to empty
+	assert.Empty(t, snap.outages)
 }
