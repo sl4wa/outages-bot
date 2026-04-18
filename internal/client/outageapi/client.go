@@ -19,13 +19,15 @@ var newlineRegex = regexp.MustCompile(`[\r\n]+`)
 
 // Provider fetches outages from the Lviv power outage API.
 type Provider struct {
-	baseURL string
-	client  *http.Client
-	clock   func() time.Time
+	baseURL   string
+	client    *http.Client
+	clock     func() time.Time
+	cacheFile string
+	logger    *log.Logger
 }
 
 // NewProvider creates a new Provider.
-func NewProvider(baseURL string, clock func() time.Time, _ *log.Logger) *Provider {
+func NewProvider(baseURL string, clock func() time.Time, logger *log.Logger) *Provider {
 	if clock == nil {
 		clock = time.Now
 	}
@@ -33,7 +35,14 @@ func NewProvider(baseURL string, clock func() time.Time, _ *log.Logger) *Provide
 		baseURL: baseURL,
 		client:  &http.Client{Timeout: 30 * time.Second},
 		clock:   clock,
+		logger:  logger,
 	}
+}
+
+// WithCacheFile sets the path for HTTP-level ETag caching.
+func (p *Provider) WithCacheFile(path string) *Provider {
+	p.cacheFile = path
+	return p
 }
 
 type apiResponse struct {
@@ -61,9 +70,18 @@ type streetObj struct {
 
 // FetchOutages fetches outages from the API.
 func (p *Provider) FetchOutages(ctx context.Context) ([]service.OutageDTO, error) {
+	var cache *cacheEntry
+	if p.cacheFile != "" {
+		cache = loadCache(p.cacheFile)
+	}
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, p.baseURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	if cache != nil && cache.etag != "" {
+		req.Header.Set("If-None-Match", cache.etag)
 	}
 
 	resp, err := p.client.Do(req)
@@ -72,15 +90,41 @@ func (p *Provider) FetchOutages(ctx context.Context) ([]service.OutageDTO, error
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
+	switch resp.StatusCode {
+	case http.StatusNotModified:
+		if cache == nil {
+			return nil, fmt.Errorf("got 304 but no cached body")
+		}
+		if p.logger != nil {
+			p.logger.Printf("outageapi: cache hit (304), using cached body")
+		}
+		return p.parseBody(cache.body)
+	case http.StatusOK:
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read response body: %w", err)
+		}
+		result, err := p.parseBody(body)
+		if err != nil {
+			return nil, err
+		}
+		if p.cacheFile != "" {
+			etag := resp.Header.Get("ETag")
+			if saveErr := saveCache(p.cacheFile, etag, body); saveErr != nil {
+				if p.logger != nil {
+					p.logger.Printf("outageapi: failed to save cache: %v", saveErr)
+				}
+			} else if p.logger != nil {
+				p.logger.Printf("outageapi: cache miss (200), updated cache")
+			}
+		}
+		return result, nil
+	default:
 		return nil, fmt.Errorf("outage API returned status %d", resp.StatusCode)
 	}
+}
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %w", err)
-	}
-
+func (p *Provider) parseBody(body []byte) ([]service.OutageDTO, error) {
 	var apiResp apiResponse
 	if err := json.Unmarshal(body, &apiResp); err != nil {
 		return nil, fmt.Errorf("failed to parse API response: %w", err)

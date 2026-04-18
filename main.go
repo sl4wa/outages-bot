@@ -119,7 +119,8 @@ func notifierCmd() *cobra.Command {
 				return fmt.Errorf("failed to create user repository: %w", err)
 			}
 
-			outageProvider := outageapi.NewProvider(requireEnv("OUTAGE_API_URL"), nil, nil)
+			outageProvider := outageapi.NewProvider(requireEnv("OUTAGE_API_URL"), nil, log.Default()).
+				WithCacheFile(filepath.Join(dir, "outages.http-cache"))
 			sender := tgclient.NewNotificationSender(api)
 			fetchService := service.NewFetchOutages(outageProvider)
 			snapshotRepo := repository.NewFileOutageRepository(filepath.Join(dir, repository.OutageSnapshotFileName))
