@@ -12,6 +12,8 @@ import (
 	"outages-bot/internal/domain"
 )
 
+const OutageSnapshotFileName = "outages.csv"
+
 // FileOutageRepository persists outage data for deduplication as a CSV file.
 type FileOutageRepository struct {
 	path string

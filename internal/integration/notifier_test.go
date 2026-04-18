@@ -54,7 +54,7 @@ func (s *NotifierSuite) SetupTest() {
 	var err error
 	s.userRepo, err = repository.NewFileUserRepository(filepath.Join(s.dataDir, "users"))
 	require.NoError(s.T(), err)
-	s.outageRepo = repository.NewFileOutageRepository(filepath.Join(s.dataDir, "outages-notifier.csv"))
+	s.outageRepo = repository.NewFileOutageRepository(filepath.Join(s.dataDir, repository.OutageSnapshotFileName))
 	s.sender = &mockNotifSender{errs: make(map[int64]error)}
 	s.server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
