@@ -4,11 +4,14 @@
 - `make build` builds `bin/outages-bot`.
 - `go test ./...` runs all Go tests.
 - Useful focused suites:
-  - `go test ./internal/domain/...`
-  - `go test ./internal/application/...`
-  - `go test ./internal/repository/...`
-  - `go test ./internal/client/...`
-  - `go test ./internal/cmd/... -run TestName`
+  - `go test ./internal/outage/...`
+  - `go test ./internal/users/...`
+  - `go test ./internal/persistence/...`
+  - `go test ./internal/loe/...`
+  - `go test ./internal/telegram/...`
+  - `go test ./internal/notifier/...`
+  - `go test ./internal/cli/...`
+  - `go test ./internal/integration/...`
 - Useful local commands:
   - `go run . bot`
   - `go run . notifier`
