@@ -10,13 +10,13 @@ import (
 	"syscall"
 	"time"
 
-	"outages-bot/internal/application/service"
-	"outages-bot/internal/application/bot"
-	"outages-bot/internal/application/notifier"
-	"outages-bot/internal/client/outageapi"
-	tgclient "outages-bot/internal/client/telegram"
-	"outages-bot/internal/cmd"
-	"outages-bot/internal/repository"
+	"outages-bot/internal/cli"
+	"outages-bot/internal/loe"
+	"outages-bot/internal/notifier"
+	"outages-bot/internal/outage"
+	"outages-bot/internal/persistence"
+	"outages-bot/internal/telegram"
+	"outages-bot/internal/users"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/joho/godotenv"
@@ -79,22 +79,22 @@ func botCmd() *cobra.Command {
 			api := mustBotAPI()
 			dir := dataDir()
 
-			userRepo, err := repository.NewFileUserRepository(filepath.Join(dir, "users"))
+			userRepo, err := persistence.NewFileUserRepository(filepath.Join(dir, "users"))
 			if err != nil {
 				log.Fatalf("Failed to create user repository: %v", err)
 			}
 
-			streetRepo, err := repository.NewFileStreetRepository(filepath.Join(dir, "streets.csv"))
+			streetRepo, err := persistence.NewFileStreetRepository(filepath.Join(dir, "streets.csv"))
 			if err != nil {
 				log.Fatalf("Failed to create street repository: %v", err)
 			}
 
-			runner := cli.NewBotRunner(cli.BotRunnerConfig{
-				Bot:                     api,
-				SearchStreet:     bot.NewSearchStreet(streetRepo),
-				ShowSubscription: bot.NewShowSubscription(userRepo),
-				SaveSubscription: bot.NewSaveSubscription(userRepo),
-				Unsubscribe:      bot.NewUnsubscribe(userRepo),
+			runner := telegram.NewBotRunner(telegram.BotRunnerConfig{
+				Bot:              api,
+				SearchStreet:     users.NewSearchStreet(streetRepo),
+				ShowSubscription: users.NewShowSubscription(userRepo),
+				SaveSubscription: users.NewSaveSubscription(userRepo),
+				Unsubscribe:      users.NewUnsubscribe(userRepo),
 			})
 			defer runner.Close()
 
@@ -114,21 +114,18 @@ func notifierCmd() *cobra.Command {
 			api := mustBotAPI()
 			dir := dataDir()
 
-			userRepo, err := repository.NewFileUserRepository(filepath.Join(dir, "users"))
+			userRepo, err := persistence.NewFileUserRepository(filepath.Join(dir, "users"))
 			if err != nil {
 				return fmt.Errorf("failed to create user repository: %w", err)
 			}
 
-			outageProvider := outageapi.NewProvider(requireEnv("OUTAGE_API_URL"), nil, log.Default()).
+			outageProvider := loe.NewProvider(requireEnv("OUTAGE_API_URL"), nil, log.Default()).
 				WithCacheFile(filepath.Join(dir, "outages.http-cache"))
-			sender := tgclient.NewNotificationSender(api)
-			fetchService := service.NewFetchOutages(outageProvider)
-			snapshotRepo := repository.NewFileOutageRepository(filepath.Join(dir, repository.OutageSnapshotFileName))
+			sender := telegram.NewNotificationSender(api)
+			fetchService := outage.NewFetchOutages(outageProvider)
+			snapshotRepo := persistence.NewFileOutageRepository(filepath.Join(dir, persistence.OutageSnapshotFileName))
 			notifyUsers := notifier.NewNotifyUsers(fetchService, sender, userRepo, snapshotRepo, log.Default())
-
-			runFn := func(ctx context.Context) error {
-				return cli.RunNotifierCommand(ctx, notifyUsers, log.Default())
-			}
+			runFn := notifyUsers.Handle
 
 			if interval <= 0 {
 				return runFn(context.Background())
@@ -171,7 +168,7 @@ func outagesCmd() *cobra.Command {
 		Use:   "outages",
 		Short: "Print a table of current outages",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			outageProvider := outageapi.NewProvider(requireEnv("OUTAGE_API_URL"), nil, nil)
+			outageProvider := loe.NewProvider(requireEnv("OUTAGE_API_URL"), nil, nil)
 			return cli.RunOutagesCommand(context.Background(), outageProvider, os.Stdout)
 		},
 	}
@@ -185,12 +182,12 @@ func usersCmd() *cobra.Command {
 			api := mustBotAPI()
 			dir := dataDir()
 
-			userRepo, err := repository.NewFileUserRepository(filepath.Join(dir, "users"))
+			userRepo, err := persistence.NewFileUserRepository(filepath.Join(dir, "users"))
 			if err != nil {
 				return fmt.Errorf("failed to create user repository: %w", err)
 			}
 
-			userInfoProvider := tgclient.NewUserInfoProvider(api)
+			userInfoProvider := telegram.NewUserInfoProvider(api)
 			cli.RunUsersCommand(userRepo, userInfoProvider, os.Stdout, log.Default())
 			return nil
 		},

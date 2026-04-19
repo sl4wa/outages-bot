@@ -7,11 +7,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"outages-bot/internal/application/notifier"
-	"outages-bot/internal/application/service"
-	"outages-bot/internal/client/outageapi"
-	"outages-bot/internal/domain"
-	"outages-bot/internal/repository"
+	"outages-bot/internal/loe"
+	"outages-bot/internal/notifier"
+	"outages-bot/internal/outage"
+	"outages-bot/internal/persistence"
+	"outages-bot/internal/users"
 	"path/filepath"
 	"testing"
 	"time"
@@ -23,7 +23,7 @@ import (
 
 type sentNotification struct {
 	UserID  int64
-	Content notifier.NotificationContent
+	Content notifier.Content
 }
 
 type mockNotifSender struct {
@@ -31,7 +31,7 @@ type mockNotifSender struct {
 	errs map[int64]error
 }
 
-func (m *mockNotifSender) Send(userID int64, content notifier.NotificationContent) error {
+func (m *mockNotifSender) Send(userID int64, content notifier.Content) error {
 	m.sent = append(m.sent, sentNotification{UserID: userID, Content: content})
 	if err, ok := m.errs[userID]; ok {
 		return err
@@ -42,8 +42,8 @@ func (m *mockNotifSender) Send(userID int64, content notifier.NotificationConten
 type NotifierSuite struct {
 	suite.Suite
 	server     *httptest.Server
-	userRepo   *repository.FileUserRepository
-	outageRepo *repository.FileOutageRepository // implements notifier.OutageRepository
+	userRepo   *persistence.FileUserRepository
+	outageRepo *persistence.FileOutageRepository
 	dataDir    string
 	apiBody    string
 	sender     *mockNotifSender
@@ -52,9 +52,9 @@ type NotifierSuite struct {
 func (s *NotifierSuite) SetupTest() {
 	s.dataDir = s.T().TempDir()
 	var err error
-	s.userRepo, err = repository.NewFileUserRepository(filepath.Join(s.dataDir, "users"))
+	s.userRepo, err = persistence.NewFileUserRepository(filepath.Join(s.dataDir, "users"))
 	require.NoError(s.T(), err)
-	s.outageRepo = repository.NewFileOutageRepository(filepath.Join(s.dataDir, repository.OutageSnapshotFileName))
+	s.outageRepo = persistence.NewFileOutageRepository(filepath.Join(s.dataDir, persistence.OutageSnapshotFileName))
 	s.sender = &mockNotifSender{errs: make(map[int64]error)}
 	s.server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -108,16 +108,16 @@ func (s *NotifierSuite) filterFixtureByComment(comment string) string {
 }
 
 func (s *NotifierSuite) saveUser(chatID int64, streetID int, streetName, building string) {
-	addr, err := domain.NewUserAddress(streetID, streetName, building)
+	addr, err := users.NewUserAddress(streetID, streetName, building)
 	require.NoError(s.T(), err)
-	user := &domain.User{ID: chatID, Address: addr}
+	user := &users.User{ID: chatID, Address: addr}
 	require.NoError(s.T(), s.userRepo.Save(user))
 }
 
 func (s *NotifierSuite) runPipeline() {
 	clock := func() time.Time { return time.Date(2024, 11, 28, 9, 0, 0, 0, time.UTC) }
-	apiProvider := outageapi.NewProvider(s.server.URL, clock, nil)
-	fetchService := service.NewFetchOutages(apiProvider)
+	apiProvider := loe.NewProvider(s.server.URL, clock, nil)
+	fetchService := outage.NewFetchOutages(apiProvider)
 	notifyUsers := notifier.NewNotifyUsers(fetchService, s.sender, s.userRepo, s.outageRepo, nil)
 
 	err := notifyUsers.Handle(context.Background())

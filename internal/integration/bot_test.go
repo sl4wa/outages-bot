@@ -4,10 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"outages-bot/internal/application/bot"
-	"outages-bot/internal/cmd"
-	"outages-bot/internal/domain"
-	"outages-bot/internal/repository"
+	"outages-bot/internal/persistence"
+	"outages-bot/internal/telegram"
+	"outages-bot/internal/users"
 	"path/filepath"
 	"testing"
 	"time"
@@ -20,9 +19,9 @@ import (
 
 type BotSuite struct {
 	suite.Suite
-	runner     *cli.BotRunner
-	userRepo   *repository.FileUserRepository
-	streetRepo *repository.FileStreetRepository
+	runner     *telegram.BotRunner
+	userRepo   *persistence.FileUserRepository
+	streetRepo *persistence.FileStreetRepository
 	dataDir    string
 }
 
@@ -30,10 +29,10 @@ func (s *BotSuite) SetupTest() {
 	s.dataDir = s.T().TempDir()
 
 	var err error
-	s.userRepo, err = repository.NewFileUserRepository(filepath.Join(s.dataDir, "users"))
+	s.userRepo, err = persistence.NewFileUserRepository(filepath.Join(s.dataDir, "users"))
 	require.NoError(s.T(), err)
 
-	s.streetRepo, err = repository.NewFileStreetRepository("testdata/streets.csv")
+	s.streetRepo, err = persistence.NewFileStreetRepository("testdata/streets.csv")
 	require.NoError(s.T(), err)
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -51,14 +50,14 @@ func (s *BotSuite) SetupTest() {
 	require.NoError(s.T(), err)
 
 	cleanupCh := make(chan time.Time)
-	s.runner = cli.NewBotRunner(cli.BotRunnerConfig{
-		Bot:                     api,
-		SearchStreet:     bot.NewSearchStreet(s.streetRepo),
-		ShowSubscription: bot.NewShowSubscription(s.userRepo),
-		SaveSubscription: bot.NewSaveSubscription(s.userRepo),
-		Unsubscribe:      bot.NewUnsubscribe(s.userRepo),
-		CleanupTicker:           cleanupCh,
-		TTL:                     30 * time.Minute,
+	s.runner = telegram.NewBotRunner(telegram.BotRunnerConfig{
+		Bot:              api,
+		SearchStreet:     users.NewSearchStreet(s.streetRepo),
+		ShowSubscription: users.NewShowSubscription(s.userRepo),
+		SaveSubscription: users.NewSaveSubscription(s.userRepo),
+		Unsubscribe:      users.NewUnsubscribe(s.userRepo),
+		CleanupTicker:    cleanupCh,
+		TTL:              30 * time.Minute,
 	})
 	s.T().Cleanup(s.runner.Close)
 }
@@ -101,27 +100,27 @@ func (s *BotSuite) TestSearchSaveVerifyFile() {
 }
 
 func (s *BotSuite) TestShowSubscription_ExistingUser() {
-	addr, _ := domain.NewUserAddress(12444, "Молдавська", "10")
-	s.userRepo.Save(&domain.User{ID: 100, Address: addr})
+	addr, _ := users.NewUserAddress(12444, "Молдавська", "10")
+	s.userRepo.Save(&users.User{ID: 100, Address: addr})
 
 	s.runner.HandleMessage(makeIntCmd(100, "start"))
 
 	// Should be in search step (got shown existing subscription)
 	state := s.runner.GetState(100)
 	require.NotNil(s.T(), state)
-	assert.Equal(s.T(), cli.StepSearchStreet, state.Step)
+	assert.Equal(s.T(), telegram.StepSearchStreet, state.Step)
 }
 
 func (s *BotSuite) TestShowSubscription_NewUser() {
 	s.runner.HandleMessage(makeIntCmd(100, "start"))
 	state := s.runner.GetState(100)
 	require.NotNil(s.T(), state)
-	assert.Equal(s.T(), cli.StepSearchStreet, state.Step)
+	assert.Equal(s.T(), telegram.StepSearchStreet, state.Step)
 }
 
 func (s *BotSuite) TestRemoveUser_FileDeleted() {
-	addr, _ := domain.NewUserAddress(12444, "Молдавська", "10")
-	s.userRepo.Save(&domain.User{ID: 100, Address: addr})
+	addr, _ := users.NewUserAddress(12444, "Молдавська", "10")
+	s.userRepo.Save(&users.User{ID: 100, Address: addr})
 
 	s.runner.HandleMessage(makeIntCmd(100, "stop"))
 
