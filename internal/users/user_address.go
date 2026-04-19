@@ -7,32 +7,32 @@ import (
 
 var buildingPattern = regexp.MustCompile(`^[0-9]+(-[A-ZА-ЯІЇЄҐ])?$`)
 
-// UserAddress represents a user's street address.
-type UserAddress struct {
+// Address represents a user's street address.
+type Address struct {
 	StreetID   int
 	StreetName string
 	Building   string
 }
 
-// NewUserAddress creates a new UserAddress with validation.
-func NewUserAddress(streetID int, streetName, building string) (UserAddress, error) {
+// NewAddress creates a new Address with validation.
+func NewAddress(streetID int, streetName, building string) (Address, error) {
 	if streetID <= 0 {
-		return UserAddress{}, ErrInvalidStreetID
+		return Address{}, ErrInvalidStreetID
 	}
 
 	if strings.TrimSpace(streetName) == "" {
-		return UserAddress{}, ErrEmptyStreetName
+		return Address{}, ErrEmptyStreetName
 	}
 
 	if strings.TrimSpace(building) == "" {
-		return UserAddress{}, ErrEmptyBuilding
+		return Address{}, ErrEmptyBuilding
 	}
 
 	if !buildingPattern.MatchString(building) {
-		return UserAddress{}, ErrInvalidBuildingFormat
+		return Address{}, ErrInvalidBuildingFormat
 	}
 
-	return UserAddress{
+	return Address{
 		StreetID:   streetID,
 		StreetName: streetName,
 		Building:   building,

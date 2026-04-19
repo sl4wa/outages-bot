@@ -2,35 +2,35 @@ package outage
 
 import "strings"
 
-// OutageAddress represents the location of an outage.
-type OutageAddress struct {
+// Address represents the location of an outage.
+type Address struct {
 	StreetID   int
 	StreetName string
 	Buildings  []string
 	City       string
 }
 
-// NewOutageAddress creates a new OutageAddress with validation.
-func NewOutageAddress(streetID int, streetName string, buildings []string, city string) (OutageAddress, error) {
+// NewAddress creates a new Address with validation.
+func NewAddress(streetID int, streetName string, buildings []string, city string) (Address, error) {
 	if streetID <= 0 {
-		return OutageAddress{}, ErrInvalidStreetID
+		return Address{}, ErrInvalidStreetID
 	}
 
 	if strings.TrimSpace(streetName) == "" {
-		return OutageAddress{}, ErrEmptyStreetName
+		return Address{}, ErrEmptyStreetName
 	}
 
 	if len(buildings) == 0 {
-		return OutageAddress{}, ErrEmptyBuildings
+		return Address{}, ErrEmptyBuildings
 	}
 
 	for _, b := range buildings {
 		if strings.TrimSpace(b) == "" {
-			return OutageAddress{}, ErrEmptyBuildings
+			return Address{}, ErrEmptyBuildings
 		}
 	}
 
-	return OutageAddress{
+	return Address{
 		StreetID:   streetID,
 		StreetName: streetName,
 		Buildings:  buildings,

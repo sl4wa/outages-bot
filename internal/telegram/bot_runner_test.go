@@ -236,7 +236,7 @@ func TestBot_SaveSubscription_InvalidInput_StaysInSave(t *testing.T) {
 
 func TestBot_StopWithSubscription_RemovesUser(t *testing.T) {
 	br, userRepo, msgs := setupBot(t)
-	addr, _ := users.NewUserAddress(1, "Стрийська", "10")
+	addr, _ := users.NewAddress(1, "Стрийська", "10")
 	userRepo.users[100] = &users.User{ID: 100, Address: addr}
 
 	br.HandleMessage(makeCmd(100, "stop"))
@@ -367,7 +367,7 @@ func TestBot_ExpiredSession(t *testing.T) {
 
 func TestBot_SubscriptionShowsExistingUser(t *testing.T) {
 	br, userRepo, msgs := setupBot(t)
-	addr, _ := users.NewUserAddress(1, "Стрийська", "10")
+	addr, _ := users.NewAddress(1, "Стрийська", "10")
 	userRepo.users[100] = &users.User{ID: 100, Address: addr}
 
 	br.HandleMessage(makeCmd(100, "subscription"))

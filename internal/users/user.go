@@ -5,7 +5,7 @@ import "outages-bot/internal/outage"
 // User represents a subscribed user.
 type User struct {
 	ID         int64
-	Address    UserAddress
+	Address    Address
 	OutageInfo *OutageInfo
 }
 

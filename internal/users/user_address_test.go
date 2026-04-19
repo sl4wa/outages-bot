@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestUserAddress_ValidBuildings(t *testing.T) {
+func TestAddress_ValidBuildings(t *testing.T) {
 	tests := []struct {
 		name     string
 		building string
@@ -28,14 +28,14 @@ func TestUserAddress_ValidBuildings(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			addr, err := NewUserAddress(1, "Test Street", tt.building)
+			addr, err := NewAddress(1, "Test Street", tt.building)
 			require.NoError(t, err)
 			assert.Equal(t, tt.building, addr.Building)
 		})
 	}
 }
 
-func TestUserAddress_InvalidBuildings(t *testing.T) {
+func TestAddress_InvalidBuildings(t *testing.T) {
 	tests := []struct {
 		name     string
 		building string
@@ -65,44 +65,44 @@ func TestUserAddress_InvalidBuildings(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := NewUserAddress(1, "Test Street", tt.building)
+			_, err := NewAddress(1, "Test Street", tt.building)
 			assert.Error(t, err)
 		})
 	}
 }
 
-func TestUserAddress_EmptyBuilding(t *testing.T) {
-	_, err := NewUserAddress(1, "Test Street", "")
+func TestAddress_EmptyBuilding(t *testing.T) {
+	_, err := NewAddress(1, "Test Street", "")
 	assert.True(t, errors.Is(err, ErrEmptyBuilding))
 }
 
-func TestUserAddress_WhitespaceBuilding(t *testing.T) {
-	_, err := NewUserAddress(1, "Test Street", "   ")
+func TestAddress_WhitespaceBuilding(t *testing.T) {
+	_, err := NewAddress(1, "Test Street", "   ")
 	assert.True(t, errors.Is(err, ErrEmptyBuilding))
 }
 
-func TestUserAddress_ZeroStreetID(t *testing.T) {
-	_, err := NewUserAddress(0, "Test Street", "13")
+func TestAddress_ZeroStreetID(t *testing.T) {
+	_, err := NewAddress(0, "Test Street", "13")
 	assert.True(t, errors.Is(err, ErrInvalidStreetID))
 }
 
-func TestUserAddress_NegativeStreetID(t *testing.T) {
-	_, err := NewUserAddress(-1, "Test Street", "13")
+func TestAddress_NegativeStreetID(t *testing.T) {
+	_, err := NewAddress(-1, "Test Street", "13")
 	assert.True(t, errors.Is(err, ErrInvalidStreetID))
 }
 
-func TestUserAddress_EmptyStreetName(t *testing.T) {
-	_, err := NewUserAddress(1, "", "13")
+func TestAddress_EmptyStreetName(t *testing.T) {
+	_, err := NewAddress(1, "", "13")
 	assert.True(t, errors.Is(err, ErrEmptyStreetName))
 }
 
-func TestUserAddress_WhitespaceStreetName(t *testing.T) {
-	_, err := NewUserAddress(1, "   ", "13")
+func TestAddress_WhitespaceStreetName(t *testing.T) {
+	_, err := NewAddress(1, "   ", "13")
 	assert.True(t, errors.Is(err, ErrEmptyStreetName))
 }
 
-func TestUserAddress_ValidComplete(t *testing.T) {
-	addr, err := NewUserAddress(123, "Стрийська", "10-А")
+func TestAddress_ValidComplete(t *testing.T) {
+	addr, err := NewAddress(123, "Стрийська", "10-А")
 	require.NoError(t, err)
 	assert.Equal(t, 123, addr.StreetID)
 	assert.Equal(t, "Стрийська", addr.StreetName)

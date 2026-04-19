@@ -72,18 +72,18 @@ func (r *FileOutageRepository) Load() ([]*outage.Outage, error) {
 		}
 		comment := row[6]
 
-		period, err := outage.NewOutagePeriod(start, end)
+		period, err := outage.NewPeriod(start, end)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse outage period: %w", err)
 		}
-		addr, err := outage.NewOutageAddress(streetID, streetName, buildings, city)
+		addr, err := outage.NewAddress(streetID, streetName, buildings, city)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse outage address: %w", err)
 		}
 		outages = append(outages, &outage.Outage{
 			Period:      period,
 			Address:     addr,
-			Description: outage.NewOutageDescription(comment),
+			Description: outage.NewDescription(comment),
 		})
 	}
 	return outages, nil

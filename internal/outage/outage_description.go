@@ -1,16 +1,16 @@
 package outage
 
-// OutageDescription represents the comment/description of an outage.
-type OutageDescription struct {
+// Description represents the comment/description of an outage.
+type Description struct {
 	Value string
 }
 
-// NewOutageDescription creates a new OutageDescription.
-func NewOutageDescription(value string) OutageDescription {
-	return OutageDescription{Value: value}
+// NewDescription creates a new Description.
+func NewDescription(value string) Description {
+	return Description{Value: value}
 }
 
-// Equals checks if two OutageDescription values are equal (case-sensitive).
-func (d OutageDescription) Equals(other OutageDescription) bool {
+// Equals checks if two Description values are equal (case-sensitive).
+func (d Description) Equals(other Description) bool {
 	return d.Value == other.Value
 }

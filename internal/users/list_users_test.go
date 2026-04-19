@@ -18,18 +18,18 @@ func (m *mockListUserRepo) Find(_ int64) (*User, error)  { return nil, nil }
 func (m *mockListUserRepo) Save(_ *User) error           { return nil }
 func (m *mockListUserRepo) Remove(_ int64) (bool, error) { return false, nil }
 
-func makeAddr(t *testing.T) UserAddress {
+func makeAddr(t *testing.T) Address {
 	t.Helper()
-	addr, err := NewUserAddress(1, "Стрийська", "10")
+	addr, err := NewAddress(1, "Стрийська", "10")
 	require.NoError(t, err)
 	return addr
 }
 
 func makeOutageInfo(t *testing.T, start time.Time) *OutageInfo {
 	t.Helper()
-	period, err := outage.NewOutagePeriod(start, start.Add(8*time.Hour))
+	period, err := outage.NewPeriod(start, start.Add(8*time.Hour))
 	require.NoError(t, err)
-	desc := outage.NewOutageDescription("test")
+	desc := outage.NewDescription("test")
 	info := NewOutageInfo(period, desc)
 	return &info
 }

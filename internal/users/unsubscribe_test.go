@@ -9,7 +9,7 @@ import (
 
 func TestUnsubscribe_ExistingUser(t *testing.T) {
 	repo := newMockUserRepo()
-	addr, _ := NewUserAddress(1, "Стрийська", "10")
+	addr, _ := NewAddress(1, "Стрийська", "10")
 	repo.users[12345] = &User{ID: 12345, Address: addr}
 
 	svc := NewUnsubscribe(repo)

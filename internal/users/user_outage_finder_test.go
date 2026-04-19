@@ -11,23 +11,23 @@ import (
 
 func makeOutage(t *testing.T, id int, streetID int, buildings []string, desc string) *outage.Outage {
 	t.Helper()
-	period, err := outage.NewOutagePeriod(
+	period, err := outage.NewPeriod(
 		time.Date(2024, 1, 1, 8, 0, 0, 0, time.UTC),
 		time.Date(2024, 1, 1, 16, 0, 0, 0, time.UTC),
 	)
 	require.NoError(t, err)
-	addr, err := outage.NewOutageAddress(streetID, "Street", buildings, "")
+	addr, err := outage.NewAddress(streetID, "Street", buildings, "")
 	require.NoError(t, err)
 	return &outage.Outage{
 		ID:          id,
 		Period:      period,
 		Address:     addr,
-		Description: outage.NewOutageDescription(desc),
+		Description: outage.NewDescription(desc),
 	}
 }
 
 func TestOutageFinder_FindsMatchingOutage(t *testing.T) {
-	addr, _ := NewUserAddress(1, "Street", "10")
+	addr, _ := NewAddress(1, "Street", "10")
 	user := &User{ID: 1, Address: addr}
 	outages := []*outage.Outage{makeOutage(t, 1, 1, []string{"10", "12"}, "test")}
 
@@ -37,7 +37,7 @@ func TestOutageFinder_FindsMatchingOutage(t *testing.T) {
 }
 
 func TestOutageFinder_NoMatchReturnsNil(t *testing.T) {
-	addr, _ := NewUserAddress(1, "Street", "14")
+	addr, _ := NewAddress(1, "Street", "14")
 	user := &User{ID: 1, Address: addr}
 	outages := []*outage.Outage{makeOutage(t, 1, 1, []string{"10", "12"}, "test")}
 
@@ -46,7 +46,7 @@ func TestOutageFinder_NoMatchReturnsNil(t *testing.T) {
 }
 
 func TestOutageFinder_AlreadyNotifiedReturnsNil(t *testing.T) {
-	addr, _ := NewUserAddress(1, "Street", "10")
+	addr, _ := NewAddress(1, "Street", "10")
 	current := makeOutage(t, 1, 1, []string{"10"}, "test")
 	info := NewOutageInfo(current.Period, current.Description)
 	user := &User{ID: 1, Address: addr, OutageInfo: &info}
@@ -56,7 +56,7 @@ func TestOutageFinder_AlreadyNotifiedReturnsNil(t *testing.T) {
 }
 
 func TestOutageFinder_MultipleMatching_ReturnsFirst(t *testing.T) {
-	addr, _ := NewUserAddress(1, "Street", "10")
+	addr, _ := NewAddress(1, "Street", "10")
 	user := &User{ID: 1, Address: addr}
 	o1 := makeOutage(t, 1, 1, []string{"10"}, "first")
 	o2 := makeOutage(t, 2, 1, []string{"10"}, "second")
@@ -67,7 +67,7 @@ func TestOutageFinder_MultipleMatching_ReturnsFirst(t *testing.T) {
 }
 
 func TestOutageFinder_SameOutagesReversed_ReturnsDifferentFirst(t *testing.T) {
-	addr, _ := NewUserAddress(1, "Street", "10")
+	addr, _ := NewAddress(1, "Street", "10")
 	user := &User{ID: 1, Address: addr}
 	o1 := makeOutage(t, 1, 1, []string{"10"}, "first")
 	o2 := makeOutage(t, 2, 1, []string{"10"}, "second")
@@ -78,7 +78,7 @@ func TestOutageFinder_SameOutagesReversed_ReturnsDifferentFirst(t *testing.T) {
 }
 
 func TestOutageFinder_AlreadyNotifiedFirstMatch_SkipsSecondMatch(t *testing.T) {
-	addr, _ := NewUserAddress(1, "Street", "10")
+	addr, _ := NewAddress(1, "Street", "10")
 	o1 := makeOutage(t, 1, 1, []string{"10"}, "first")
 	o2 := makeOutage(t, 2, 1, []string{"10"}, "second")
 
@@ -92,7 +92,7 @@ func TestOutageFinder_AlreadyNotifiedFirstMatch_SkipsSecondMatch(t *testing.T) {
 }
 
 func TestOutageFinder_FirstOutageGone_SecondMatchFires(t *testing.T) {
-	addr, _ := NewUserAddress(1, "Street", "10")
+	addr, _ := NewAddress(1, "Street", "10")
 	o1 := makeOutage(t, 1, 1, []string{"10"}, "first")
 	o2 := makeOutage(t, 2, 1, []string{"10"}, "second")
 
@@ -108,7 +108,7 @@ func TestOutageFinder_FirstOutageGone_SecondMatchFires(t *testing.T) {
 }
 
 func TestOutageFinder_EmptyOutageList(t *testing.T) {
-	addr, _ := NewUserAddress(1, "Street", "10")
+	addr, _ := NewAddress(1, "Street", "10")
 	user := &User{ID: 1, Address: addr}
 
 	result := user.FindOutageForNotification([]*outage.Outage{})
@@ -116,7 +116,7 @@ func TestOutageFinder_EmptyOutageList(t *testing.T) {
 }
 
 func TestOutageFinder_DifferentStreet_ThenAlreadyNotified(t *testing.T) {
-	addr, _ := NewUserAddress(1, "Street", "10")
+	addr, _ := NewAddress(1, "Street", "10")
 	// Non-matching outage (different street), followed by matching but already notified
 	nonMatching := makeOutage(t, 1, 2, []string{"10"}, "other street")
 	matching := makeOutage(t, 2, 1, []string{"10"}, "notified")

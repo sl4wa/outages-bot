@@ -17,12 +17,12 @@ var (
 )
 
 func makeOutage(streetID int, streetName string, buildings []string, start, end time.Time, comment string) *outage.Outage {
-	period, _ := outage.NewOutagePeriod(start, end)
-	addr, _ := outage.NewOutageAddress(streetID, streetName, buildings, "Львів")
+	period, _ := outage.NewPeriod(start, end)
+	addr, _ := outage.NewAddress(streetID, streetName, buildings, "Львів")
 	return &outage.Outage{
 		Period:      period,
 		Address:     addr,
-		Description: outage.NewOutageDescription(comment),
+		Description: outage.NewDescription(comment),
 	}
 }
 

@@ -16,7 +16,7 @@ func TestShowSubscription_NewUser(t *testing.T) {
 
 func TestShowSubscription_ExistingUser(t *testing.T) {
 	repo := newMockUserRepo()
-	addr, _ := NewUserAddress(1, "Стрийська", "10")
+	addr, _ := NewAddress(1, "Стрийська", "10")
 	repo.users[12345] = &User{ID: 12345, Address: addr}
 	svc := NewShowSubscription(repo)
 	msg := svc.Handle(12345)
@@ -28,7 +28,7 @@ func TestShowSubscription_ExistingUser(t *testing.T) {
 
 func TestShowSubscription_DifferentChatIDs(t *testing.T) {
 	repo := newMockUserRepo()
-	addr, _ := NewUserAddress(1, "Наукова", "5")
+	addr, _ := NewAddress(1, "Наукова", "5")
 	repo.users[111] = &User{ID: 111, Address: addr}
 	svc := NewShowSubscription(repo)
 
@@ -41,7 +41,7 @@ func TestShowSubscription_DifferentChatIDs(t *testing.T) {
 
 func TestShowSubscription_DifferentStreetAndBuilding(t *testing.T) {
 	repo := newMockUserRepo()
-	addr, _ := NewUserAddress(2, "Молдавська", "25-А")
+	addr, _ := NewAddress(2, "Молдавська", "25-А")
 	repo.users[333] = &User{ID: 333, Address: addr}
 	svc := NewShowSubscription(repo)
 	msg := svc.Handle(333)
@@ -51,7 +51,7 @@ func TestShowSubscription_DifferentStreetAndBuilding(t *testing.T) {
 
 func TestShowSubscription_CyrillicLabelsPresent(t *testing.T) {
 	repo := newMockUserRepo()
-	addr, _ := NewUserAddress(1, "Стрийська", "10")
+	addr, _ := NewAddress(1, "Стрийська", "10")
 	repo.users[12345] = &User{ID: 12345, Address: addr}
 	svc := NewShowSubscription(repo)
 	msg := svc.Handle(12345)
@@ -69,7 +69,7 @@ func TestShowSubscription_CorruptedDataFallsBack(t *testing.T) {
 
 func TestShowCurrent_ExistingUser(t *testing.T) {
 	repo := newMockUserRepo()
-	addr, _ := NewUserAddress(1, "Стрийська", "10")
+	addr, _ := NewAddress(1, "Стрийська", "10")
 	repo.users[12345] = &User{ID: 12345, Address: addr}
 	svc := NewShowSubscription(repo)
 	msg, err := svc.ShowCurrent(12345)

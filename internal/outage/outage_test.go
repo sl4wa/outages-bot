@@ -13,22 +13,22 @@ var (
 )
 
 func makeTestOutage(streetID int, streetName string, buildings []string, start, end time.Time, comment string) *Outage {
-	period, _ := NewOutagePeriod(start, end)
-	addr, _ := NewOutageAddress(streetID, streetName, buildings, "Львів")
+	period, _ := NewPeriod(start, end)
+	addr, _ := NewAddress(streetID, streetName, buildings, "Львів")
 	return &Outage{
 		Period:      period,
 		Address:     addr,
-		Description: NewOutageDescription(comment),
+		Description: NewDescription(comment),
 	}
 }
 
 func TestOutage_Create(t *testing.T) {
-	period, _ := NewOutagePeriod(
+	period, _ := NewPeriod(
 		time.Date(2024, 1, 1, 8, 0, 0, 0, time.UTC),
 		time.Date(2024, 1, 1, 16, 0, 0, 0, time.UTC),
 	)
-	addr, _ := NewOutageAddress(1, "Стрийська", []string{"10", "12"}, "Львів")
-	desc := NewOutageDescription("test")
+	addr, _ := NewAddress(1, "Стрийська", []string{"10", "12"}, "Львів")
+	desc := NewDescription("test")
 	o := &Outage{ID: 42, Period: period, Address: addr, Description: desc}
 	assert.Equal(t, 42, o.ID)
 	assert.Equal(t, period, o.Period)
@@ -69,11 +69,11 @@ func TestOutagesEqual_DifferentPeriod_False(t *testing.T) {
 }
 
 func TestOutagesEqual_DifferentCity_False(t *testing.T) {
-	period, _ := NewOutagePeriod(ot0, ot1)
-	addrA, _ := NewOutageAddress(1, "Стрийська", []string{"10"}, "Львів")
-	addrB, _ := NewOutageAddress(1, "Стрийська", []string{"10"}, "Київ")
-	a := []*Outage{{Period: period, Address: addrA, Description: NewOutageDescription("c")}}
-	b := []*Outage{{Period: period, Address: addrB, Description: NewOutageDescription("c")}}
+	period, _ := NewPeriod(ot0, ot1)
+	addrA, _ := NewAddress(1, "Стрийська", []string{"10"}, "Львів")
+	addrB, _ := NewAddress(1, "Стрийська", []string{"10"}, "Київ")
+	a := []*Outage{{Period: period, Address: addrA, Description: NewDescription("c")}}
+	b := []*Outage{{Period: period, Address: addrB, Description: NewDescription("c")}}
 	assert.False(t, OutagesEqual(a, b))
 }
 

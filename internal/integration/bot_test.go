@@ -100,7 +100,7 @@ func (s *BotSuite) TestSearchSaveVerifyFile() {
 }
 
 func (s *BotSuite) TestShowSubscription_ExistingUser() {
-	addr, _ := users.NewUserAddress(12444, "Молдавська", "10")
+	addr, _ := users.NewAddress(12444, "Молдавська", "10")
 	s.userRepo.Save(&users.User{ID: 100, Address: addr})
 
 	s.runner.HandleMessage(makeIntCmd(100, "start"))
@@ -119,7 +119,7 @@ func (s *BotSuite) TestShowSubscription_NewUser() {
 }
 
 func (s *BotSuite) TestRemoveUser_FileDeleted() {
-	addr, _ := users.NewUserAddress(12444, "Молдавська", "10")
+	addr, _ := users.NewAddress(12444, "Молдавська", "10")
 	s.userRepo.Save(&users.User{ID: 100, Address: addr})
 
 	s.runner.HandleMessage(makeIntCmd(100, "stop"))

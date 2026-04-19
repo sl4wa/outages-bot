@@ -24,25 +24,25 @@ func (m *mockUserRepoForUsers) Find(_ int64) (*users.User, error) {
 func (m *mockUserRepoForUsers) Save(_ *users.User) error     { return nil }
 func (m *mockUserRepoForUsers) Remove(_ int64) (bool, error) { return false, nil }
 
-type mockUserInfoProvider struct {
-	infos map[int64]users.UserInfoDTO
+type mockInfoProvider struct {
+	infos map[int64]users.Info
 	err   error
 }
 
-func (m *mockUserInfoProvider) GetUserInfo(chatID int64) (users.UserInfoDTO, error) {
+func (m *mockInfoProvider) GetUserInfo(chatID int64) (users.Info, error) {
 	if m.err != nil {
-		return users.UserInfoDTO{}, m.err
+		return users.Info{}, m.err
 	}
 	info, ok := m.infos[chatID]
 	if !ok {
-		return users.UserInfoDTO{}, errors.New("user not found")
+		return users.Info{}, errors.New("user not found")
 	}
 	return info, nil
 }
 
 func makeUserWithAddr(t *testing.T, id int64, streetName, building string) *users.User {
 	t.Helper()
-	addr, err := users.NewUserAddress(1, streetName, building)
+	addr, err := users.NewAddress(1, streetName, building)
 	require.NoError(t, err)
 	return &users.User{ID: id, Address: addr}
 }
@@ -52,8 +52,8 @@ func TestRunUsersCommand_PrintsUsers(t *testing.T) {
 		makeUserWithAddr(t, 100, "Стрийська", "10"),
 	}
 	repo := &mockUserRepoForUsers{users: testUsers}
-	infoProvider := &mockUserInfoProvider{
-		infos: map[int64]users.UserInfoDTO{
+	infoProvider := &mockInfoProvider{
+		infos: map[int64]users.Info{
 			100: {ChatID: 100, Username: "testuser", FirstName: "John", LastName: "Doe"},
 		},
 	}
@@ -75,7 +75,7 @@ func TestRunUsersCommand_PrintsUsers(t *testing.T) {
 
 func TestRunUsersCommand_Empty(t *testing.T) {
 	repo := &mockUserRepoForUsers{users: []*users.User{}}
-	infoProvider := &mockUserInfoProvider{}
+	infoProvider := &mockInfoProvider{}
 
 	var buf bytes.Buffer
 	logger := log.New(&bytes.Buffer{}, "", 0)
@@ -90,8 +90,8 @@ func TestRunUsersCommand_GetUserInfoError_SkipsUser(t *testing.T) {
 		makeUserWithAddr(t, 200, "Молдавська", "5"),
 	}
 	repo := &mockUserRepoForUsers{users: testUsers}
-	infoProvider := &mockUserInfoProvider{
-		infos: map[int64]users.UserInfoDTO{
+	infoProvider := &mockInfoProvider{
+		infos: map[int64]users.Info{
 			200: {ChatID: 200, Username: "user2", FirstName: "Jane", LastName: "Smith"},
 		},
 	}
@@ -115,8 +115,8 @@ func TestRunUsersCommand_UsernameFormatting(t *testing.T) {
 		makeUserWithAddr(t, 200, "Молдавська", "5"),
 	}
 	repo := &mockUserRepoForUsers{users: testUsers}
-	infoProvider := &mockUserInfoProvider{
-		infos: map[int64]users.UserInfoDTO{
+	infoProvider := &mockInfoProvider{
+		infos: map[int64]users.Info{
 			100: {ChatID: 100, Username: "hasuser", FirstName: "A", LastName: "B"},
 			200: {ChatID: 200, Username: "", FirstName: "C", LastName: "D"},
 		},
@@ -134,19 +134,19 @@ func TestRunUsersCommand_UsernameFormatting(t *testing.T) {
 }
 
 func TestRunUsersCommand_OutageInfoFormatting(t *testing.T) {
-	addr, _ := users.NewUserAddress(1, "Стрийська", "10")
+	addr, _ := users.NewAddress(1, "Стрийська", "10")
 	start := time.Date(2024, 3, 15, 8, 0, 0, 0, time.UTC)
 	end := time.Date(2024, 3, 15, 16, 0, 0, 0, time.UTC)
-	period, _ := outage.NewOutagePeriod(start, end)
-	desc := outage.NewOutageDescription("Ремонт")
+	period, _ := outage.NewPeriod(start, end)
+	desc := outage.NewDescription("Ремонт")
 	info := users.NewOutageInfo(period, desc)
 
 	testUsers := []*users.User{
 		{ID: 100, Address: addr, OutageInfo: &info},
 	}
 	repo := &mockUserRepoForUsers{users: testUsers}
-	infoProvider := &mockUserInfoProvider{
-		infos: map[int64]users.UserInfoDTO{
+	infoProvider := &mockInfoProvider{
+		infos: map[int64]users.Info{
 			100: {ChatID: 100, Username: "user1", FirstName: "A", LastName: "B"},
 		},
 	}
@@ -166,8 +166,8 @@ func TestRunUsersCommand_SanitizationApplied(t *testing.T) {
 		makeUserWithAddr(t, 100, "Стрийська", "10"),
 	}
 	repo := &mockUserRepoForUsers{users: testUsers}
-	infoProvider := &mockUserInfoProvider{
-		infos: map[int64]users.UserInfoDTO{
+	infoProvider := &mockInfoProvider{
+		infos: map[int64]users.Info{
 			100: {ChatID: 100, Username: "user1", FirstName: "John\u200b", LastName: "Doe\u200c"},
 		},
 	}

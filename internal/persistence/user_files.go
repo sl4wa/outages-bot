@@ -127,7 +127,7 @@ func (r *FileUserRepository) loadFromFile(path string) (*users.User, error) {
 		return nil, fmt.Errorf("failed to parse user file %s: %w", base, err)
 	}
 
-	addr, err := users.NewUserAddress(uf.StreetID, uf.StreetName, uf.Building)
+	addr, err := users.NewAddress(uf.StreetID, uf.StreetName, uf.Building)
 	if err != nil {
 		return nil, fmt.Errorf("invalid user address in %s: %w", base, err)
 	}
@@ -142,11 +142,11 @@ func (r *FileUserRepository) loadFromFile(path string) (*users.User, error) {
 		if err != nil {
 			return nil, fmt.Errorf("invalid end_date in %s: %w", base, err)
 		}
-		period, err := outage.NewOutagePeriod(startDate, endDate)
+		period, err := outage.NewPeriod(startDate, endDate)
 		if err != nil {
 			return nil, fmt.Errorf("invalid outage period in %s: %w", base, err)
 		}
-		desc := outage.NewOutageDescription(uf.Comment)
+		desc := outage.NewDescription(uf.Comment)
 		info := users.NewOutageInfo(period, desc)
 		outageInfo = &info
 	}

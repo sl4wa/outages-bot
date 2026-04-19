@@ -16,7 +16,7 @@ import (
 // RunUsersCommand lists all users with their Telegram info and addresses.
 func RunUsersCommand(
 	userRepo users.Repository,
-	userInfoProvider users.UserInfoProvider,
+	infoProvider users.InfoProvider,
 	w io.Writer,
 	logger *log.Logger,
 ) {
@@ -43,7 +43,7 @@ func RunUsersCommand(
 
 	successCount := 0
 	for _, user := range allUsers {
-		info, err := userInfoProvider.GetUserInfo(user.ID)
+		info, err := infoProvider.GetUserInfo(user.ID)
 		if err != nil {
 			logger.Printf("Failed to get info for chat %d: %v", user.ID, err)
 			continue

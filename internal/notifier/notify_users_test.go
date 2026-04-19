@@ -63,7 +63,7 @@ func newNotifyUsers(provider *mockProvider, sender *mockSender, repo *mockUserRe
 func TestNotifyUsers_MatchingSendsAndSaves(t *testing.T) {
 	sender := &mockSender{}
 	repo := newMockUserRepo()
-	addr, _ := users.NewUserAddress(1, "Стрийська", "10")
+	addr, _ := users.NewAddress(1, "Стрийська", "10")
 	repo.users[100] = &users.User{ID: 100, Address: addr}
 
 	provider := &mockProvider{outages: []outage.RawOutage{makeTestOutage(1, []string{"10", "12"})}}
@@ -81,7 +81,7 @@ func TestNotifyUsers_BlockedUserRemoved(t *testing.T) {
 		err: ErrRecipientUnavailable,
 	}
 	repo := newMockUserRepo()
-	addr, _ := users.NewUserAddress(1, "Стрийська", "10")
+	addr, _ := users.NewAddress(1, "Стрийська", "10")
 	repo.users[100] = &users.User{ID: 100, Address: addr}
 
 	provider := &mockProvider{outages: []outage.RawOutage{makeTestOutage(1, []string{"10"})}}
@@ -95,7 +95,7 @@ func TestNotifyUsers_BlockedUserRemoved(t *testing.T) {
 func TestNotifyUsers_NonMatchingDoesNothing(t *testing.T) {
 	sender := &mockSender{}
 	repo := newMockUserRepo()
-	addr, _ := users.NewUserAddress(2, "Наукова", "10")
+	addr, _ := users.NewAddress(2, "Наукова", "10")
 	repo.users[100] = &users.User{ID: 100, Address: addr}
 
 	provider := &mockProvider{outages: []outage.RawOutage{makeTestOutage(1, []string{"10"})}}
@@ -110,7 +110,7 @@ func TestNotifyUsers_NonMatchingDoesNothing(t *testing.T) {
 func TestNotifyUsers_DedupSecondRunSkips(t *testing.T) {
 	sender := &mockSender{}
 	repo := newMockUserRepo()
-	addr, _ := users.NewUserAddress(1, "Стрийська", "10")
+	addr, _ := users.NewAddress(1, "Стрийська", "10")
 	repo.users[100] = &users.User{ID: 100, Address: addr}
 
 	provider := &mockProvider{outages: []outage.RawOutage{makeTestOutage(1, []string{"10"})}}
@@ -133,7 +133,7 @@ func TestNotifyUsers_NonBlockingSendError_UserNotRemoved(t *testing.T) {
 		err: errors.New("send failed"),
 	}
 	repo := newMockUserRepo()
-	addr, _ := users.NewUserAddress(1, "Стрийська", "10")
+	addr, _ := users.NewAddress(1, "Стрийська", "10")
 	repo.users[100] = &users.User{ID: 100, Address: addr}
 
 	provider := &mockProvider{outages: []outage.RawOutage{makeTestOutage(1, []string{"10"})}}
@@ -149,7 +149,7 @@ func TestNotifyUsers_SaveError_LogsAndContinues(t *testing.T) {
 	sender := &mockSender{}
 	repo := newMockUserRepo()
 	repo.saveErr = errors.New("disk full")
-	addr, _ := users.NewUserAddress(1, "Стрийська", "10")
+	addr, _ := users.NewAddress(1, "Стрийська", "10")
 	repo.users[100] = &users.User{ID: 100, Address: addr}
 
 	var buf bytes.Buffer
@@ -169,7 +169,7 @@ func TestNotifyUsers_RemoveError_LogsAndContinues(t *testing.T) {
 	}
 	repo := newMockUserRepo()
 	repo.removeErr = errors.New("disk full")
-	addr, _ := users.NewUserAddress(1, "Стрийська", "10")
+	addr, _ := users.NewAddress(1, "Стрийська", "10")
 	repo.users[100] = &users.User{ID: 100, Address: addr}
 
 	var buf bytes.Buffer
@@ -203,7 +203,7 @@ func newNotifyUsersWithSnapshot(provider *mockProvider, sender *mockSender, repo
 func TestNotifyUsers_Snapshot_FirstRun_SavesAndNotifies(t *testing.T) {
 	sender := &mockSender{}
 	repo := newMockUserRepo()
-	addr, _ := users.NewUserAddress(1, "Стрийська", "10")
+	addr, _ := users.NewAddress(1, "Стрийська", "10")
 	repo.users[100] = &users.User{ID: 100, Address: addr}
 
 	snap := &mockOutageRepo{} // no prior snapshot
@@ -219,7 +219,7 @@ func TestNotifyUsers_Snapshot_FirstRun_SavesAndNotifies(t *testing.T) {
 func TestNotifyUsers_Snapshot_IdenticalSecondRun_SkipsNotification(t *testing.T) {
 	sender := &mockSender{}
 	repo := newMockUserRepo()
-	addr, _ := users.NewUserAddress(1, "Стрийська", "10")
+	addr, _ := users.NewAddress(1, "Стрийська", "10")
 	repo.users[100] = &users.User{ID: 100, Address: addr}
 
 	outages := []outage.RawOutage{makeTestOutage(1, []string{"10"})}
@@ -243,7 +243,7 @@ func TestNotifyUsers_Snapshot_IdenticalSecondRun_SkipsNotification(t *testing.T)
 func TestNotifyUsers_Snapshot_ChangedSnapshot_SavesAndNotifies(t *testing.T) {
 	sender := &mockSender{}
 	repo := newMockUserRepo()
-	addr, _ := users.NewUserAddress(1, "Стрийська", "10")
+	addr, _ := users.NewAddress(1, "Стрийська", "10")
 	repo.users[100] = &users.User{ID: 100, Address: addr}
 
 	firstOutages := []outage.RawOutage{makeTestOutage(1, []string{"10"})}
@@ -273,7 +273,7 @@ func TestNotifyUsers_Snapshot_ChangedSnapshot_SavesAndNotifies(t *testing.T) {
 func TestNotifyUsers_Snapshot_SaveFailure_AbortsBeforeNotifications(t *testing.T) {
 	sender := &mockSender{}
 	repo := newMockUserRepo()
-	addr, _ := users.NewUserAddress(1, "Стрийська", "10")
+	addr, _ := users.NewAddress(1, "Стрийська", "10")
 	repo.users[100] = &users.User{ID: 100, Address: addr}
 
 	snap := &mockOutageRepo{saveErr: errSaveFailed}

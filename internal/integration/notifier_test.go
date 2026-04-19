@@ -108,7 +108,7 @@ func (s *NotifierSuite) filterFixtureByComment(comment string) string {
 }
 
 func (s *NotifierSuite) saveUser(chatID int64, streetID int, streetName, building string) {
-	addr, err := users.NewUserAddress(streetID, streetName, building)
+	addr, err := users.NewAddress(streetID, streetName, building)
 	require.NoError(s.T(), err)
 	user := &users.User{ID: chatID, Address: addr}
 	require.NoError(s.T(), s.userRepo.Save(user))

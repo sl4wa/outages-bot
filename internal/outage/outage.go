@@ -7,9 +7,9 @@ import (
 // Outage represents a power outage event.
 type Outage struct {
 	ID          int
-	Period      OutagePeriod
-	Address     OutageAddress
-	Description OutageDescription
+	Period      Period
+	Address     Address
+	Description Description
 }
 
 // OutagesEqual reports whether a and b contain the same outages in the same order.

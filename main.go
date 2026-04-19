@@ -187,8 +187,8 @@ func usersCmd() *cobra.Command {
 				return fmt.Errorf("failed to create user repository: %w", err)
 			}
 
-			userInfoProvider := telegram.NewUserInfoProvider(api)
-			cli.RunUsersCommand(userRepo, userInfoProvider, os.Stdout, log.Default())
+			infoProvider := telegram.NewInfoProvider(api)
+			cli.RunUsersCommand(userRepo, infoProvider, os.Stdout, log.Default())
 			return nil
 		},
 	}

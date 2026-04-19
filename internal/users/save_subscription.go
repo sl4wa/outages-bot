@@ -22,7 +22,7 @@ func NewSaveSubscription(userRepo Repository) *SaveSubscription {
 
 // Handle saves a user subscription. Returns validation errors as unsuccessful results.
 func (s *SaveSubscription) Handle(chatID int64, streetID int, streetName, building string) *SaveSubscriptionResult {
-	addr, err := NewUserAddress(streetID, streetName, building)
+	addr, err := NewAddress(streetID, streetName, building)
 	if err != nil {
 		return &SaveSubscriptionResult{Message: err.Error(), Success: false}
 	}

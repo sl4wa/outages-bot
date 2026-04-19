@@ -11,25 +11,25 @@ import (
 
 func newTestUser(t *testing.T) *User {
 	t.Helper()
-	addr, err := NewUserAddress(1, "Стрийська", "10")
+	addr, err := NewAddress(1, "Стрийська", "10")
 	require.NoError(t, err)
 	return &User{ID: 12345, Address: addr, OutageInfo: nil}
 }
 
 func newTestOutage(t *testing.T) *outage.Outage {
 	t.Helper()
-	period, err := outage.NewOutagePeriod(
+	period, err := outage.NewPeriod(
 		time.Date(2024, 1, 1, 8, 0, 0, 0, time.UTC),
 		time.Date(2024, 1, 1, 16, 0, 0, 0, time.UTC),
 	)
 	require.NoError(t, err)
-	addr, err := outage.NewOutageAddress(1, "Стрийська", []string{"10", "12"}, "Львів")
+	addr, err := outage.NewAddress(1, "Стрийська", []string{"10", "12"}, "Львів")
 	require.NoError(t, err)
 	return &outage.Outage{
 		ID:          1,
 		Period:      period,
 		Address:     addr,
-		Description: outage.NewOutageDescription("Планове відключення"),
+		Description: outage.NewDescription("Планове відключення"),
 	}
 }
 

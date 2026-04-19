@@ -2,22 +2,22 @@ package outage
 
 import "time"
 
-// OutagePeriod represents the time period of an outage.
-type OutagePeriod struct {
+// Period represents the time period of an outage.
+type Period struct {
 	StartDate time.Time
 	EndDate   time.Time
 }
 
-// NewOutagePeriod creates a new OutagePeriod, returning an error if start is after end.
-func NewOutagePeriod(startDate, endDate time.Time) (OutagePeriod, error) {
+// NewPeriod creates a new Period, returning an error if start is after end.
+func NewPeriod(startDate, endDate time.Time) (Period, error) {
 	if startDate.After(endDate) {
-		return OutagePeriod{}, ErrInvalidDateRange
+		return Period{}, ErrInvalidDateRange
 	}
-	return OutagePeriod{StartDate: startDate, EndDate: endDate}, nil
+	return Period{StartDate: startDate, EndDate: endDate}, nil
 }
 
-// Equals checks if two OutagePeriod values are equal by comparing Unix timestamps.
-func (p OutagePeriod) Equals(other OutagePeriod) bool {
+// Equals checks if two Period values are equal by comparing Unix timestamps.
+func (p Period) Equals(other Period) bool {
 	return p.StartDate.Unix() == other.StartDate.Unix() &&
 		p.EndDate.Unix() == other.EndDate.Unix()
 }

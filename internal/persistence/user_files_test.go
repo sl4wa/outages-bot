@@ -23,7 +23,7 @@ func setupUserRepo(t *testing.T) *FileUserRepository {
 
 func makeTestUser(t *testing.T, id int64) *users.User {
 	t.Helper()
-	addr, err := users.NewUserAddress(1, "Стрийська", "10")
+	addr, err := users.NewAddress(1, "Стрийська", "10")
 	require.NoError(t, err)
 	return &users.User{ID: id, Address: addr}
 }
@@ -47,11 +47,11 @@ func TestFileUserRepository_SaveAndFind(t *testing.T) {
 
 func TestFileUserRepository_SaveWithOutageInfo(t *testing.T) {
 	repo := setupUserRepo(t)
-	addr, _ := users.NewUserAddress(1, "Стрийська", "10")
+	addr, _ := users.NewAddress(1, "Стрийська", "10")
 	start := time.Date(2024, 1, 1, 8, 0, 0, 0, time.UTC)
 	end := time.Date(2024, 1, 1, 16, 0, 0, 0, time.UTC)
-	period, _ := outage.NewOutagePeriod(start, end)
-	desc := outage.NewOutageDescription("Планове відключення")
+	period, _ := outage.NewPeriod(start, end)
+	desc := outage.NewDescription("Планове відключення")
 	info := users.NewOutageInfo(period, desc)
 	user := &users.User{ID: 12345, Address: addr, OutageInfo: &info}
 
@@ -209,7 +209,7 @@ func TestFileUserRepository_SaveOverwriteExisting(t *testing.T) {
 	require.NoError(t, repo.Save(user))
 
 	// Overwrite with different address
-	addr, err := users.NewUserAddress(2, "Молдавська", "5")
+	addr, err := users.NewAddress(2, "Молдавська", "5")
 	require.NoError(t, err)
 	updatedUser := &users.User{ID: 12345, Address: addr}
 	require.NoError(t, repo.Save(updatedUser))

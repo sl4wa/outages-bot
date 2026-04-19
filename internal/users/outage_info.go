@@ -4,12 +4,12 @@ import "outages-bot/internal/outage"
 
 // OutageInfo is a composite value object containing a period and description.
 type OutageInfo struct {
-	Period      outage.OutagePeriod
-	Description outage.OutageDescription
+	Period      outage.Period
+	Description outage.Description
 }
 
 // NewOutageInfo creates a new OutageInfo.
-func NewOutageInfo(period outage.OutagePeriod, description outage.OutageDescription) OutageInfo {
+func NewOutageInfo(period outage.Period, description outage.Description) OutageInfo {
 	return OutageInfo{Period: period, Description: description}
 }
 
