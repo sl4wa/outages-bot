@@ -1,19 +1,14 @@
 # CLAUDE.md
 
-outages-bot is a Go Telegram bot for outage subscriptions and notifications.
+outages-bot is a Go monorepo with two binaries built from one module (`github.com/sl4wa/outages-bot`):
+
+- `cmd/outage-notification/` — Cobra app exposing `bot`, `notifier`, `outages`, `users` subcommands. Owns the subscription Telegram bot and per-user outage notification flow.
+- `cmd/schedule-notification/` — polling daemon that broadcasts LOE schedule changes to every user in the shared users directory.
 
 Repo-specific Claude Code guidance lives in `.claude/rules/`.
 
 - Start with `.claude/rules/core.md` and `.claude/rules/commands.md`.
-- Claude Code also loads path-scoped rules from `.claude/rules/` when working with matching files.
-- Current package layout:
-  - `internal/cli`: command execution helpers and stdout formatting
-  - `internal/loe`: outage API transport, normalization, and cache behavior
-  - `internal/notifier`: notification orchestration
-  - `internal/outage`: outage models, validation, conversion, and snapshot interfaces
-  - `internal/persistence`: file-backed user, street, and outage snapshot storage
-  - `internal/subscription`: subscription conversation workflow, command handling, pending state, and application operations
-  - `internal/telegram`: Telegram bot runner, command mapping, response rendering, and Telegram transport helpers
-  - `internal/users`: user, address, street entities, validation, repositories, and reusable matching/listing behavior
-- `main.go` is the composition root. It constructs Cobra commands and wires repositories, providers, notifier flow, and Telegram integrations.
-- Treat notifier semantics, subscription conversation flow, file persistence, and outage normalization rules as intentional behavior unless the task explicitly changes them.
+- For outage-flow work, load `.claude/rules/outage-flow.md` (auto-scoped to `cmd/outage-notification/**`, `internal/outage/**`, `test/integration/outage_*.go`).
+- For schedule-flow work, load `.claude/rules/schedule-flow.md` (auto-scoped to `cmd/schedule-notification/**`, `internal/schedule/**`, `test/integration/schedule_*.go`).
+- **Boundary**: `internal/outage/` and `internal/schedule/` must not import each other. Both may import `internal/shared/`.
+- Both binaries run from the repo root (supervisord uses `directory=%(here)s`; Makefile uses `go run ./cmd/...`). They load env via a single `godotenv.Load()` and default file paths are root-relative.

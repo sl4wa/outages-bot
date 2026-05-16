@@ -1,23 +1,27 @@
 # Run And Test Commands
 
-- `make test` runs the full test suite.
-- `make build` builds `bin/outages-bot`.
-- `go test ./...` runs all Go tests.
+- `make test` runs the full test suite (`go test ./...`).
+- `make build` builds `bin/outage-notification` and `bin/schedule-notification`.
+- All commands run from the repo root; do not `cd` into `cmd/*` or `internal/*`.
 - Useful focused suites:
   - `go test ./internal/outage/...`
-  - `go test ./internal/subscription/...`
-  - `go test ./internal/users/...`
-  - `go test ./internal/persistence/...`
-  - `go test ./internal/loe/...`
-  - `go test ./internal/telegram/...`
-  - `go test ./internal/notifier/...`
-  - `go test ./internal/cli/...`
+  - `go test ./internal/outage/subscription/...`
+  - `go test ./internal/outage/users/...`
+  - `go test ./internal/outage/persistence/...`
+  - `go test ./internal/outage/loe/...`
+  - `go test ./internal/outage/telegram/...`
+  - `go test ./internal/outage/notifier/...`
+  - `go test ./internal/outage/cli/...`
+  - `go test ./internal/schedule/...`
+  - `go test ./internal/shared/...`
   - `go test ./test/integration/...`
 - Useful local commands:
-  - `go run . bot`
-  - `go run . notifier`
-  - `go run . notifier --interval=60s`
-  - `go run . outages`
-  - `go run . users`
-- Runtime commands may require `TELEGRAM_BOT_TOKEN`, `OUTAGE_API_URL`, and `DATA_DIR`.
-- `DATA_DIR` defaults to `data` when unset.
+  - `make run-bot`            (or `go run ./cmd/outage-notification bot`)
+  - `make run-notifier`       (or `go run ./cmd/outage-notification notifier`)
+  - `make run-outages`        (or `go run ./cmd/outage-notification outages`)
+  - `make run-users`          (or `go run ./cmd/outage-notification users`)
+  - `make run-schedule`       (or `go run ./cmd/schedule-notification`)
+  - `make run-schedule-loop`  (or `go run ./cmd/schedule-notification --interval=60s`)
+- Outage app runtime env: `TELEGRAM_BOT_TOKEN`, `OUTAGE_API_URL`, `DATA_DIR` (defaults to `data`).
+- Schedule app runtime env: `TELEGRAM_BOT_TOKEN`, `SCHEDULE_API_URL`, `SCHEDULE_STATE_PATH` (defaults to `data/outages.csv`), `SCHEDULE_HTTP_CACHE_PATH` (derived from state path when unset), `TELEGRAM_USERS_DIR` (defaults to `data/users`).
+- The two apps own distinct env namespaces: outage uses `OUTAGE_*` / `DATA_DIR`, schedule uses `SCHEDULE_*`. Shared vars (`TELEGRAM_BOT_TOKEN`, `TELEGRAM_USERS_DIR`) are read by both.

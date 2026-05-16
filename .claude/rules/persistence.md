@@ -1,6 +1,6 @@
 ---
 paths:
-  - "internal/persistence/**/*.go"
+  - "internal/outage/persistence/**/*.go"
 ---
 
 # Persistence Rules

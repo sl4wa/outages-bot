@@ -1,6 +1,6 @@
 ---
 paths:
-  - "internal/notifier/**/*.go"
+  - "internal/outage/notifier/**/*.go"
 ---
 
 # Notifier Rules

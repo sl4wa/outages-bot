@@ -1,6 +1,6 @@
 ---
 paths:
-  - "internal/loe/**/*.go"
+  - "internal/outage/loe/**/*.go"
 ---
 
 # LOE Rules

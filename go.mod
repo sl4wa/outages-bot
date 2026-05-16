@@ -1,4 +1,4 @@
-module outages-bot
+module github.com/sl4wa/outages-bot
 
 go 1.25.6
 
