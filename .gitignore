@@ -1,6 +1,10 @@
-venv/
-*.pyc
-__pycache__/
-users/data/
-*.log
-.env
+/bin/
+/var/**
+!/var/log/
+!/var/log/.gitkeep
+!/var/run/
+!/var/run/.gitkeep
+/data/users/
+/data/outages.csv
+/.env
+/.idea/

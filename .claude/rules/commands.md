@@ -1,0 +1,23 @@
+# Run And Test Commands
+
+- `make test` runs the full test suite.
+- `make build` builds `bin/outages-bot`.
+- `go test ./...` runs all Go tests.
+- Useful focused suites:
+  - `go test ./internal/outage/...`
+  - `go test ./internal/subscription/...`
+  - `go test ./internal/users/...`
+  - `go test ./internal/persistence/...`
+  - `go test ./internal/loe/...`
+  - `go test ./internal/telegram/...`
+  - `go test ./internal/notifier/...`
+  - `go test ./internal/cli/...`
+  - `go test ./test/integration/...`
+- Useful local commands:
+  - `go run . bot`
+  - `go run . notifier`
+  - `go run . notifier --interval=60s`
+  - `go run . outages`
+  - `go run . users`
+- Runtime commands may require `TELEGRAM_BOT_TOKEN`, `OUTAGE_API_URL`, and `DATA_DIR`.
+- `DATA_DIR` defaults to `data` when unset.
